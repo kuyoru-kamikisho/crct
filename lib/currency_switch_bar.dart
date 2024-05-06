@@ -1,0 +1,150 @@
+import 'package:feriea/k_dropmenu.dart';
+import 'package:feriea/public_context.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+class CurrencySwitchBar extends StatelessWidget {
+  const CurrencySwitchBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 8),
+        child: Row(
+          children: [
+            Expanded(
+                child: TextField(
+              cursorColor: Colors.red,
+              style: const TextStyle(fontSize: 14),
+              maxLength: 18,
+              enableSuggestions: false,
+              keyboardType: TextInputType.visiblePassword,
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp("[0-9.]"))
+              ],
+              decoration: const InputDecoration(
+                isDense: true,
+                contentPadding: EdgeInsets.fromLTRB(6, 7, 6, 7),
+                counterText: '',
+                hintText: '100.00',
+                border: OutlineInputBorder(
+                    gapPadding: 0,
+                    borderSide: BorderSide(width: 0, color: Colors.red),
+                    borderRadius: BorderRadius.all(Radius.circular(0))),
+                enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.zero),
+                    gapPadding: 0,
+                    borderSide: BorderSide(color: Colors.black, width: 0.4)),
+                focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.all(Radius.zero),
+                    borderSide: BorderSide(color: Colors.black, width: 1)),
+              ),
+            )),
+            const CurrencyPair()
+          ],
+        ));
+  }
+}
+
+class CurrencyPair extends StatefulWidget {
+  const CurrencyPair({super.key});
+  @override
+  State<CurrencyPair> createState() => _CurrencyPair();
+}
+
+class _CurrencyPair extends State<CurrencyPair> {
+  CurrencyObject currencyFrom = CurrencyList.collections[2];
+  CurrencyObject currencyTo = CurrencyList.collections[11];
+
+  void switchCurrency() {
+    var oldFrom = currencyFrom;
+    currencyFrom = currencyTo;
+    currencyTo = oldFrom;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    double menuWidth = 102;
+    double menuHeight = 320;
+    var menuList = CurrencyList.collections
+        .map<KDropdownMenuEntry<String>>((CurrencyObject s) {
+      return KDropdownMenuEntry<String>(
+          value: s.name,
+          label: s.name,
+          style: const ButtonStyle(
+              minimumSize: MaterialStatePropertyAll(Size.fromHeight(32))),
+          leadingIcon: SvgPicture.asset(
+            s.icon,
+            width: 20,
+          ));
+    }).toList();
+    var txtStyle = const TextStyle(fontSize: 14);
+    var menuSyle = const MenuStyle(
+      visualDensity: VisualDensity(),
+      padding: MaterialStatePropertyAll(EdgeInsets.zero),
+    );
+    var inputDec = InputDecorationTheme(
+        isDense: true,
+        outlineBorder: const BorderSide(),
+        constraints: BoxConstraints.tight(const Size.fromHeight(28)),
+        helperStyle: const TextStyle(fontSize: 10),
+        focusedBorder: const OutlineInputBorder(
+            borderRadius: BorderRadius.zero,
+            gapPadding: 0,
+            borderSide: BorderSide(width: 1, color: Colors.black)),
+        border: const OutlineInputBorder(
+            borderRadius: BorderRadius.zero,
+            gapPadding: 0,
+            borderSide: BorderSide(width: 1, color: Colors.black)),
+        contentPadding: const EdgeInsets.fromLTRB(12, 0, 8, 0));
+
+    return Row(children: [
+      Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6),
+        child: KDropdownMenu<String>(
+            width: menuWidth,
+            menuStyle: menuSyle,
+            menuHeight: menuHeight,
+            textStyle: txtStyle,
+            inputDecorationTheme: inputDec,
+            dropdownMenuEntries: menuList,
+            initialSelection: currencyFrom.name,
+            onSelected: (String? s) {
+              setState(() {
+                if (s == currencyTo.name) return switchCurrency();
+                currencyFrom = CurrencyList.getCurrency(s!);
+              });
+            }),
+      ),
+      const Text(
+        '兑换',
+        style: TextStyle(fontSize: 12),
+      ),
+      Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          child: KDropdownMenu<String>(
+              width: menuWidth,
+              menuHeight: menuHeight,
+              textStyle: txtStyle,
+              menuStyle: menuSyle,
+              inputDecorationTheme: inputDec,
+              dropdownMenuEntries: menuList,
+              initialSelection: currencyTo.name,
+              onSelected: (String? s) {
+                setState(() {
+                  if (s == currencyFrom.name) return switchCurrency();
+                  currencyTo = CurrencyList.getCurrency(s!);
+                });
+              })),
+      IconButton(
+          color: Colors.grey[850],
+          onPressed: () {
+            setState(() {
+              switchCurrency();
+            });
+          },
+          icon: const Icon(Icons.currency_exchange))
+    ]);
+  }
+}
