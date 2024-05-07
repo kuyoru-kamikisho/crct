@@ -15,7 +15,7 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          backgroundColor: Colors.blue[50],
           title: Text(widget.title, style: const TextStyle(fontSize: 14)),
           toolbarHeight: 28,
         ),
@@ -27,7 +27,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 child: const CurrencySwitchBar(),
               ),
               Container(
-                  height: constraints.maxHeight - 100,
+                  height: constraints.maxHeight - 48,
                   color: Colors.transparent,
                   child: SingleChildScrollView(
                     child: CurrencyViewBox(constraints: constraints),

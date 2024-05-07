@@ -4,9 +4,13 @@ import 'package:provider/provider.dart';
 import 'my_home_page.dart';
 
 void main() {
-  runApp(MultiProvider(
-      providers: [ChangeNotifierProvider(create: (_) => UseCurrency())],
-      child: const MyApp()));
+  runApp(MultiProvider(providers: [
+    ChangeNotifierProvider(create: (_) {
+      var uc = UseCurrency();
+      uc.queryRates();
+      return uc;
+    })
+  ], child: const MyApp()));
 }
 
 class MyApp extends StatelessWidget {

@@ -11,6 +11,7 @@ class CurrencySwitchBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var ctx = context.read<UseCurrency>();
     return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8),
         child: Row(
@@ -23,7 +24,7 @@ class CurrencySwitchBar extends StatelessWidget {
               enableSuggestions: false,
               keyboardType: TextInputType.visiblePassword,
               inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp("[0-9.]"))
+                FilteringTextInputFormatter.allow(RegExp(r"[0-9][.0-9]?"))
               ],
               decoration: const InputDecoration(
                 isDense: true,
@@ -42,6 +43,9 @@ class CurrencySwitchBar extends StatelessWidget {
                     borderRadius: BorderRadius.all(Radius.zero),
                     borderSide: BorderSide(color: Colors.black, width: 1)),
               ),
+              onChanged: (s) {
+                ctx.setInputMoney(s);
+              },
             )),
             const CurrencyPair()
           ],
@@ -49,17 +53,8 @@ class CurrencySwitchBar extends StatelessWidget {
   }
 }
 
-// class CurrencyPair extends StatefulWidget {
-//   const CurrencyPair({super.key});
-//   @override
-//   State<CurrencyPair> createState() => _CurrencyPair();
-// }
-
 class CurrencyPair extends StatelessWidget {
   const CurrencyPair({super.key});
-  // CurrencyObject currencyFrom = CurrencyList.collections[2];
-  // CurrencyObject currencyTo = CurrencyList.collections[11];
-
   @override
   Widget build(BuildContext context) {
     double menuWidth = 102;

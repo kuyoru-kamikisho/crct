@@ -1,5 +1,7 @@
 import 'package:feriea/public_context.dart';
+import 'package:feriea/public_states.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class CurrencyViewBox extends StatelessWidget {
   const CurrencyViewBox({super.key, required this.constraints});
@@ -24,16 +26,33 @@ class CurrencyInfoBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var ipdv = context.watch<UseCurrency>().inputMoney;
+    var rats = context.watch<UseCurrency>().currencyRates;
+    var frmn = context.watch<UseCurrency>().currencyFrom.name;
+    var tomn = context.watch<UseCurrency>().currencyTo.name;
+
+    double rest(String to) {
+      return CurrencyList.usdBaseCrossRate(
+          double.parse('${rats?['rates'][frmn]}'),
+          double.parse('${rats?['rates'][to]}'),
+          double.parse(ipdv));
+    }
+
     return Card(
+      color: currencyType == frmn
+          ? Colors.amber[700]
+          : currencyType == tomn
+              ? Colors.redAccent[400]
+              : Colors.blue[50],
       margin: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(Radius.zero)),
       child: Row(
         children: [
           Expanded(child: KSmallSticker(text: currencyType!)),
-          const Expanded(child: KSmallSticker(text: '21.84')),
-          const Expanded(child: KSmallSticker(text: '-0.046%')),
-          const Expanded(child: KSmallSticker(text: '2,184.1242')),
+          Expanded(
+              child: KSmallSticker(text: '${rats?['rates'][currencyType!]}')),
+          Expanded(child: KSmallSticker(text: '${rest(currencyType!)}')),
         ],
       ),
     );

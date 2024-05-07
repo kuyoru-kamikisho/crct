@@ -30,4 +30,24 @@ class CurrencyList {
     return collections.firstWhere((element) => element.name == name,
         orElse: () => collections[2]);
   }
+
+  /// <br/>以美元为汇率计算基础
+  /// <br/>例如：
+  /// <br/>    usd/cny = 7
+  /// <br/>    usd/jpy = 140
+  /// <br/>那么
+  /// <br/>    cny/jpy = 20
+  /// <br/> [from] 是要被转换币种的汇率
+  /// <br/> [to] 是目标币种的汇率
+  /// <br/> [m] 是要转换的金额数
+  static double usdBaseCrossRate(double? from, double? to, double? m) {
+    double result = 0;
+    if (from != null && to != null) {
+      result = to / from;
+    }
+    if (m != null) {
+      result *= m;
+    }
+    return result;
+  }
 }
