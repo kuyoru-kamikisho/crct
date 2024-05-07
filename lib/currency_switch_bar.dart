@@ -1,8 +1,10 @@
 import 'package:feriea/k_dropmenu.dart';
 import 'package:feriea/public_context.dart';
+import 'package:feriea/public_states.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
 
 class CurrencySwitchBar extends StatelessWidget {
   const CurrencySwitchBar({super.key});
@@ -47,26 +49,24 @@ class CurrencySwitchBar extends StatelessWidget {
   }
 }
 
-class CurrencyPair extends StatefulWidget {
+// class CurrencyPair extends StatefulWidget {
+//   const CurrencyPair({super.key});
+//   @override
+//   State<CurrencyPair> createState() => _CurrencyPair();
+// }
+
+class CurrencyPair extends StatelessWidget {
   const CurrencyPair({super.key});
-  @override
-  State<CurrencyPair> createState() => _CurrencyPair();
-}
-
-class _CurrencyPair extends State<CurrencyPair> {
-  CurrencyObject currencyFrom = CurrencyList.collections[2];
-  CurrencyObject currencyTo = CurrencyList.collections[11];
-
-  void switchCurrency() {
-    var oldFrom = currencyFrom;
-    currencyFrom = currencyTo;
-    currencyTo = oldFrom;
-  }
+  // CurrencyObject currencyFrom = CurrencyList.collections[2];
+  // CurrencyObject currencyTo = CurrencyList.collections[11];
 
   @override
   Widget build(BuildContext context) {
     double menuWidth = 102;
     double menuHeight = 320;
+    var ctx = context.read<UseCurrency>();
+    var initCurrencyFrom = context.watch<UseCurrency>().currencyFrom;
+    var initCurrencyTo = context.watch<UseCurrency>().currencyTo;
     var menuList = CurrencyList.collections
         .map<KDropdownMenuEntry<String>>((CurrencyObject s) {
       return KDropdownMenuEntry<String>(
@@ -109,12 +109,14 @@ class _CurrencyPair extends State<CurrencyPair> {
             textStyle: txtStyle,
             inputDecorationTheme: inputDec,
             dropdownMenuEntries: menuList,
-            initialSelection: currencyFrom.name,
+            initialSelection: initCurrencyFrom.name,
             onSelected: (String? s) {
-              setState(() {
-                if (s == currencyTo.name) return switchCurrency();
-                currencyFrom = CurrencyList.getCurrency(s!);
-              });
+              var useCurrency =
+                  Provider.of<UseCurrency>(context, listen: false);
+              if (s == useCurrency.currencyTo.name) {
+                return ctx.exchange();
+              }
+              ctx.setCurrencyFrom(CurrencyList.getCurrency(s!));
             }),
       ),
       const Text(
@@ -130,19 +132,19 @@ class _CurrencyPair extends State<CurrencyPair> {
               menuStyle: menuSyle,
               inputDecorationTheme: inputDec,
               dropdownMenuEntries: menuList,
-              initialSelection: currencyTo.name,
+              initialSelection: initCurrencyTo.name,
               onSelected: (String? s) {
-                setState(() {
-                  if (s == currencyFrom.name) return switchCurrency();
-                  currencyTo = CurrencyList.getCurrency(s!);
-                });
+                var useCurrency =
+                    Provider.of<UseCurrency>(context, listen: false);
+                if (s == useCurrency.currencyFrom.name) {
+                  return ctx.exchange();
+                }
+                ctx.setCurrencyTo(CurrencyList.getCurrency(s!));
               })),
       IconButton(
           color: Colors.grey[850],
           onPressed: () {
-            setState(() {
-              switchCurrency();
-            });
+            ctx.exchange();
           },
           icon: const Icon(Icons.currency_exchange))
     ]);
