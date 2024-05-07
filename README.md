@@ -1,16 +1,5 @@
-# feriea
+##### 用于学习flutter的练手项目。
 
-A new Flutter project.
+- `main`分支：这是一个用于计算汇率的桌面程序，汇率信息来自互联网，每隔5秒查询并更新一次，使用效果如下：
 
-## Getting Started
-
-This project is a starting point for a Flutter application.
-
-A few resources to get you started if this is your first Flutter project:
-
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
-
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+  ![app](./unused/app_introduce.gif)
