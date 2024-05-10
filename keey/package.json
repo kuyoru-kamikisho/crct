@@ -1,8 +1,8 @@
 {
-  "name": "my-new-app",
-  "productName": "my-new-app",
+  "name": "keey",
+  "productName": "keey",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "Make keyboard operation easy!",
   "main": ".vite/build/main.js",
   "scripts": {
     "start": "electron-forge start",
@@ -21,13 +21,13 @@
     "@electron-forge/plugin-fuses": "^7.4.0",
     "@electron-forge/plugin-vite": "^7.4.0",
     "@electron/fuses": "^1.8.0",
-    "@typescript-eslint/eslint-plugin": "^5.0.0",
-    "@typescript-eslint/parser": "^5.0.0",
-    "eslint": "^8.0.1",
-    "eslint-plugin-import": "^2.25.0",
+    "@vitejs/plugin-vue": "^5.0.4",
+    "electron": "^30.0.3",
+    "sass": "^1.77.0",
     "ts-node": "^10.0.0",
     "typescript": "~4.5.4",
-    "vite": "^5.0.12"
+    "vite": "^5.0.12",
+    "vue-tsc": "^2.0.16"
   },
   "keywords": [],
   "author": {
@@ -36,6 +36,9 @@
   },
   "license": "MIT",
   "dependencies": {
-    "electron-squirrel-startup": "^1.0.0"
+    "electron-squirrel-startup": "^1.0.0",
+    "pinia": "^2.1.7",
+    "vue": "^3.4.27",
+    "vuetify": "^3.6.4"
   }
 }
