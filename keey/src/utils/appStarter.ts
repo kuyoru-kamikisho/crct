@@ -1,7 +1,7 @@
-import { BrowserWindow, app } from 'electron';
+import {BrowserWindow, app} from 'electron';
 import * as fs from 'node:fs'
 import path from 'path';
-import { main_handleDeps } from '../context/main_process';
+import {main_handleDeps} from '../context/main_process';
 
 export enum DepFilePath {
     settings = './deps/settings.json',
@@ -9,25 +9,29 @@ export enum DepFilePath {
 }
 
 export async function readDeps(): Promise<DepsObject> {
-    const settings = fs.readFileSync(DepFilePath.settings, { encoding: 'utf-8' })
-    const keymaps = fs.readFileSync(DepFilePath.keymaps, { encoding: 'utf-8' })
+    const settings = fs.readFileSync(DepFilePath.settings, {encoding: 'utf-8'})
+    const keymaps = fs.readFileSync(DepFilePath.keymaps, {encoding: 'utf-8'})
 
     return {
         settings: JSON.parse(settings),
         keymaps: JSON.parse(keymaps)
     }
 }
+
 export class RegisteredWindows {
     static main: BrowserWindow
 }
+
 export function createMainWindow(deps: DepsObject) {
-    const { settings } = deps;
+    const {settings} = deps;
     const mainWindow = new BrowserWindow({
         width: settings.size[0],
         height: settings.size[1],
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
         },
+        frame: false,
+        transparent: true
     });
     if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {
         mainWindow.loadURL(MAIN_WINDOW_VITE_DEV_SERVER_URL);
@@ -69,5 +73,6 @@ export function initApp(deps: DepsObject) {
 }
 
 export function reWriteDepFile(o: DepTypes, path: DepFilePath) {
-    fs.writeFile(path, JSON.stringify(o, null, 2), { encoding: 'utf-8' }, () => { });
+    fs.writeFile(path, JSON.stringify(o, null, 2), {encoding: 'utf-8'}, () => {
+    });
 }

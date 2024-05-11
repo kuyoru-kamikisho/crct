@@ -1,4 +1,6 @@
 declare type AppSetting = {
+    enabledGroup: number
+    opacity: number
     position: number[]
     size: number[]
 }
