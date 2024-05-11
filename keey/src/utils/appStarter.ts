@@ -49,6 +49,7 @@ export function createMainWindow(deps: DepsObject) {
         settings.position = position
         reWriteDepFile(settings, DepFilePath.settings)
     })
+    mainWindow.setAlwaysOnTop(true, "floating")
     RegisteredWindows.main = mainWindow;
     return mainWindow;
 };

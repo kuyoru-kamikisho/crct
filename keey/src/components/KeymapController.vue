@@ -14,7 +14,7 @@
       <v-icon icon="mdi-window-close"></v-icon>
     </div>
     <v-divider></v-divider>
-    <ul v-if="getEnabledGroup" class="keys-container d-flex px-3 py-1">
+    <ul v-if="getEnabledGroup" class="keys-container d-flex flex-wrap px-3 py-1">
       <li v-ripple class="key-btn py-1 px-2" v-for="k in getEnabledGroup.keymaps" :key="k.name">
         <span>{{ k.name }}</span>
       </li>
@@ -34,10 +34,12 @@ const {getEnabledGroup, getOpacity} = storeToRefs(useWebContext())
 <style scoped lang="scss">
 .key-btn {
   box-shadow: inset 0 0 1px 1px rgba(246, 245, 245, 0.4);
-  transition: box-shadow .2s ease;
+  transition: box-shadow .2s ease, background-color .2s ease, color .2s ease;
 
   &:hover {
+    color: #bcfa70;
     box-shadow: inset 0 0 1px 1px rgba(248, 249, 250, 0.7);
+    background-color: rgba(43, 43, 43, 0.95);
   }
 }
 
