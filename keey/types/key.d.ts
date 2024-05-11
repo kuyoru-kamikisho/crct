@@ -5,7 +5,7 @@ declare type KeyObject = {
 }
 
 declare type KeymapObject = {
-    groupname: string
+    group: string
     keymaps: KeyObject[]
 }
 

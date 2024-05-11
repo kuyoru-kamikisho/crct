@@ -1,6 +1,7 @@
 import { BrowserWindow, app } from 'electron';
 import * as fs from 'node:fs'
 import path from 'path';
+import { main_handleDeps } from '../context/main_process';
 
 export enum DepFilePath {
     settings = './deps/settings.json',
@@ -16,7 +17,9 @@ export async function readDeps(): Promise<DepsObject> {
         keymaps: JSON.parse(keymaps)
     }
 }
-
+export class RegisteredWindows {
+    static main: BrowserWindow
+}
 export function createMainWindow(deps: DepsObject) {
     const { settings } = deps;
     const mainWindow = new BrowserWindow({
@@ -42,11 +45,15 @@ export function createMainWindow(deps: DepsObject) {
         settings.position = position
         reWriteDepFile(settings, DepFilePath.settings)
     })
+    RegisteredWindows.main = mainWindow;
     return mainWindow;
 };
 
 export function initApp(deps: DepsObject) {
-    app.on('ready', () => { createMainWindow(deps) });
+    app.on('ready', () => {
+        main_handleDeps(deps)
+        createMainWindow(deps)
+    });
 
     app.on('window-all-closed', () => {
         if (process.platform !== 'darwin') {

@@ -1,1 +1,49 @@
-{}
+[
+    {
+        "group": "SAI2",
+        "keymaps": [
+            {
+                "name": "V",
+                "keys": [
+                    "v"
+                ],
+                "description": "喷枪"
+            },
+            {
+                "name": "Q",
+                "keys": [
+                    "q"
+                ],
+                "description": "放大镜"
+            },
+            {
+                "name": "W",
+                "keys": [
+                    "w"
+                ],
+                "description": "魔棒"
+            },
+            {
+                "name": "E",
+                "keys": [
+                    "e"
+                ],
+                "description": "橡皮"
+            },
+            {
+                "name": "R",
+                "keys": [
+                    "r"
+                ],
+                "description": "旋转"
+            },
+            {
+                "name": "T",
+                "keys": [
+                    "T"
+                ],
+                "description": "变换"
+            }
+        ]
+    }
+]

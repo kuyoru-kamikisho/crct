@@ -9,3 +9,7 @@ declare type DepsObject = {
 }
 
 declare type DepTypes = KeymapObjectList | AppSetting
+
+declare type RegisteredWindowApi = {
+    handleDeps: { (): Promise<DepsObject> }
+}
