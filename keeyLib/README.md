@@ -48,7 +48,14 @@ kt -k numlock -k delete delete -k arrowup -k num1
 
 - 打开任务管理器
 
-```
+```txt
 kt -k ctrl shift esc
 ```
 
+下面的命令实现了这样的操作：
+
+- 显示帮助
+
+```txt
+kt -h
+```
