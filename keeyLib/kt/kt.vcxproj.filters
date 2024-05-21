@@ -18,5 +18,13 @@
     <ClCompile Include="kt.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="program_utils.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="program_utils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

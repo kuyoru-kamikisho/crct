@@ -46,7 +46,7 @@ kt -k numlock -k delete delete -k arrowup -k num1
 
 下面的命令实现了这样的操作：
 
-- 打开任务管理器
+- 打开任务管理器，一个 `-k` 关键字代表一次性按下
 
 ```txt
 kt -k ctrl shift esc

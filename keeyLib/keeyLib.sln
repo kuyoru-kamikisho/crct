@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34511.84
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "keyTrigger", "keyTrigger\keyTrigger.vcxproj", "{02C7E0F0-76BD-40DC-92D3-D31EAD5D91C3}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kt", "kt\kt.vcxproj", "{64CFB7DF-6734-42FB-B25A-F3AB0221D3F1}"
 EndProject
 Global
@@ -15,14 +13,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{02C7E0F0-76BD-40DC-92D3-D31EAD5D91C3}.Debug|x64.ActiveCfg = Debug|x64
-		{02C7E0F0-76BD-40DC-92D3-D31EAD5D91C3}.Debug|x64.Build.0 = Debug|x64
-		{02C7E0F0-76BD-40DC-92D3-D31EAD5D91C3}.Debug|x86.ActiveCfg = Debug|Win32
-		{02C7E0F0-76BD-40DC-92D3-D31EAD5D91C3}.Debug|x86.Build.0 = Debug|Win32
-		{02C7E0F0-76BD-40DC-92D3-D31EAD5D91C3}.Release|x64.ActiveCfg = Release|x64
-		{02C7E0F0-76BD-40DC-92D3-D31EAD5D91C3}.Release|x64.Build.0 = Release|x64
-		{02C7E0F0-76BD-40DC-92D3-D31EAD5D91C3}.Release|x86.ActiveCfg = Release|Win32
-		{02C7E0F0-76BD-40DC-92D3-D31EAD5D91C3}.Release|x86.Build.0 = Release|Win32
 		{64CFB7DF-6734-42FB-B25A-F3AB0221D3F1}.Debug|x64.ActiveCfg = Debug|x64
 		{64CFB7DF-6734-42FB-B25A-F3AB0221D3F1}.Debug|x64.Build.0 = Debug|x64
 		{64CFB7DF-6734-42FB-B25A-F3AB0221D3F1}.Debug|x86.ActiveCfg = Debug|Win32
