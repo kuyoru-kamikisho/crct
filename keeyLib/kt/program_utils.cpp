@@ -48,6 +48,62 @@ void shiftHelp(std::vector<std::string>* p)
 
 void shiftKeys(std::vector<std::string>* p)
 {
+	bool readContinue = false;
+	bool readDelay = false;
+	bool readKeys = false;
+	bool readWords = false;
+	std::vector<std::string> keyTemp;
+	for (auto it = p->begin(); it != p->end(); ++it) {
+		std::string s = *it;
+		if (s == "-c")
+		{
+			readContinue = true;
+			readDelay = false;
+			readKeys = false;
+			readWords = false;
+			continue;
+		}
+		if (s == "-d")
+		{
+			readContinue = false;
+			readDelay = true;
+			readKeys = false;
+			readWords = false;
+			continue;
+		}
+		if (s == "-k")
+		{
+			readContinue = false;
+			readDelay = false;
+			readKeys = true;
+			readWords = false;
+			continue;
+		}
+		if (s == "-w")
+		{
+			readContinue = false;
+			readDelay = false;
+			readKeys = false;
+			readWords = true;
+			continue;
+		}
+		if (readContinue)
+		{
+
+		}
+		if (readDelay)
+		{
+
+		}
+		if (readKeys)
+		{
+
+		}
+		if (readWords)
+		{
+
+		}
+	}
 }
 
 void shiftDelay(std::vector<std::string>* p)
