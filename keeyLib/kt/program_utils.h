@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <Windows.h>
 
 #ifndef PROGRAM_INFO_H
 #define PROGRAM_INFO_H
@@ -23,23 +24,39 @@ void printerA(std::string str);
 void shiftHelp(std::vector<std::string> *p);
 
 /// <summary>
-/// 键位操作
+/// 参数处理
 /// </summary>
 void shiftKeys(std::vector<std::string>* p);
 
 /// <summary>
 /// 延迟操作
 /// </summary>
-void shiftDelay(std::vector<std::string>* p);
-
-/// <summary>
-/// 持续操作
-/// </summary>
-void shiftContinue(std::vector<std::string>* p);
+void shiftDelay(int d);
 
 /// <summary>
 /// 单词操作
 /// </summary>
 void shiftWords(std::vector<std::string>* p);
+
+/// <summary>
+/// 触发按键
+/// </summary>
+/// <param name="p">键位列表</param>
+/// <param name="c">按键持续时间</param>
+void triggerKeys(std::vector<std::string>* p, int* c);
+
+/// <summary>
+/// 将字符串映射为win api虚拟键值
+/// </summary>
+/// <param name="key">按键字符串</param>
+/// <returns>如果能在已定义的列表中找到，则返回对应的虚拟键值，否则返回0</returns>
+WORD mapTowVk(const std::string& key);
+
+/// <summary>
+/// 将字符串转换为大写
+/// </summary>
+/// <param name="input">字符串</param>
+/// <returns>大写后的字符串</returns>
+std::string toUpperCase(const std::string& input);
 
 #endif
