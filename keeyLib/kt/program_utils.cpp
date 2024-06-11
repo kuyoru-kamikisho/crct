@@ -175,8 +175,7 @@ void shiftWords(std::vector<std::string>* p)
 
 void triggerKeys(std::vector<std::string>* p, int* c)
 {
-	printerA("快捷键执行CTRL+D...");
-	INPUT inputs[4] = {};
+	INPUT inputs[8] = {};
 	ZeroMemory(inputs, sizeof(inputs));
 
 	inputs[0].type = INPUT_KEYBOARD;
