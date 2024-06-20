@@ -22,7 +22,12 @@ class UseApp with ChangeNotifier, DiagnosticableTreeMixin {
     }
     _isWatchingDevicePerformance = true;
     _receivePort.listen((d) {
-      debugPrint(d.toString());
+      if (d is Map<String, double>) {
+        _cpu = '${d['c']!.toStringAsFixed(2)}%';
+        _dsk = '${d['d']!.toStringAsFixed(2)}%';
+        _mem = '${d['m']!.toStringAsFixed(2)}%';
+        notifyListeners();
+      }
     });
     var dmc = DmcClass(mainPort1: _receivePort.sendPort);
     dmc.spawn();
