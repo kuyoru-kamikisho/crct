@@ -23,7 +23,11 @@ void main() async {
 
   runApp(MultiProvider(
     providers: [
-      ChangeNotifierProvider(create: (_) => UseApp()),
+      ChangeNotifierProvider(create: (_) {
+        var appStore = UseApp();
+        appStore.watchDevicePerformance();
+        return appStore;
+      }),
     ],
     child: const MyApp(),
   ));

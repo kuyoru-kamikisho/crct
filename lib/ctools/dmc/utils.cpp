@@ -5,6 +5,12 @@
 #include <pdhmsg.h>
 
 float GetCpuUsage(int milliseconds) {
+	HANDLE hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	if (hEvent == NULL) {
+		std::cerr << "CreateEvent error" << std::endl;
+		return -1.0f;
+	}
+
 	PDH_STATUS status;
 	PDH_HQUERY query;
 	PDH_HCOUNTER counter;
@@ -13,6 +19,7 @@ float GetCpuUsage(int milliseconds) {
 	status = PdhOpenQuery(NULL, 0, &query);
 	if (status != ERROR_SUCCESS) {
 		std::cerr << "PdhOpenQuery error: " << status << std::endl;
+		CloseHandle(hEvent);
 		return -1.0f;
 	}
 
@@ -20,6 +27,7 @@ float GetCpuUsage(int milliseconds) {
 	if (status != ERROR_SUCCESS) {
 		std::cerr << "PdhAddCounter error: " << status << std::endl;
 		PdhCloseQuery(query);
+		CloseHandle(hEvent);
 		return -1.0f;
 	}
 
@@ -27,10 +35,13 @@ float GetCpuUsage(int milliseconds) {
 	if (status != ERROR_SUCCESS) {
 		std::cerr << "PdhCollectQueryData error: " << status << std::endl;
 		PdhCloseQuery(query);
+		CloseHandle(hEvent);
 		return -1.0f;
 	}
 
-	Sleep(milliseconds);
+	WaitForSingleObject(hEvent, milliseconds);
+
+	SetEvent(hEvent);
 
 	status = PdhCollectQueryData(query);
 	if (status != ERROR_SUCCESS) {
@@ -41,10 +52,12 @@ float GetCpuUsage(int milliseconds) {
 	if (status != ERROR_SUCCESS) {
 		std::cerr << "PdhGetFormattedCounterValue error: " << status << std::endl;
 		PdhCloseQuery(query);
+		CloseHandle(hEvent);
 		return -1.0f;
 	}
 
 	PdhCloseQuery(query);
+	CloseHandle(hEvent);
 
 	return static_cast<float>(value.doubleValue);
 }
