@@ -1,21 +1,34 @@
-MIT License
+软件许可证
 
-Copyright (c) 2024 玖夜kuyoru
+版权所有 © [2024年6月24日]，玖夜kuyoru（以下简称“版权所有者”）
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
+1. 定义
+本许可证下，“软件”指版权所有者提供的源代码、目标代码、用户手册、开发工具、技术文档以及所有相关的附属文件。
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
+2. 版权声明
+本软件及其所有文档和材料均受版权法保护。未经版权所有者明确书面授权，禁止任何组织或个人复制、修改、传播、发行或以任何方式使用本软件的源代码、目标代码、用户手册、开发工具、技术文档或任何附属产物。
 
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
+3. 使用许可
+版权所有者授予用户非独占、不可转让的权利，使用本软件进行个人或商业用途，但仅限于内部使用，不得对外提供服务或进行二次分发。
+
+4. 修改和衍生作品
+未经版权所有者书面同意，用户不得对软件进行修改、反向工程、反编译、拆解或试图以任何方式发现软件的源代码，也不得创作任何衍生作品。
+
+5. 分发
+未经版权所有者书面授权，用户不得将软件或其任何部分以任何形式分发、出租、出借或转让给第三方。
+
+6. 保证和责任限制
+版权所有者不对软件的适销性、适用于特定目的或非侵权性作出任何明示或暗示的保证。在任何情况下，版权所有者均不对因使用或无法使用软件而导致的任何直接、间接、附带的、特殊的或后果性的损害负责。
+
+7. 许可证终止
+如用户违反本许可证的任何条款，版权所有者有权立即终止本许可证，并要求用户停止使用软件。
+
+8. 法律管辖
+本许可证应受[中国]法律管辖，并按该法律解释，不考虑任何冲突法原则。
+
+9. 完整协议
+本许可证构成双方关于软件的完整协议，并取代所有先前或同期的口头或书面通信、陈述和理解。
+
+版权所有者： [玖夜kuyoru]
+
+日期： [2024年6月24日]
