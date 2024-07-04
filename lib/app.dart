@@ -15,7 +15,8 @@ class MyApp extends StatelessWidget {
           Container(),
           Container(
               padding: const EdgeInsets.symmetric(vertical: 6),
-              child: Row(
+              child: IntrinsicHeight(
+                  child: Row(
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   Container(
@@ -23,11 +24,11 @@ class MyApp extends StatelessWidget {
                     child: const TimeInfo(),
                   ),
                   const VerticalDivider(
-                    width: 3,
+                    width: 1,
                     thickness: 1,
-                    color: Colors.white70,
-                    indent: 0,
-                    endIndent: 0,
+                    color: Colors.white60,
+                    indent: 2,
+                    endIndent: 2,
                   ),
                   Container(
                     padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
@@ -38,7 +39,7 @@ class MyApp extends StatelessWidget {
                     child: IpInfo(),
                   )
                 ],
-              ))
+              )))
         ],
       ),
     );
