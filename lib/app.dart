@@ -1,4 +1,5 @@
 import 'package:crct/widgets/dmc_info.dart';
+import 'package:crct/widgets/ip_info.dart';
 import 'package:crct/widgets/time_info.dart';
 import 'package:flutter/material.dart';
 
@@ -31,6 +32,10 @@ class MyApp extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
                     child: DmcInfo(),
+                  ),
+                  const Padding(
+                    padding: EdgeInsets.fromLTRB(8, 0, 8, 0),
+                    child: IpInfo(),
                   )
                 ],
               ))

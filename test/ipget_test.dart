@@ -5,5 +5,8 @@ void main() {
   test('test ip info', () async {
     var info = await queryIpInfo();
     expect(info.ip, isNotEmpty);
+    expect(info.city, isNotEmpty);
+    expect(info.timezone, isNotEmpty);
+    expect(info.countrycode, isNotEmpty);
   });
 }
