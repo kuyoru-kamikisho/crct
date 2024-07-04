@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:crct/tools/leaf.dart';
+import 'package:crct/widgets/style_text.dart';
 import 'package:flutter/material.dart';
 
 class TimeInfo extends StatefulWidget {
@@ -18,6 +19,9 @@ class _TimeInfoState extends State<TimeInfo> {
   String _minute = '_';
   String _second = '_';
   String _week = '_';
+
+  final TextStyle _style = dmcTextStyle();
+
   @override
   void initState() {
     super.initState();
@@ -47,10 +51,21 @@ class _TimeInfoState extends State<TimeInfo> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Row(
       children: [
-        Text('$_hour:$_minute:$_second'),
-        Text('$_year年$_month月$_day日 $_week')
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Text(
+            '$_hour:$_minute:$_second',
+            style: _style,
+          ),
+        ),
+        Container(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Text(
+              '$_year年$_month月$_day日 $_week',
+              style: _style,
+            )),
       ],
     );
   }

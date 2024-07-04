@@ -65,8 +65,8 @@ class DmcClass {
       }
     });
 
-    Timer.periodic(const Duration(microseconds: 1300), (timer) {
-      var c = getCpuUsage(1000);
+    Timer.periodic(const Duration(microseconds: 1600), (timer) {
+      var c = getCpuUsage(1600);
       var d = getDiskUsage();
       var m = getMemoryUsage();
       mainPort1.send({'c': c, 'd': d, 'm': m});

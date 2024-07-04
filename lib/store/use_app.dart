@@ -7,14 +7,14 @@ class UseApp with ChangeNotifier, DiagnosticableTreeMixin {
   final ReceivePort _receivePort = ReceivePort();
   bool _isWatchingDevicePerformance = false;
 
-  String _cpu = '0%';
-  String _dsk = '0%';
-  String _mem = '0%';
+  double _cpu = 0;
+  double _dsk = 0;
+  double _mem = 0;
 
   String get version => _version;
-  String get cpu => _cpu;
-  String get disk => _dsk;
-  String get memory => _mem;
+  double get cpu => _cpu;
+  double get disk => _dsk;
+  double get memory => _mem;
 
   void watchDevicePerformance() {
     if (_isWatchingDevicePerformance) {
@@ -23,9 +23,9 @@ class UseApp with ChangeNotifier, DiagnosticableTreeMixin {
     _isWatchingDevicePerformance = true;
     _receivePort.listen((d) {
       if (d is Map<String, double>) {
-        _cpu = '${d['c']!.toStringAsFixed(2)}%';
-        _dsk = '${d['d']!.toStringAsFixed(2)}%';
-        _mem = '${d['m']!.toStringAsFixed(2)}%';
+        _cpu = double.parse(d['c']!.toStringAsFixed(2));
+        _dsk = double.parse(d['d']!.toStringAsFixed(2));
+        _mem = double.parse(d['m']!.toStringAsFixed(2));
         notifyListeners();
       }
     });

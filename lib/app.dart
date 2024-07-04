@@ -7,9 +7,34 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
+    return MaterialApp(
       home: Column(
-        children: [TimeInfo(), DmcInfo()],
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Container(),
+          Container(
+              padding: const EdgeInsets.symmetric(vertical: 6),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+                    child: const TimeInfo(),
+                  ),
+                  const VerticalDivider(
+                    width: 1,
+                    thickness: 12,
+                    color: Colors.white70,
+                    indent: 0,
+                    endIndent: 0,
+                  ),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+                    child: DmcInfo(),
+                  )
+                ],
+              ))
+        ],
       ),
     );
   }
