@@ -1,15 +1,15 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
-class IpInfo {
+class IpInfoO {
   late String ip;
   late String city;
   late String timezone;
   late String countrycode;
 }
 
-Future<IpInfo> queryIpInfo() async {
-  var v = IpInfo();
+Future<IpInfoO> queryIpInfo() async {
+  var v = IpInfoO();
   final Uri api = Uri.parse('https://api.ip.sb/geoip');
   Map<String, String> headers = {
     'User-Agent':
