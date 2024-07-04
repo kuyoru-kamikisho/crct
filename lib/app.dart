@@ -22,8 +22,8 @@ class MyApp extends StatelessWidget {
                     child: const TimeInfo(),
                   ),
                   const VerticalDivider(
-                    width: 1,
-                    thickness: 12,
+                    width: 3,
+                    thickness: 1,
                     color: Colors.white70,
                     indent: 0,
                     endIndent: 0,
