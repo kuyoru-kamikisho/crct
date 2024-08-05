@@ -10,11 +10,13 @@ class UseApp with ChangeNotifier, DiagnosticableTreeMixin {
   double _cpu = 0;
   double _dsk = 0;
   double _mem = 0;
+  int _btt = 0;
 
   String get version => _version;
   double get cpu => _cpu;
   double get disk => _dsk;
   double get memory => _mem;
+  int get battery => _btt;
 
   void watchDevicePerformance() {
     if (_isWatchingDevicePerformance) {
@@ -22,10 +24,11 @@ class UseApp with ChangeNotifier, DiagnosticableTreeMixin {
     }
     _isWatchingDevicePerformance = true;
     _receivePort.listen((d) {
-      if (d is Map<String, double>) {
+      if (d is Map<String, dynamic>) {
         _cpu = double.parse(d['c']!.toStringAsFixed(2));
         _dsk = double.parse(d['d']!.toStringAsFixed(2));
         _mem = double.parse(d['m']!.toStringAsFixed(2));
+        _btt = d['b'];
         notifyListeners();
       }
     });

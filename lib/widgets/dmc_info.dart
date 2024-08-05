@@ -13,6 +13,7 @@ class DmcInfo extends StatelessWidget {
     double cpuN = context.watch<UseApp>().cpu;
     double memN = context.watch<UseApp>().memory;
     double dskN = context.watch<UseApp>().disk;
+    int bttN = context.watch<UseApp>().battery;
     return Row(
       children: [
         Container(
@@ -67,6 +68,27 @@ class DmcInfo extends StatelessWidget {
               ),
               Text(
                 '${memN.toString()}%',
+                style: _style,
+              )
+            ],
+          ),
+        ),
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 4),
+          child: Row(
+            children: [
+              Padding(
+                  padding: const EdgeInsets.fromLTRB(0, 0, 4, 0),
+                  child: Transform.rotate(
+                    angle: 90 * 3.14159 / 180,
+                    child: Icon(
+                      statuBattery(bttN),
+                      size: 15,
+                      color: statuColor(101.0 - bttN),
+                    ),
+                  )),
+              Text(
+                '${bttN.toString()}%',
                 style: _style,
               )
             ],

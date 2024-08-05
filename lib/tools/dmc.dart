@@ -13,6 +13,9 @@ typedef GetDiskUsage = double Function();
 typedef GetMemoryUsageC = ffi.Float Function();
 typedef GetMemoryUsage = double Function();
 
+typedef GetBatteryStatusC = ffi.Int Function();
+typedef GetBatteryStatus = int Function();
+
 class DmcClass {
   late String _libraryPath;
   late ffi.DynamicLibrary _dmcLib;
@@ -20,6 +23,7 @@ class DmcClass {
   late double Function(int) getCpuUsage;
   late double Function() getMemoryUsage;
   late double Function() getDiskUsage;
+  late int Function() getBatteryStatus;
 
   /// 用来将性能信息发送到该主线程接口
   late SendPort mainPort1;
@@ -54,6 +58,9 @@ class DmcClass {
         .lookupFunction<GetMemoryUsageC, GetMemoryUsage>('GetMemoryUsage');
     getDiskUsage =
         _dmcLib.lookupFunction<GetDiskUsageC, GetDiskUsage>('GetDiskUsage');
+    getBatteryStatus =
+        _dmcLib.lookupFunction<GetBatteryStatusC, GetBatteryStatus>(
+            'GetBatteryStatus');
 
     selfPort1 = ReceivePort();
     mainp.send(selfPort1.sendPort);
@@ -69,7 +76,8 @@ class DmcClass {
       var c = getCpuUsage(1600);
       var d = getDiskUsage();
       var m = getMemoryUsage();
-      mainPort1.send({'c': c, 'd': d, 'm': m});
+      var b = getBatteryStatus();
+      mainPort1.send({'c': c, 'd': d, 'm': m, 'b': b});
     });
   }
 }
