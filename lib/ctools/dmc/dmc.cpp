@@ -26,4 +26,5 @@ int main(int argc, char* argv[])
 	std::cout << "CPU Usage:    [ " << GetCpuUsage(sleep_time) << "% ]" << std::endl;
 	std::cout << "Disk Usage:   [ " << GetDiskUsage() << "% ]" << std::endl;
 	std::cout << "Memory Usage: [ " << GetMemoryUsage() << "% ]" << std::endl;
+	std::cout << "Battery Usage: [ " << GetBatteryStatus() << "% ]" << std::endl;
 }

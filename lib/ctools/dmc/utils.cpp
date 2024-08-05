@@ -79,3 +79,17 @@ float GetMemoryUsage() {
 	float memoryLoad = static_cast<float>(memInfo.dwMemoryLoad);
 	return memoryLoad;
 }
+
+int GetBatteryStatus()
+{
+	SYSTEM_POWER_STATUS powerStatus;
+	if (GetSystemPowerStatus(&powerStatus)) {
+		if (powerStatus.ACLineStatus == 0) {
+			return powerStatus.BatteryLifePercent;
+		}
+		else {
+			return 100;
+		}
+	}
+	return 100;
+}

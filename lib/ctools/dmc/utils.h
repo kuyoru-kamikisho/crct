@@ -21,5 +21,9 @@ extern"C" DMC_API float GetDiskUsage();
 /// 获取内存使用率
 /// </summary>
 extern"C" DMC_API float GetMemoryUsage();
+/// <summary>
+/// 获取电池剩余量
+/// </summary>
+extern"C" DMC_API int GetBatteryStatus();
 
 
