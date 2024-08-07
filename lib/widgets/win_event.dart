@@ -1,4 +1,6 @@
+import 'package:crct/store/use_win.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 class WinEvent extends StatefulWidget {
@@ -8,10 +10,17 @@ class WinEvent extends StatefulWidget {
 }
 
 class _WinEvent extends State<WinEvent> with WindowListener {
+  late UseWin _useWinR;
+
   @override
   void initState() {
     super.initState();
     windowManager.addListener(this);
+    _useWinR = context.read<UseWin>();
+    windowManager.getBounds().then((rect) {
+      _useWinR.winSize(rect.width, rect.height);
+      _useWinR.winPosition(rect.left, rect.top);
+    });
   }
 
   @override
@@ -21,70 +30,27 @@ class _WinEvent extends State<WinEvent> with WindowListener {
   }
 
   @override
-  void onWindowEvent(String eventName) {
-    debugPrint('[WindowManager] onWindowEvent: $eventName');
-  }
-
-  @override
-  void onWindowClose() {
-    // do something
-  }
-
-  @override
-  void onWindowFocus() {
-    // do something
-  }
-
-  @override
-  void onWindowBlur() {
-    // do something
-  }
-
-  @override
-  void onWindowMaximize() {
-    // do something
-  }
-
-  @override
-  void onWindowUnmaximize() {
-    // do something
-  }
-
-  @override
-  void onWindowMinimize() {
-    // do something
-  }
-
-  @override
-  void onWindowRestore() {
-    // do something
-  }
-
-  @override
   void onWindowResize() {
-    // do something
+    windowManager.getBounds().then((rect) {
+      _useWinR.winSize(rect.width, rect.height);
+    });
   }
 
   @override
-  void onWindowMove() {
-    // do something
-  }
-
-  @override
-  void onWindowEnterFullScreen() {
-    // do something
-  }
-
-  @override
-  void onWindowLeaveFullScreen() {
-    // do something
+  void onWindowMoved() {
+    windowManager.getBounds().then((rect) {
+      _useWinR.winPosition(rect.left, rect.top);
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return const SizedBox(
-      width: 0,
-      height: 0,
-    );
+    var u = context.watch<UseWin>();
+    var x = u.x;
+    var y = u.y;
+    var w = u.width;
+    var h = u.height;
+    return Text(
+        '${x.toString()}_${y.toString()}_${w.toString()}_${h.toString()}');
   }
 }

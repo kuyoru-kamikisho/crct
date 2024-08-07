@@ -11,12 +11,13 @@ class UseWin with ChangeNotifier, DiagnosticableTreeMixin {
   double get x => _x;
   double get y => _y;
 
-  void winSizeChangeTo(double? w, double? h) {
+  void winSize(double? w, double? h) {
     _w = w ?? _w;
     _h = h ?? _h;
+    notifyListeners();
   }
 
-  void winPositionChangeTo(double? x, double? y) {
+  void winPosition(double? x, double? y) {
     _x = x ?? _x;
     _y = y ?? _y;
     notifyListeners();
