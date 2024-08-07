@@ -31,13 +31,15 @@ class _IpInfo extends State<IpInfo> {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-        onTap: () {
-          _fetch();
-        },
-        child: Text(
-          _whereip,
-          style: dmcTextStyle(),
-        ));
+    return MouseRegion(
+        cursor: SystemMouseCursors.click,
+        child: GestureDetector(
+            onTap: () {
+              _fetch();
+            },
+            child: Text(
+              _whereip,
+              style: dmcTextStyle(),
+            )));
   }
 }
