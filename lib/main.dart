@@ -1,6 +1,7 @@
-import 'package:crct/app.dart';
+import 'package:crct/router/index.dart';
 import 'package:crct/store/use_app.dart';
 import 'package:crct/store/use_win.dart';
+import 'package:crct/widgets/footer_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:window_manager/window_manager.dart';
@@ -31,6 +32,15 @@ void main() async {
       }),
       ChangeNotifierProvider(create: (_) => UseWin())
     ],
-    child: const MyApp(),
+    child: MaterialApp.router(
+        routerConfig: appRouter,
+        builder: (context, child) {
+          return Column(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(child: child ?? const SizedBox.shrink()),
+                const FooterBar()
+              ]);
+        }),
   ));
 }
