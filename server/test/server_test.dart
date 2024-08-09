@@ -1,8 +1,8 @@
-import 'package:server/server.dart';
+import 'package:server/info.dart';
 import 'package:test/test.dart';
 
 void main() {
-  test('calculate', () {
-    expect(calculate(), 42);
+  test('app_welcome', () {
+    expect(appWelcome(), true);
   });
 }
