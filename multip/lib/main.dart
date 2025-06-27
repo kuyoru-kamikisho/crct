@@ -1,125 +1,454 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:provider/provider.dart';
+import 'package:go_router/go_router.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
-
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
-
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
-
-  final String title;
-
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            const Text(
-              'You have pushed the button this many times:',
-            ),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+    return ChangeNotifierProvider(
+      create: (context) => MyAppState(),
+      child: MaterialApp.router(
+        theme: ThemeData(
+          fontFamily: 'HYWenHei85w',
+          textTheme: TextTheme(labelSmall: TextStyle(fontSize: 16)),
+        ),
+        routerConfig: GoRouter(
+          initialLocation: '/websites',
+          routes: <RouteBase>[
+            ShellRoute(
+              builder:
+                  (
+                    BuildContext context,
+                    GoRouterState state,
+                    Widget routeWidget,
+                  ) {
+                    return LayoutBuilder(
+                      builder: (context, constraints) {
+                        return Scaffold(
+                          body: Row(
+                            children: [
+                              KNavigator(constraints: constraints),
+                              Expanded(child: Container(child: routeWidget)),
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+              routes: <RouteBase>[
+                GoRoute(
+                  path: '/',
+                  builder: (BuildContext context, GoRouterState state) {
+                    return HomeScreen();
+                  },
+                  routes: <RouteBase>[
+                    GoRoute(
+                      path: 'settings',
+                      builder: (BuildContext context, GoRouterState state) {
+                        return SettingsPage();
+                      },
+                    ),
+                    GoRoute(
+                      path: 'websites',
+                      builder: (BuildContext context, GoRouterState state) {
+                        return SiteScreen();
+                      },
+                    ),
+                    GoRoute(
+                      path: 'schedule',
+                      builder: (BuildContext context, GoRouterState state) {
+                        return ScheduleScreen();
+                      },
+                    ),
+                  ],
+                ),
+              ],
             ),
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
+  }
+}
+
+/// 任务计划表页面
+class ScheduleScreen extends StatelessWidget {
+  const ScheduleScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Placeholder();
+  }
+}
+
+class SiteScreen extends StatelessWidget {
+  const SiteScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: Colors.black54,
+      child: Column(children: [TextSearcher()]),
+    );
+  }
+}
+
+/// 搜索框组件
+class TextSearcher extends StatefulWidget {
+  const TextSearcher({super.key});
+
+  @override
+  State<TextSearcher> createState() => _TextSearcherState();
+}
+
+class SearchAction {
+  final String name;
+  final String target;
+  final Widget icon;
+  bool active;
+
+  SearchAction({
+    required this.name,
+    required this.target,
+    required this.icon,
+    this.active = false,
+  });
+}
+
+class _TextSearcherState extends State<TextSearcher> {
+  final searchController = TextEditingController();
+  final focusNode = FocusNode();
+  var targetAction = '';
+  List<SearchAction> searchActions = [
+    SearchAction(
+      name: '百度',
+      target: 'https://www.baidu.com/s?wd=',
+      icon: SvgPicture.asset('assets/icons/baidu_icon.svg'),
+      active: true,
+    ),
+    SearchAction(
+      name: '谷歌',
+      target: 'https://www.google.com/search?q=',
+      icon: SvgPicture.asset('assets/icons/google_icon.svg'),
+      active: false,
+    ),
+    SearchAction(
+      name: '必应',
+      target: 'https://www.bing.com/search?q=',
+      icon: SvgPicture.asset('assets/icons/biying_icon.svg'),
+      active: false,
+    ),
+    SearchAction(
+      name: '哔哩哔哩',
+      target: 'https://search.bilibili.com/all?keyword=',
+      icon: SvgPicture.asset('assets/icons/bilibili_icon.svg'),
+      active: false,
+    ),
+    SearchAction(
+      name: 'Youtube',
+      target: 'https://www.youtube.com/results?search_query=',
+      icon: SvgPicture.asset('assets/icons/youtube_icon.svg'),
+      active: false,
+    ),
+    SearchAction(
+      name: 'Yandex',
+      target: 'https://yandex.com/search?text=',
+      icon: SvgPicture.asset('assets/icons/yandex_icon.svg'),
+      active: false,
+    ),
+  ];
+
+  SearchAction getActive() {
+    return searchActions.firstWhere((action) => action.active);
+  }
+
+  void switchAction() {
+    final currentIndex = searchActions.indexWhere((action) => action.active);
+
+    setState(() {
+      if (currentIndex == -1) {
+        searchActions.first.active = true;
+        return;
+      }
+
+      searchActions[currentIndex].active = false;
+
+      final nextIndex = (currentIndex + 1) % searchActions.length;
+      searchActions[nextIndex].active = true;
+    });
+  }
+
+  @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(20.0),
+      child: TextSelectionTheme(
+        data: TextSelectionThemeData(
+          selectionColor: Color.fromARGB(255, 63, 40, 147),
+        ),
+        child: Container(
+          padding: EdgeInsets.all(0),
+          decoration: BoxDecoration(
+            border: Border.all(),
+            color: Color.fromARGB(40, 0, 0, 0),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                width: 420,
+                child: TextField(
+                  focusNode: focusNode,
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: WidgetStateColor.resolveWith((states) {
+                      return states.contains(WidgetState.hovered)
+                          ? Color(0xFF212121)
+                          : Colors.black;
+                    }),
+                  ),
+                  controller: searchController,
+                  cursorColor: Colors.pink,
+                  decoration: InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.fromLTRB(12, 12, 12, 12),
+                    focusColor: Colors.red,
+                    border: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        style: BorderStyle.solid,
+                        color: Colors.red,
+                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(0)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        style: BorderStyle.solid,
+                        color: Colors.transparent,
+                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(0)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        style: BorderStyle.solid,
+                        color: Colors.transparent,
+                      ),
+                      borderRadius: BorderRadius.all(Radius.circular(0)),
+                    ),
+                    hintText: '使用 ${getActive().name} 进行搜索',
+                    hintStyle: TextStyle(color: Colors.white54),
+                  ),
+                  onSubmitted: (value) {
+                    print(value);
+                    focusNode.requestFocus();
+                  },
+                ),
+              ),
+              MouseRegion(
+                cursor: SystemMouseCursors.click,
+                child: InkWell(
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 270),
+                    switchOutCurve: Curves.easeInOut,
+                    switchInCurve: Curves.easeInOut,
+                    transitionBuilder:
+                        (Widget child, Animation<double> animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          );
+                        },
+                    layoutBuilder: (currentChild, previousChildren) {
+                      return SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: <Widget>[
+                            ...previousChildren,
+                            if (currentChild != null) currentChild,
+                          ],
+                        ),
+                      );
+                    },
+                    child: KeyedSubtree(
+                      key: ValueKey(getActive().name),
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: getActive().icon,
+                      ),
+                    ),
+                  ),
+                  onTap: () {
+                    switchAction();
+                  },
+                ),
+              ),
+              SizedBox(width: 12),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// 左侧的菜单栏
+class KNavigator extends StatefulWidget {
+  final BoxConstraints constraints;
+
+  const KNavigator({super.key, required this.constraints});
+
+  @override
+  State<KNavigator> createState() => _KNavigatorState();
+}
+
+class _KNavigatorState extends State<KNavigator> {
+  final buttons = <Map<String, dynamic>>[
+    {
+      'label': '首页',
+      'icon': Icon(Icons.house_outlined),
+      'selectedIcon': Icon(Icons.house),
+      'path': '/',
+    },
+    {
+      'label': '任务计划',
+      'icon': Icon(Icons.play_arrow),
+      'selectedIcon': Icon(Icons.play_circle),
+      'path': '/schedule',
+    },
+    {
+      'label': '快捷导航',
+      'icon': Icon(Icons.ads_click),
+      'selectedIcon': Icon(Icons.touch_app),
+      'path': '/websites',
+    },
+    {
+      'label': '设置',
+      'icon': Icon(Icons.settings_outlined),
+      'selectedIcon': Icon(Icons.settings),
+      'path': '/settings',
+    },
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    var nowPath = GoRouter.of(context).state.fullPath;
+    bool isSelected(String path) {
+      return nowPath == path;
+    }
+
+    return SafeArea(
+      child: Container(
+        decoration: BoxDecoration(
+          border: Border(
+            right: BorderSide(
+              color: const Color.fromARGB(64, 36, 35, 36),
+              width: 1.0,
+            ),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black26,
+              offset: Offset(1.0, 0.0),
+              blurRadius: 4.0,
+              spreadRadius: 0.0,
+              blurStyle: BlurStyle.outer,
+            ),
+          ],
+        ),
+        width: 220,
+        child: Column(
+          spacing: 2,
+          children: [
+            for (Map<String, dynamic> leftNavItem in buttons)
+              Row(
+                children: [
+                  Expanded(
+                    child: FilledButton(
+                      onPressed: () {
+                        context.go(leftNavItem['path']);
+                      },
+                      style: FilledButton.styleFrom(
+                        padding: EdgeInsets.only(left: 32),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(0),
+                        ),
+                        backgroundColor: isSelected(leftNavItem['path'])
+                            ? Colors.black87
+                            : Colors.black54,
+                        foregroundColor: Colors.white,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(0, 12, 0, 12),
+                        child: Row(
+                          spacing: 8,
+                          children: [
+                            isSelected(leftNavItem['path'])
+                                ? leftNavItem['selectedIcon']
+                                : leftNavItem['icon'],
+                            Text(
+                              leftNavItem['label'],
+                              style: TextStyle(
+                                fontSize: Theme.of(
+                                  context,
+                                ).textTheme.labelSmall!.fontSize,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 设置页面
+class SettingsPage extends StatelessWidget {
+  const SettingsPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Placeholder();
+  }
+}
+
+/// 主页
+class HomeScreen extends StatelessWidget {
+  const HomeScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Placeholder();
+  }
+}
+
+/// 全局存储
+class MyAppState extends ChangeNotifier {
+  var state1 = '';
+
+  void getNext(String str) {
+    state1 = str;
+    notifyListeners();
   }
 }
