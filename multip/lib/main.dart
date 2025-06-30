@@ -32,11 +32,17 @@ class MyApp extends StatelessWidget {
                   ) {
                     return LayoutBuilder(
                       builder: (context, constraints) {
+                        context.read<MyAppState>().setScreenWidth(
+                          constraints.maxWidth,
+                        );
+                        context.read<MyAppState>().setScreenHeight(
+                          constraints.maxHeight,
+                        );
                         return Scaffold(
                           body: Row(
                             children: [
                               KNavigator(constraints: constraints),
-                              Expanded(child: Container(child: routeWidget)),
+                              Expanded(child: routeWidget),
                             ],
                           ),
                         );
@@ -212,6 +218,8 @@ class _TextSearcherState extends State<TextSearcher> {
 
   @override
   Widget build(BuildContext context) {
+    final searchInputWidth = context.watch<MyAppState>().appScreenWidth - 500;
+
     return Padding(
       padding: const EdgeInsets.all(20.0),
       child: TextSelectionTheme(
@@ -232,7 +240,7 @@ class _TextSearcherState extends State<TextSearcher> {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   SizedBox(
-                    width: 420,
+                    width: searchInputWidth > 420 ? 420 : searchInputWidth,
                     child: TextField(
                       focusNode: focusNode,
                       style: TextStyle(
@@ -484,10 +492,16 @@ class HomeScreen extends StatelessWidget {
 
 /// 全局存储
 class MyAppState extends ChangeNotifier {
-  var state1 = '';
+  double appScreenWidth = 320;
+  double appScreenHeight = 720;
 
-  void getNext(String str) {
-    state1 = str;
-    notifyListeners();
+  void setScreenWidth(double n) {
+    appScreenWidth = n;
+    Future.microtask(() => notifyListeners());
+  }
+
+  void setScreenHeight(double n) {
+    appScreenHeight = n;
+    Future.microtask(() => notifyListeners());
   }
 }
