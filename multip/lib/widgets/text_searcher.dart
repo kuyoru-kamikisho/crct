@@ -4,7 +4,7 @@ import 'package:multip/states/my_app_state.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-
+/// 链接前缀结构声明
 class SearchAction {
   final String name;
   final String target;

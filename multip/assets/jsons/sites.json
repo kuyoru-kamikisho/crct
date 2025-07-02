@@ -1,0 +1,322 @@
+[
+    {
+      "groupName": "动漫/漫画",
+      "groupSites": [
+        {
+          "name": "哔哩哔哩",
+          "link": "https://www.bilibili.com/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "番组计划",
+          "link": "https://bangumi.tv/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "爱恋动漫BT",
+          "link": "https://www.kisssub.org/",
+          "mark": "#0cb6ff"
+        },
+        {
+          "name": "AGE动漫",
+          "link": "https://www.agefans.la/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "MX动漫",
+          "link": "https://www.mxdm6.fans/",
+          "mark": "#0cb6ff"
+        },
+        {
+          "name": "咕咕番",
+          "link": "https://www.gugu3.com/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "NyaFun",
+          "link": "https://www.nyafun.org/",
+          "mark": "#0cb6ff"
+        },
+        {
+          "name": "樱花动漫",
+          "link": "https://www.yinhuadm.vip/",
+          "mark": "#0cb6ff"
+        },
+        {
+          "name": "omoFun",
+          "link": "https://www.omofun.in/",
+          "mark": "#0cb6ff"
+        },
+        {
+          "name": "奇奇动漫",
+          "link": "https://www.qiqidongman.com/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "Hanime1",
+          "link": "https://hanime1.me/",
+          "mark": "#ff0c26"
+        },
+        {
+          "name": "Kemono",
+          "link": "https://kemono.party/",
+          "mark": "#ff0c26"
+        },
+        {
+          "name": "NHentai",
+          "link": "https://nhentai.net/",
+          "mark": "#ff0c26"
+        },
+        {
+          "name": "漫画柜",
+          "link": "https://www.manhuagui.com/",
+          "mark": "#0cb6ff"
+        },
+        {
+          "name": "jump+",
+          "link": "https://shonenjumpplus.com/",
+          "mark": "#ff0c26"
+        },
+        {
+          "name": "古风漫画网",
+          "link": "https://www.123gf.com/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "E-hentai",
+          "link": "https://e-hentai.org/",
+          "mark": "#ff0c26"
+        },
+        {
+          "name": "18comic",
+          "link": "https://18comic.vip/",
+          "mark": "#ff0c26"
+        },
+        {
+          "name": "ACG盒子",
+          "link": "https://www.acgbox.link/",
+          "mark": "#79ff0c"
+        }
+      ]
+    },
+    {
+      "groupName": "图片",
+      "groupSites": [
+        {
+          "name": "Pixiv",
+          "link": "https://www.pixiv.net/",
+          "mark": "#ff0c26"
+        },
+        {
+          "name": "Fanbox",
+          "link": "https://www.fanbox.cc/",
+          "mark": "#ff0c26"
+        },
+        {
+          "name": "Pinterest",
+          "link": "https://www.pinterest.jp/",
+          "mark": "#ff0c26"
+        },
+        {
+          "name": "花瓣",
+          "link": "https://huaban.com/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "Lofter",
+          "link": "https://www.lofter.com/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "米画师",
+          "link": "https://www.mihuashi.com/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "Yand.re",
+          "link": "https://yande.re/post",
+          "mark": "#ff0c26"
+        }
+      ]
+    },
+    {
+      "groupName": "社区",
+      "groupSites": [
+        {
+          "name": "微博",
+          "link": "https://weibo.com/",
+          "mark": "#ff0c26"
+        },
+        {
+          "name": "米游社",
+          "link": "https://bbs.mihoyo.com/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "NGA",
+          "link": "https://bbs.nga.cn/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "X",
+          "link": "https://x.com/",
+          "mark": "#0cb6ff"
+        },
+        {
+          "name": "OpenBase",
+          "link": "https://openbase.com/",
+          "mark": "#0cb6ff"
+        },
+        {
+          "name": "Github",
+          "link": "https://github.com/",
+          "mark": "#0cb6ff"
+        },
+        {
+          "name": "reddit",
+          "link": "https://www.reddit.com/",
+          "mark": "#0cb6ff"
+        }
+      ]
+    },
+    {
+      "groupName": "工具",
+      "groupSites": [
+        {
+          "name": "Convertio",
+          "link": "https://convertio.co/zh/",
+          "mark": "#0cb6ff"
+        },
+        {
+          "name": "transform",
+          "link": "https://transform.tools/",
+          "mark": "#0cb6ff"
+        },
+        {
+          "name": "Forex",
+          "link": "https://www.xe.com/zh-CN/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "百度翻译",
+          "link": "https://fanyi.baidu.com/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "谷歌翻译",
+          "link": "https://translate.google.cn/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "沪江小D",
+          "link": "https://dict.hjenglish.com/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "谷歌邮箱",
+          "link": "https://mail.google.com/",
+          "mark": "#0cb6ff"
+        },
+        {
+          "name": "QQ邮箱",
+          "link": "https://mail.qq.com/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "百度网盘",
+          "link": "https://pan.baidu.com/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "谷歌云盘",
+          "link": "https://drive.google.com/",
+          "mark": "#0cb6ff"
+        },
+        {
+          "name": "Font1001",
+          "link": "https://www.1001fonts.com/",
+          "mark": "#0cb6ff"
+        }
+      ]
+    },
+    {
+      "groupName": "编程",
+      "groupSites": [
+        {
+          "name": "腾讯云",
+          "link": "https://cloud.tencent.com/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "转义字符表",
+          "link": "https://tool.oschina.net/commons?type=2",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "ASCII码表",
+          "link": "https://tool.oschina.net/commons?type=4",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "正则表达式",
+          "link": "https://c.runoob.com/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "Clippy",
+          "link": "https://bennettfeely.com/clippy/",
+          "mark": "#0cb6ff"
+        },
+        {
+          "name": "Cubic",
+          "link": "https://cubic-bezier.com/",
+          "mark": "#0cb6ff"
+        },
+        {
+          "name": "Namesilo",
+          "link": "https://www.namesilo.com/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "CloudFlare",
+          "link": "https://dash.cloudflare.com/",
+          "mark": "#0cb6ff"
+        },
+        {
+          "name": "Github代理",
+          "link": "https://ghproxy.com/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "Gradients",
+          "link": "https://uigradients.com/",
+          "mark": "#ff0c26"
+        },
+        {
+          "name": "IconFont",
+          "link": "https://www.iconfont.cn/",
+          "mark": "#79ff0c"
+        },
+        {
+          "name": "Maven仓库",
+          "link": "https://mvnrepository.com/",
+          "mark": "#0cb6ff"
+        },
+        {
+          "name": "Yarn仓库",
+          "link": "https://yarnpkg.com/",
+          "mark": "#0cb6ff"
+        },
+        {
+          "name": "Npm仓库",
+          "link": "https://www.npmjs.com/",
+          "mark": "#0cb6ff"
+        },
+        {
+          "name": "Java doc",
+          "link": "https://docs.oracle.com/en/java/javase/18/docs/api/index.html",
+          "mark": "#79ff0c"
+        }
+      ]
+    }
+  ]
