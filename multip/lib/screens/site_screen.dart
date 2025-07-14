@@ -62,7 +62,9 @@ class _SitesBox extends State<SitesBox> {
   @override
   Widget build(BuildContext context) {
     final scrollController = ScrollController();
-    final siteGroupWidth = context.watch<MyAppState>().appScreenWidth - 280;
+
+    // 组容器的宽度
+    final siteGroupWidth = context.watch<MyAppState>().appScreenWidth - 300;
 
     // 占据剩余空间
     return Expanded(
@@ -80,15 +82,15 @@ class _SitesBox extends State<SitesBox> {
             children: [
               for (SiteGroup siteGroup in _sites)
                 Container(
-                  margin: EdgeInsets.symmetric(vertical: 4),
+                  margin: EdgeInsets.symmetric(vertical: 6),
                   child: Column(
                     children: [
                       Container(
                         width: siteGroupWidth,
                         color: Colors.black38,
                         padding: EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 8,
+                          horizontal: 20,
+                          vertical: 20,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
@@ -103,8 +105,8 @@ class _SitesBox extends State<SitesBox> {
                             ),
                             SizedBox(height: 8),
                             Wrap(
-                              spacing: 8,
-                              runSpacing: 8,
+                              spacing: 18,
+                              runSpacing: 12,
                               children: [
                                 for (SiteBtn siteBtn in siteGroup.groupSites)
                                   SiteButton(siteBtn: siteBtn),

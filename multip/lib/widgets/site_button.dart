@@ -81,7 +81,7 @@ class _SiteButtonState extends State<SiteButton> {
         onTapUp: (_) => setState(() => _isPressed = false),
         onTapCancel: () => setState(() => _isPressed = false),
         child: Container(
-          padding: EdgeInsets.fromLTRB(10, 3, 12, 3),
+          padding: EdgeInsets.fromLTRB(14, 3, 14, 3),
           color: _isHovered ? Colors.black : Colors.black54,
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -101,6 +101,8 @@ class _SiteButtonState extends State<SiteButton> {
                 widget.siteBtn.name,
                 style: TextStyle(
                   fontFamily: 'HYWenHei75w',
+                  fontSize: 16,
+                  letterSpacing: 1,
                   color: _isPressed
                       ? Colors.limeAccent
                       : _isHovered
