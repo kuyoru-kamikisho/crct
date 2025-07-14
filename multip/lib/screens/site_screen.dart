@@ -19,7 +19,14 @@ class _SiteScreenState extends State<SiteScreen> {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.black54,
-      child: Column(children: [TextSearcher(), SitesBox()]),
+      child: Column(
+        children: [
+          SizedBox(height: 28),
+          TextSearcher(),
+          SizedBox(height: 14),
+          SitesBox(),
+        ],
+      ),
     );
   }
 }
@@ -116,4 +123,3 @@ class _SitesBox extends State<SitesBox> {
     );
   }
 }
-
