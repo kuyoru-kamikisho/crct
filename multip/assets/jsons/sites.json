@@ -1,6 +1,6 @@
 [
     {
-      "groupName": "动漫/漫画",
+      "groupName": "动漫/漫画/视频",
       "groupSites": [
         {
           "name": "哔哩哔哩",
@@ -19,7 +19,7 @@
         },
         {
           "name": "AGE动漫",
-          "link": "https://www.agefans.la/",
+          "link": "https://www.agedm.vip/",
           "mark": "#79ff0c"
         },
         {
@@ -78,9 +78,14 @@
           "mark": "#ff0c26"
         },
         {
-          "name": "古风漫画网",
-          "link": "https://www.123gf.com/",
-          "mark": "#79ff0c"
+          "name": "爱壹帆",
+          "link": "https://www.iyf.tv/",
+          "mark": "#ff0c26"
+        },
+        {
+          "name": "Youtube",
+          "link": "https://www.youtube.com/",
+          "mark": "#ff0c26"
         },
         {
           "name": "E-hentai",
