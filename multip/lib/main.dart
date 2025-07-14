@@ -3,6 +3,7 @@ import 'package:multip/screens/home_screen.dart';
 import 'package:multip/screens/schedule_screen.dart';
 import 'package:multip/screens/settings_screen.dart';
 import 'package:multip/screens/site_screen.dart';
+import 'package:multip/screens/word_flashcards.dart';
 import 'package:multip/states/my_app_state.dart';
 import 'package:multip/widgets/k_navigator.dart';
 import 'package:provider/provider.dart';
@@ -25,7 +26,7 @@ class MyApp extends StatelessWidget {
           textTheme: TextTheme(labelSmall: TextStyle(fontSize: 16)),
         ),
         routerConfig: GoRouter(
-          initialLocation: '/websites',
+          initialLocation: '/schedule',
           routes: <RouteBase>[
             ShellRoute(
               builder:
@@ -76,6 +77,12 @@ class MyApp extends StatelessWidget {
                       path: 'schedule',
                       builder: (BuildContext context, GoRouterState state) {
                         return ScheduleScreen();
+                      },
+                    ),
+                    GoRoute(
+                      path: 'wordFlashcards',
+                      builder: (BuildContext context, GoRouterState state) {
+                        return WordFlashcards();
                       },
                     ),
                   ],

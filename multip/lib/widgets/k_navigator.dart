@@ -34,6 +34,12 @@ class _KNavigatorState extends State<KNavigator> {
       'path': '/websites',
     },
     {
+      'label': '单词助记',
+      'icon': const Icon(Icons.abc),
+      'selectedIcon': const Icon(Icons.spellcheck),
+      'path': '/wordFlashcards',
+    },
+    {
       'label': '设置',
       'icon': const Icon(Icons.settings_outlined),
       'selectedIcon': const Icon(Icons.settings),

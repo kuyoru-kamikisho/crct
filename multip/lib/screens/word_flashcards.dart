@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-/// 主页
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+/// 背单词页
+class WordFlashcards extends StatelessWidget {
+  const WordFlashcards({super.key});
 
   @override
   Widget build(BuildContext context) {

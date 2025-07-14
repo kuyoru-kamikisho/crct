@@ -90,7 +90,7 @@ class _SitesBox extends State<SitesBox> {
                         color: Colors.black38,
                         padding: EdgeInsets.symmetric(
                           horizontal: 20,
-                          vertical: 20,
+                          vertical: 12,
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 class MyAppState extends ChangeNotifier {
   double appScreenWidth = 320;
   double appScreenHeight = 720;
+  double runningScheduleNum = 0;
 
   void setScreenWidth(double n) {
     appScreenWidth = n;
