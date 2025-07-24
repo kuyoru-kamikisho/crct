@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 class MyAppState extends ChangeNotifier {
   double appScreenWidth = 320;
   double appScreenHeight = 720;
-  double runningScheduleNum = 0;
+  int runningScheduleNum = 0;
 
   void setScreenWidth(double n) {
     appScreenWidth = n;
@@ -14,5 +14,15 @@ class MyAppState extends ChangeNotifier {
   void setScreenHeight(double n) {
     appScreenHeight = n;
     Future.microtask(() => notifyListeners());
+  }
+
+  void addASchedule() {
+    runningScheduleNum++;
+    notifyListeners();
+  }
+
+  void deleteASchedule() {
+    runningScheduleNum--;
+    notifyListeners();
   }
 }

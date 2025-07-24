@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:multip/declares/site_o.dart';
 import 'package:multip/states/my_app_state.dart';
 import 'package:multip/widgets/site_button.dart';
 import 'package:multip/widgets/text_searcher.dart';
@@ -18,7 +19,7 @@ class _SiteScreenState extends State<SiteScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black54,
+      color: const Color.fromRGBO(0, 0, 0, 0.541),
       child: Column(
         children: [
           SizedBox(height: 28),

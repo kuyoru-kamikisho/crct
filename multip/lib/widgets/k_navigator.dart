@@ -40,6 +40,12 @@ class _KNavigatorState extends State<KNavigator> {
       'path': '/wordFlashcards',
     },
     {
+      'label': '维森社',
+      'icon': const Icon(Icons.diversity_2),
+      'selectedIcon': const Icon(Icons.catching_pokemon),
+      'path': '/guild',
+    },
+    {
       'label': '设置',
       'icon': const Icon(Icons.settings_outlined),
       'selectedIcon': const Icon(Icons.settings),

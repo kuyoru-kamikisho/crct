@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:multip/screens/guild_screen.dart';
 import 'package:multip/screens/home_screen.dart';
 import 'package:multip/screens/schedule_screen.dart';
 import 'package:multip/screens/settings_screen.dart';
@@ -77,6 +78,12 @@ class MyApp extends StatelessWidget {
                       path: 'schedule',
                       builder: (BuildContext context, GoRouterState state) {
                         return ScheduleScreen();
+                      },
+                    ),
+                    GoRoute(
+                      path: 'guild',
+                      builder: (BuildContext context, GoRouterState state) {
+                        return GuildScreen();
                       },
                     ),
                     GoRoute(

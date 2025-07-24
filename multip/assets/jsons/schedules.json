@@ -1,0 +1,135 @@
+{
+    "cmds": [
+        {
+            "id": "shutdown",
+            "deleteAble": false,
+            "name": "强制关机",
+            "winCmd": "shutdown /s /f /t 0",
+            "macCmd": "sudo shutdown -h now",
+            "linuxCmd": "sudo systemctl poweroff -i"
+        },
+        {
+            "id": "task",
+            "deleteAble": false,
+            "name": "打开任务管理器",
+            "winCmd": "taskmgr",
+            "macCmd": "open -a 'Activity Monitor'",
+            "linuxCmd": "gnome-system-monitor || xfce4-task-manager || lxtask || open-system-monitor || xdg-open settings://system/about"
+        },
+        {
+            "id": "setting",
+            "deleteAble": false,
+            "name": "打开控制面板",
+            "winCmd": "control",
+            "macCmd": "open -b com.apple.systempreferences",
+            "linuxCmd": "xdg-open settings://system/about || gnome-control-center || unity-control-center || systemsettings5 || mate-control-center"
+        }
+    ],
+    "records": [],
+    "times": [
+        {
+            "name": "5秒后关机",
+            "bindCmd": "shutdown",
+            "bindRecord": "",
+            "tiptext": "",
+            "delay": 5,
+            "period": 0
+        },
+        {
+            "name": "10分钟后关机",
+            "bindCmd": "shutdown",
+            "bindRecord": "",
+            "tiptext": "",
+            "delay": 600,
+            "period": 0
+        },
+        {
+            "name": "20分钟后关机",
+            "bindCmd": "shutdown",
+            "bindRecord": "",
+            "tiptext": "",
+            "delay": 1200,
+            "period": 0
+        },
+        {
+            "name": "30分钟后关机",
+            "bindCmd": "shutdown",
+            "bindRecord": "",
+            "tiptext": "",
+            "delay": 1800,
+            "period": 0
+        },
+        {
+            "name": "40分钟后关机",
+            "bindCmd": "shutdown",
+            "bindRecord": "",
+            "tiptext": "",
+            "delay": 2400,
+            "period": 0
+        },
+        {
+            "name": "50分钟后关机",
+            "bindCmd": "shutdown",
+            "bindRecord": "",
+            "tiptext": "",
+            "delay": 3000,
+            "period": 0
+        },
+        {
+            "name": "1小时后关机",
+            "bindCmd": "shutdown",
+            "bindRecord": "",
+            "tiptext": "",
+            "delay": 3600,
+            "period": 0
+        },
+        {
+            "name": "1小时10分钟后关机",
+            "bindCmd": "shutdown",
+            "bindRecord": "",
+            "tiptext": "",
+            "delay": 4200,
+            "period": 0
+        },
+        {
+            "name": "1小时20分钟后关机",
+            "bindCmd": "shutdown",
+            "bindRecord": "",
+            "tiptext": "",
+            "delay": 4800,
+            "period": 0
+        },
+        {
+            "name": "1小时30分钟后关机",
+            "bindCmd": "shutdown",
+            "bindRecord": "",
+            "tiptext": "",
+            "delay": 5400,
+            "period": 0
+        },
+        {
+            "name": "1小时40分钟后关机",
+            "bindCmd": "shutdown",
+            "bindRecord": "",
+            "tiptext": "",
+            "delay": 6000,
+            "period": 0
+        },
+        {
+            "name": "1小时50分钟后关机",
+            "bindCmd": "shutdown",
+            "bindRecord": "",
+            "tiptext": "",
+            "delay": 6600,
+            "period": 0
+        },
+        {
+            "name": "2小时后关机",
+            "bindCmd": "shutdown",
+            "bindRecord": "",
+            "tiptext": "",
+            "delay": 7200,
+            "period": 0
+        }
+    ]
+}
