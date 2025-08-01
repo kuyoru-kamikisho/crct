@@ -246,12 +246,9 @@ class _SchedulesContainerState extends State<SchedulesContainer> {
                                     onPressed: () {
                                       setState(() {
                                         if (time.running) {
-                                          time.running = false;
-                                          context
-                                              .read<MyAppState>()
-                                              .deleteASchedule();
+                                          time.stop();
                                         } else {
-                                          time.running = true;
+                                          time.run(() => setState(() {}));
                                           context
                                               .read<MyAppState>()
                                               .addASchedule();
