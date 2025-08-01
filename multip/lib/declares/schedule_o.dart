@@ -6,6 +6,8 @@ class CmdO {
   final String winCmd;
   final String macCmd;
   final String linuxCmd;
+  bool hovering = false;
+  bool running = false;
 
   CmdO({
     required this.id,
@@ -36,6 +38,15 @@ class TimerO {
   final String tiptext;
   final int delay;
   final int period;
+  bool hovering = false;
+  bool running = false;
+  bool paused = false;
+  // 启动时间
+  int startTime = 0;
+  // 当前进行到的时间
+  int currentTime = 0;
+  // 当前执行进度 0 ~ 1
+  double progress = 0.0;
 
   TimerO({
     required this.name,
@@ -64,11 +75,7 @@ class ScheduleMap {
   final List<dynamic> records;
   final List<TimerO> times;
 
-  ScheduleMap({
-    required this.cmds,
-    required this.records,
-    required this.times,
-  });
+  ScheduleMap({required this.cmds, required this.records, required this.times});
 
   factory ScheduleMap.fromJson(Map<String, dynamic> json) {
     return ScheduleMap(
