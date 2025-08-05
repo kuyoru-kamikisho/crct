@@ -216,12 +216,7 @@ class _SchedulesContainerState extends State<SchedulesContainer> {
                                         milliseconds: 200,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: const Color.fromARGB(
-                                          80,
-                                          42,
-                                          21,
-                                          61,
-                                        ),
+                                        color: const Color.fromARGB(172, 219, 15, 77),
                                         borderRadius: BorderRadius.circular(0),
                                       ),
                                       height: double.infinity,
@@ -254,10 +249,17 @@ class _SchedulesContainerState extends State<SchedulesContainer> {
                                         if (time.running) {
                                           time.stop();
                                         } else {
+                                          time.onStop = () {
+                                            context
+                                                .read<MyAppState>()
+                                                .deleteASchedule();
+                                          };
+                                          time.onRun = () {
+                                            context
+                                                .read<MyAppState>()
+                                                .addASchedule();
+                                          };
                                           time.run(() => setState(() {}));
-                                          context
-                                              .read<MyAppState>()
-                                              .addASchedule();
                                         }
                                       });
                                     },

@@ -46,6 +46,8 @@ class TimerO {
   bool running = false;
   bool hovering = false;
   VoidCallback? onStateChanged;
+  VoidCallback? onStop;
+  VoidCallback? onRun;
 
   // 持续时间，持续时间到后强制结束：秒
   final int period;
@@ -67,12 +69,16 @@ class TimerO {
 
   void run(VoidCallback? notifier) {
     if (running) return;
-    if (notifier!=null) onStateChanged = notifier;
+    if (notifier != null) onStateChanged = notifier;
 
     running = true;
     startTime = DateTime.now().millisecondsSinceEpoch;
     currentTime = startTime;
     progress = 0.0;
+
+    if (onRun != null) {
+      onRun!();
+    }
 
     _notify();
 
@@ -97,6 +103,9 @@ class TimerO {
     currentTime = 0;
     progress = 0.0;
     _notify();
+    if (onStop != null) {
+      onStop!();
+    }
   }
 
   void _notify() {
