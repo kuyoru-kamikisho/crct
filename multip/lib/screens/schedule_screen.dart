@@ -207,20 +207,26 @@ class _SchedulesContainerState extends State<SchedulesContainer> {
                             Positioned.fill(
                               child: Align(
                                 alignment: Alignment.centerLeft,
-                                child: FractionallySizedBox(
-                                  widthFactor: time.progress, // 进度比例(0.0-1.0)
-                                  child: Container(
-                                    decoration: BoxDecoration(
-                                      color: const Color.fromARGB(
-                                        80,
-                                        42,
-                                        21,
-                                        61,
+                                child: LayoutBuilder(
+                                  builder: (context, constraints) {
+                                    return AnimatedContainer(
+                                      width:
+                                          constraints.maxWidth * time.progress,
+                                      duration: const Duration(
+                                        milliseconds: 200,
                                       ),
-                                      borderRadius: BorderRadius.circular(0),
-                                    ),
-                                    height: double.infinity,
-                                  ),
+                                      decoration: BoxDecoration(
+                                        color: const Color.fromARGB(
+                                          80,
+                                          42,
+                                          21,
+                                          61,
+                                        ),
+                                        borderRadius: BorderRadius.circular(0),
+                                      ),
+                                      height: double.infinity,
+                                    );
+                                  },
                                 ),
                               ),
                             ),
