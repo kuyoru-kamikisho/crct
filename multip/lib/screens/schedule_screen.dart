@@ -193,15 +193,15 @@ class _SchedulesContainerState extends State<SchedulesContainer> {
               controller: scrollController,
               shrinkWrap: true,
               children: [
+                // ------------------TAB 0-----------------------
                 if (widget.activeTabIndex == 0)
                   for (TimerO time in scheduleMap.times)
                     MouseRegion(
                       onEnter: (_) => setState(() => time.hovering = true),
                       onExit: (_) => setState(() => time.hovering = false),
                       child: Container(
-                        // 项目容器 A
                         margin: EdgeInsets.only(bottom: 6),
-                        color: _backgroundColor(time.hovering),
+                        color: _backgroundColor(time.hovering, time.running),
                         child: Stack(
                           children: [
                             Positioned.fill(
@@ -216,7 +216,12 @@ class _SchedulesContainerState extends State<SchedulesContainer> {
                                         milliseconds: 200,
                                       ),
                                       decoration: BoxDecoration(
-                                        color: const Color.fromARGB(172, 219, 15, 77),
+                                        color: const Color.fromARGB(
+                                          172,
+                                          219,
+                                          15,
+                                          77,
+                                        ),
                                         borderRadius: BorderRadius.circular(0),
                                       ),
                                       height: double.infinity,
@@ -238,7 +243,10 @@ class _SchedulesContainerState extends State<SchedulesContainer> {
                                     time.name,
                                     style: TextStyle(
                                       letterSpacing: 1,
-                                      color: _foregeColor(time.hovering),
+                                      color: _foregeColor(
+                                        time.hovering,
+                                        time.running,
+                                      ),
                                     ),
                                   ),
                                   IconButton(
@@ -267,7 +275,10 @@ class _SchedulesContainerState extends State<SchedulesContainer> {
                                       time.running
                                           ? Icons.stop_circle_outlined
                                           : Icons.play_circle_outline,
-                                      color: _foregeColor(time.hovering),
+                                      color: _foregeColor(
+                                        time.hovering,
+                                        time.running,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -278,9 +289,11 @@ class _SchedulesContainerState extends State<SchedulesContainer> {
                       ),
                     ),
 
+                // ------------------TAB 1-----------------------
                 if (widget.activeTabIndex == 1)
                   for (var record in scheduleMap.records) Container(),
 
+                // ------------------TAB 2-----------------------
                 if (widget.activeTabIndex == 2)
                   for (CmdO cmd in scheduleMap.cmds) Container(),
               ],
@@ -291,12 +304,20 @@ class _SchedulesContainerState extends State<SchedulesContainer> {
     );
   }
 
-  Color _foregeColor(bool hovering) {
-    return hovering ? Colors.greenAccent : Colors.white70;
+  Color _foregeColor(bool hovering, bool running) {
+    return running
+        ? const Color.fromARGB(255, 240, 255, 26)
+        : hovering
+        ? Colors.greenAccent
+        : Colors.white70;
   }
 
-  Color _backgroundColor(bool hovering) {
-    return hovering ? Colors.black87 : Colors.black38;
+  Color _backgroundColor(bool hovering, bool running) {
+    return running
+        ? const Color.fromARGB(255, 4, 16, 26)
+        : hovering
+        ? Colors.black87
+        : Colors.black38;
   }
 
   // 加载 JSON 并存储到全局状态
