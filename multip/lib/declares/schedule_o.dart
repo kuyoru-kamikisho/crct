@@ -9,8 +9,10 @@ class CmdO {
   final String winCmd;
   final String macCmd;
   final String linuxCmd;
+  
   bool hovering = false;
   bool running = false;
+  int thread = 0;
 
   CmdO({
     required this.id,

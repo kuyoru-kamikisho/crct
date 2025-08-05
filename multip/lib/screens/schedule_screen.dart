@@ -14,7 +14,7 @@ class ScheduleScreen extends StatefulWidget {
 }
 
 class _ScheduleScreenState extends State<ScheduleScreen> {
-  int tabIndex = 0;
+  int tabIndex = 2;
 
   void setTabIndex(int x) {
     setState(() {
@@ -295,7 +295,39 @@ class _SchedulesContainerState extends State<SchedulesContainer> {
 
                 // ------------------TAB 2-----------------------
                 if (widget.activeTabIndex == 2)
-                  for (CmdO cmd in scheduleMap.cmds) Container(),
+                  for (CmdO cmd in scheduleMap.cmds)
+                     MouseRegion(
+                          onEnter: (_) => setState(() => cmd.hovering = true),
+                          onExit: (_) => setState(() => cmd.hovering = false),
+                          child: Row(
+                            children: [
+                              Expanded(
+                                child: Container(
+                                  color: _backgroundColor(
+                                    cmd.hovering,
+                                    cmd.running,
+                                  ),
+                                  margin: EdgeInsets.only(bottom: 6),
+                                  padding: EdgeInsets.symmetric(
+                                    vertical: 10,
+                                    horizontal: 12,
+                                  ),
+                                  child: Text(
+                                    cmd.name,
+                                    style: TextStyle(
+                                      letterSpacing: 1,
+                                      color: _foregeColor(
+                                        cmd.hovering,
+                                        cmd.running,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                   
               ],
             ),
           ),
@@ -309,7 +341,7 @@ class _SchedulesContainerState extends State<SchedulesContainer> {
         ? const Color.fromARGB(255, 240, 255, 26)
         : hovering
         ? Colors.greenAccent
-        : Colors.white70;
+        : const Color.fromARGB(220, 255, 255, 255);
   }
 
   Color _backgroundColor(bool hovering, bool running) {
