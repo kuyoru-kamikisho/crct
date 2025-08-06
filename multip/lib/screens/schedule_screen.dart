@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:multip/declares/schedule_o.dart';
 import 'package:multip/states/my_app_state.dart';
+import 'package:multip/tools/text.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
@@ -14,7 +15,7 @@ class ScheduleScreen extends StatefulWidget {
 }
 
 class _ScheduleScreenState extends State<ScheduleScreen> {
-  int tabIndex = 2;
+  int tabIndex = 0;
 
   void setTabIndex(int x) {
     setState(() {
@@ -313,19 +314,32 @@ class _SchedulesContainerState extends State<SchedulesContainer> {
                                 horizontal: 12,
                               ),
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    cmd.name,
-                                    style: TextStyle(
-                                      letterSpacing: 1,
-                                      color: _foregeColor(
-                                        cmd.hovering,
-                                        cmd.running,
+                                  SizedBox(
+                                    width: 230,
+                                    child: Text(
+                                      cmd.name,
+                                      style: TextStyle(
+                                        letterSpacing: 1,
+                                        color: _foregeColor(
+                                          cmd.hovering,
+                                          cmd.running,
+                                        ),
                                       ),
                                     ),
                                   ),
+                                  Text(
+                                    truncateWithEllipsis(
+                                      cmd.cmdForCurrentPlatform,
+                                      20,
+                                    ),
+                                    style: TextStyle(
+                                      color: Colors.white54,
+                                      letterSpacing: 2,
+                                      fontFamily: 'PARaDOS',
+                                    ),
+                                  ),
+                                  Expanded(child: SizedBox()),
                                   IconButton(
                                     constraints: BoxConstraints(),
                                     padding: EdgeInsets.zero,

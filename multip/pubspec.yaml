@@ -108,3 +108,6 @@ flutter:
     - family: HYYongZiBianSeLongW
       fonts:
         - asset: fonts/HYYongZiBianSeLongW.ttf
+    - family: PARaDOS
+      fonts:
+        - asset: fonts/PARaDOS.ttf
