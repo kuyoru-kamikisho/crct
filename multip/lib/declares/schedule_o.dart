@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
 import 'dart:async';
+import 'package:multip/extensions/collection.dart';
 
 // CMD的类型
 class CmdO {
@@ -90,6 +91,7 @@ class TimerO {
   bool hovering = false;
   VoidCallback? onRun;
   VoidCallback? onStop;
+  VoidCallback? onTimeReached;
   VoidCallback? onStateChanged;
 
   // 持续时间，持续时间到后强制结束：秒
@@ -133,6 +135,7 @@ class TimerO {
       _notify();
 
       if (progress >= 1.0) {
+        onTimeReached?.call();
         stop();
       }
     });
@@ -174,6 +177,10 @@ class ScheduleMap {
   final List<TimerO> times;
 
   ScheduleMap({required this.cmds, required this.records, required this.times});
+
+  CmdO? findCmdById(String id) {
+    return cmds.find((cmd) => cmd.id == id);
+  }
 
   factory ScheduleMap.fromJson(Map<String, dynamic> json) {
     return ScheduleMap(

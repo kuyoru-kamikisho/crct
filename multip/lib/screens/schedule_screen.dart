@@ -258,15 +258,17 @@ class _SchedulesContainerState extends State<SchedulesContainer> {
                                         if (time.running) {
                                           time.stop();
                                         } else {
-                                          time.onStop = () {
-                                            context
-                                                .read<MyAppState>()
-                                                .deleteASchedule();
-                                          };
-                                          time.onRun = () {
-                                            context
-                                                .read<MyAppState>()
-                                                .addASchedule();
+                                          time.onStop = () => context
+                                              .read<MyAppState>()
+                                              .deleteASchedule();
+                                          time.onRun = () => context
+                                              .read<MyAppState>()
+                                              .addASchedule();
+                                          time.onTimeReached = () {
+                                            var cmd = scheduleMap.findCmdById(
+                                              time.bindCmd,
+                                            );
+                                            cmd?.run();
                                           };
                                           time.run(() => setState(() {}));
                                         }
@@ -291,8 +293,7 @@ class _SchedulesContainerState extends State<SchedulesContainer> {
                     ),
 
                 // ------------------TAB 1-----------------------
-                if (widget.activeTabIndex == 1)
-                  for (var record in scheduleMap.records) Container(),
+                if (widget.activeTabIndex == 1) Container(),
 
                 // ------------------TAB 2-----------------------
                 if (widget.activeTabIndex == 2)
