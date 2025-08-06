@@ -84,7 +84,7 @@ class _KNavigatorState extends State<KNavigator> {
             ),
           ],
         ),
-        width: isSmallScreen ? 40 : 220,
+        width: isSmallScreen ? 40 : 180,
         child: ClipRect(
           child: Column(
             spacing: 1,

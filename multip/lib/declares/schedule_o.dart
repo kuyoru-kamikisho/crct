@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 import 'dart:async';
 
@@ -6,13 +7,16 @@ class CmdO {
   final String id;
   final bool deleteAble;
   final String name;
-  final String winCmd;
-  final String macCmd;
-  final String linuxCmd;
-  
+  final String? winCmd;
+  final String? macCmd;
+  final String? linuxCmd;
+
   bool hovering = false;
   bool running = false;
-  int thread = 0;
+
+  Process? _process;
+  VoidCallback? onRun;
+  VoidCallback? onStop;
 
   CmdO({
     required this.id,
@@ -22,6 +26,43 @@ class CmdO {
     required this.macCmd,
     required this.linuxCmd,
   });
+
+  String get cmdForCurrentPlatform {
+    if (Platform.isWindows) return winCmd ?? '';
+    if (Platform.isMacOS) return macCmd ?? '';
+    if (Platform.isLinux) return linuxCmd ?? '';
+    return '';
+  }
+
+  Future<void> run() async {
+    final cmd = cmdForCurrentPlatform;
+    if (cmd.isEmpty) return;
+
+    try {
+      final parts = cmd.split(' ');
+      final executable = parts.first;
+      final arguments = parts.skip(1).toList();
+
+      _process = await Process.start(executable, arguments, runInShell: true);
+
+      running = true;
+      onRun?.call();
+
+      await _process!.exitCode;
+      running = false;
+      onStop?.call();
+    } catch (e) {
+      print('启动失败: $e');
+    }
+  }
+
+  Future<void> stop() async {
+    if (_process != null && running) {
+      _process!.kill();
+      running = false;
+      onStop?.call();
+    }
+  }
 
   factory CmdO.fromJson(Map<String, dynamic> json) {
     return CmdO(
@@ -47,9 +88,9 @@ class TimerO {
   Timer? _timer;
   bool running = false;
   bool hovering = false;
-  VoidCallback? onStateChanged;
-  VoidCallback? onStop;
   VoidCallback? onRun;
+  VoidCallback? onStop;
+  VoidCallback? onStateChanged;
 
   // 持续时间，持续时间到后强制结束：秒
   final int period;

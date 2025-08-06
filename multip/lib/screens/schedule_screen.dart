@@ -296,23 +296,27 @@ class _SchedulesContainerState extends State<SchedulesContainer> {
                 // ------------------TAB 2-----------------------
                 if (widget.activeTabIndex == 2)
                   for (CmdO cmd in scheduleMap.cmds)
-                     MouseRegion(
-                          onEnter: (_) => setState(() => cmd.hovering = true),
-                          onExit: (_) => setState(() => cmd.hovering = false),
-                          child: Row(
-                            children: [
-                              Expanded(
-                                child: Container(
-                                  color: _backgroundColor(
-                                    cmd.hovering,
-                                    cmd.running,
-                                  ),
-                                  margin: EdgeInsets.only(bottom: 6),
-                                  padding: EdgeInsets.symmetric(
-                                    vertical: 10,
-                                    horizontal: 12,
-                                  ),
-                                  child: Text(
+                    MouseRegion(
+                      onEnter: (_) => setState(() => cmd.hovering = true),
+                      onExit: (_) => setState(() => cmd.hovering = false),
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              color: _backgroundColor(
+                                cmd.hovering,
+                                cmd.running,
+                              ),
+                              margin: EdgeInsets.only(bottom: 6),
+                              padding: EdgeInsets.symmetric(
+                                vertical: 10,
+                                horizontal: 12,
+                              ),
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
                                     cmd.name,
                                     style: TextStyle(
                                       letterSpacing: 1,
@@ -322,12 +326,37 @@ class _SchedulesContainerState extends State<SchedulesContainer> {
                                       ),
                                     ),
                                   ),
-                                ),
+                                  IconButton(
+                                    constraints: BoxConstraints(),
+                                    padding: EdgeInsets.zero,
+                                    onPressed: () {
+                                      cmd.onRun = () => setState(() {});
+                                      cmd.onStop = () => setState(() {});
+                                      setState(() {
+                                        if (cmd.running) {
+                                          cmd.stop();
+                                        } else {
+                                          cmd.run();
+                                        }
+                                      });
+                                    },
+                                    icon: Icon(
+                                      cmd.running
+                                          ? Icons.stop_circle_outlined
+                                          : Icons.play_circle_outline,
+                                      color: _foregeColor(
+                                        cmd.hovering,
+                                        cmd.running,
+                                      ),
+                                    ),
+                                  ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                   
+                        ],
+                      ),
+                    ),
               ],
             ),
           ),
