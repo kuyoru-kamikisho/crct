@@ -27,7 +27,7 @@ class MyApp extends StatelessWidget {
           textTheme: TextTheme(labelSmall: TextStyle(fontSize: 16)),
         ),
         routerConfig: GoRouter(
-          initialLocation: '/schedule',
+          initialLocation: '/',
           routes: <RouteBase>[
             ShellRoute(
               builder:
