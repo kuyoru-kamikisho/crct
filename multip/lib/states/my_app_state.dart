@@ -55,6 +55,7 @@ class MyAppState extends ChangeNotifier {
       week = getJpWeekDay(now.weekday);
       month = padZero(now.month);
       date = padZero(now.day);
+      notifyListeners();
     });
   }
 }

@@ -13,7 +13,10 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
-    return Container(color: Colors.black54, child: NumClock());
+    return Container(
+      color: Colors.black54,
+      child: Align(child: NumClock()),
+    );
   }
 
   @override
@@ -37,10 +40,45 @@ class NumClock extends StatelessWidget {
       state.hour,
       state.minute,
     );
-    return Container(child: Column(
+    return Column(
+      mainAxisSize: MainAxisSize.min,
       children: [
-        Text(hour,style: TextStyle(color: Colors.white,fontSize: 72,fontFamily: 'PARaDOS'),)
+        ClockText(text: hour),
+        ClockText(text: minute),
       ],
-    ));
+    );
+  }
+}
+
+class ClockText extends StatelessWidget {
+  const ClockText({super.key, required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return ShaderMask(
+      blendMode: BlendMode.srcIn,
+      shaderCallback: (Rect bounds) {
+        return LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            const Color.fromARGB(255, 154, 154, 166),
+            const Color.fromARGB(255, 255, 255, 255),
+          ],
+          stops: [0.58, 0.59],
+        ).createShader(bounds);
+      },
+      child: Text(
+        text,
+        style: TextStyle(
+          height: 1,
+          fontSize: 72,
+          fontFamily: 'PARaDOS',
+          color: Colors.white,
+        ),
+      ),
+    );
   }
 }
