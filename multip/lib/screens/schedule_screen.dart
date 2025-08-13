@@ -168,7 +168,31 @@ class SchedulesContainer extends StatefulWidget {
   State<SchedulesContainer> createState() => _SchedulesContainerState();
 }
 
-class _SchedulesContainerState extends State<SchedulesContainer> {
+class _SchedulesContainerState extends State<SchedulesContainer>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _blinkController;
+  late Animation<Color?> _blinkAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _blinkController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1),
+    )..repeat(reverse: true);
+
+    // 添加曲线（easeInOut 让变化更柔和）
+    final curvedAnimation = CurvedAnimation(
+      parent: _blinkController,
+      curve: Curves.easeInOut,
+    );
+
+    _blinkAnimation = ColorTween(
+      begin: const Color.fromARGB(255, 240, 255, 26),
+      end: const Color.fromARGB(99, 237, 241, 180),
+    ).animate(curvedAnimation);
+  }
+
   @override
   Widget build(BuildContext context) {
     var scheduleMap = context.watch<MyAppState>().scheduleMap;
@@ -380,10 +404,17 @@ class _SchedulesContainerState extends State<SchedulesContainer> {
     );
   }
 
+  @override
+  void dispose() {
+    _blinkController.dispose();
+    super.dispose();
+  }
+
   Color _foregeColor(bool hovering, bool running) {
-    return running
-        ? const Color.fromARGB(255, 240, 255, 26)
-        : hovering
+    if (running) {
+      return _blinkAnimation.value ?? const Color.fromARGB(255, 240, 255, 26);
+    }
+    return hovering
         ? Colors.greenAccent
         : const Color.fromARGB(220, 255, 255, 255);
   }
