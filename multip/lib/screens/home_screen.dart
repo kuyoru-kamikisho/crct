@@ -15,7 +15,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: const Color.fromARGB(186, 0, 0, 0),
+      color: const Color.fromARGB(160, 0, 0, 0),
       child: Align(
         child: Row(
           mainAxisSize: MainAxisSize.min,

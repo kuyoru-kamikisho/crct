@@ -68,6 +68,7 @@ class MyApp extends StatelessWidget {
                           constraints.maxHeight,
                         );
                         return Scaffold(
+                          backgroundColor: Colors.transparent,
                           body: Row(
                             children: [
                               KNavigator(constraints: constraints),
