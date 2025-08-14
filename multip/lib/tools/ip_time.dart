@@ -3,9 +3,17 @@ import 'package:http/http.dart' as http;
 
 /// IP 信息对象类型
 class IpInfoO {
+  // ip地址
   late String ip;
+  // 城市
   late String city;
+  // 时区
   late String timezone;
+  // 纬度
+  late String latitude;
+  // 经度
+  late String longitude;
+  // 国家识别名
   late String countrycode;
 }
 
@@ -23,6 +31,8 @@ Future<IpInfoO?> queryMyIp() async {
     v.ip = o['ip'];
     v.city = o['city'];
     v.timezone = o['timezone'];
+    v.latitude = o['latitude'];
+    v.longitude = o['longitude'];
     v.countrycode = o['country_code'];
     return v;
   } else {
