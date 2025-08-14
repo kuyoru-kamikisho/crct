@@ -70,6 +70,10 @@ class WeatherO {
     96: '雷暴伴小冰雹',
     99: '雷暴伴大冰雹',
   };
+
+  String get weatherCn {
+    return wmoCode[current.weatherCode] ?? '';
+  }
 }
 
 class CurrentWeatherUnit {
@@ -105,13 +109,13 @@ class CurrentWeather {
   // 体感温度
   late double apparentTemperature;
   // 白天
-  late bool isDay;
+  late int isDay;
   // 降雨量
   late double rain;
   // 降雪量
   late double snowfall;
   // 天气代码
-  late double weatherCode;
+  late int weatherCode;
   // 风向
   late double windDirection10m;
   // 风速
