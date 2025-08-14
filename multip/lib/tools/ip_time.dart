@@ -50,3 +50,17 @@ String getJpWeekDay(int day) {
   };
   return jpWeekdays[day] ?? '';
 }
+
+/// 获取英文星期几（简写）
+String getEnWeekDay(int day) {
+  Map<int, String> enWeekdays = {
+    7: 'Sun',
+    1: 'Mon',
+    2: 'Tues',
+    3: 'Weds',
+    4: 'Thur',
+    5: 'Fri',
+    6: 'Sat',
+  };
+  return enWeekdays[day] ?? '';
+}

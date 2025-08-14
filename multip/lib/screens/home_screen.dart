@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:multip/states/my_app_state.dart';
@@ -33,18 +34,41 @@ class NumClock extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<MyAppState>();
 
-    final (month, date, week, hour, minute) = (
+    final (month, date, weekEn, weekJp, hour, minute) = (
       state.month,
       state.date,
-      state.week,
+      state.weekEn,
+      state.weekJp,
       state.hour,
       state.minute,
     );
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        ClockText(text: hour),
-        ClockText(text: minute),
+        AnalogClock(),
+        SizedBox(height: 14),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                ClockText(text: hour),
+                ClockText(text: minute),
+              ],
+            ),
+            SizedBox(width: 20),
+            Text(
+              '$weekJp $month月$date日',
+              style: TextStyle(
+                fontFamily: 'HYWenHei65w',
+                fontSize: 16,
+                letterSpacing: 1,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
       ],
     );
   }
@@ -81,4 +105,117 @@ class ClockText extends StatelessWidget {
       ),
     );
   }
+}
+
+class AnalogClock extends StatefulWidget {
+  const AnalogClock({super.key});
+
+  @override
+  State<AnalogClock> createState() => _AnalogClockState();
+}
+
+class _AnalogClockState extends State<AnalogClock>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animationController;
+
+  @override
+  void initState() {
+    super.initState();
+    // 每秒刷新（约60FPS）
+    _animationController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 1), // 仅用于初始化，实际通过repeat持续运行
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _animationController,
+      builder: (context, child) {
+        final now = DateTime.now();
+        return CustomPaint(
+          painter: _ClockPainter(now),
+          size: const Size.square(240), // 固定尺寸，可改为MediaQuery动态尺寸
+        );
+      },
+    );
+  }
+}
+
+class _ClockPainter extends CustomPainter {
+  final DateTime currentTime;
+
+  _ClockPainter(this.currentTime);
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final radius = size.width / 2;
+    final paint = Paint();
+
+    // 1. 绘制表盘背景
+    paint.color = Colors.transparent;
+    canvas.drawCircle(center, radius, paint);
+
+    // 2. 绘制60个刻度（长刻度+短刻度）
+    paint.color = Colors.white;
+    paint.strokeWidth = 1;
+    for (var i = 0; i < 60; i++) {
+      final angle = math.pi * 2 * i / 60;
+      final isHourTick = i % 5 == 0; // 每5个刻度一个长刻度
+      final tickLength = isHourTick ? 12 : 6;
+      final tickStart = Offset(
+        center.dx + (radius - tickLength - 5) * math.cos(angle),
+        center.dy + (radius - tickLength - 5) * math.sin(angle),
+      );
+      final tickEnd = Offset(
+        center.dx + (radius - 5) * math.cos(angle),
+        center.dy + (radius - 5) * math.sin(angle),
+      );
+      canvas.drawLine(tickStart, tickEnd, paint);
+    }
+
+    // 3. 绘制时针（蓝色）
+    final hourAngle =
+        math.pi * 2 * (currentTime.hour % 12 + currentTime.minute / 60) / 12;
+    drawHand(canvas, center, hourAngle, radius * 0.5, Colors.blue, 4);
+
+    // 4. 绘制分针（绿色）
+    final minuteAngle =
+        math.pi * 2 * (currentTime.minute + currentTime.second / 60) / 60;
+    drawHand(canvas, center, minuteAngle, radius * 0.7, Colors.green, 2);
+
+    // 5. 绘制秒针（红色）
+    final secondAngle = math.pi * 2 * currentTime.second / 60;
+    drawHand(canvas, center, secondAngle, radius * 0.8, Colors.red, 1);
+  }
+
+  void drawHand(
+    Canvas canvas,
+    Offset center,
+    double angle,
+    double length,
+    Color color,
+    double width,
+  ) {
+    final end = Offset(
+      center.dx + length * math.cos(angle - math.pi / 2), // -pi/2 使0角度指向12点
+      center.dy + length * math.sin(angle - math.pi / 2),
+    );
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = width
+      ..strokeCap = StrokeCap.round;
+    canvas.drawLine(center, end, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

@@ -17,7 +17,8 @@ class MyAppState extends ChangeNotifier {
   Timer? _timer;
   String hour = '12';
   String minute = '00';
-  String week = '';
+  String weekJp = '';
+  String weekEn = '';
   String month = '';
   String date = '';
 
@@ -52,7 +53,8 @@ class MyAppState extends ChangeNotifier {
       var now = DateTime.now();
       hour = padZero(now.hour);
       minute = padZero(now.minute);
-      week = getJpWeekDay(now.weekday);
+      weekJp = getJpWeekDay(now.weekday);
+      weekEn = getEnWeekDay(now.weekday);
       month = padZero(now.month);
       date = padZero(now.day);
       notifyListeners();
