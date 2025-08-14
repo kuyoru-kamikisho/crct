@@ -65,11 +65,12 @@ class MyAppState extends ChangeNotifier {
     });
   }
 
-  void checkIp() async {
+  void checkIpAndWeather() async {
     queryMyIp().then((o) {
       if (o != null) {
         ipInfo = o;
         notifyListeners();
+        checkWeather();
       }
     });
   }
@@ -84,12 +85,14 @@ class MyAppState extends ChangeNotifier {
 
   void _fetchWeather() {
     if (ipInfo != null) {
+      print('开始获取天气');
       queryWeather(
         latitude: ipInfo!.latitude,
         longitude: ipInfo!.longitude,
       ).then((o) {
         weather = o;
         notifyListeners();
+        print('已获取到天气');
       });
     }
   }

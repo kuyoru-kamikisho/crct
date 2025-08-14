@@ -16,7 +16,21 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Container(
       color: Colors.black54,
-      child: Align(child: NumClock()),
+      child: Align(
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            NumClock(),
+            Container(
+              color: const Color.fromARGB(43, 255, 255, 255),
+              width: 1,
+              height: 408,
+              margin: EdgeInsets.only(left: 32, right: 20),
+            ),
+            WeatherPanel(),
+          ],
+        ),
+      ),
     );
   }
 
@@ -24,10 +38,30 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     context.read<MyAppState>()
       ..startTimeClock()
-      ..checkIp()
-      ..checkWeather();
+      ..checkIpAndWeather();
 
     super.initState();
+  }
+}
+
+class WeatherPanel extends StatelessWidget {
+  const WeatherPanel({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<MyAppState>();
+    final weather = state.weather;
+    final ipInfo = state.ipInfo;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [Text('天气：${weather?.weatherCn}')],
+        ),
+      ],
+    );
   }
 }
 

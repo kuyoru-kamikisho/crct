@@ -20,7 +20,7 @@ class IpInfoO {
 /// 天气信息对象类型
 class WeatherO {
   // 海拔
-  late int elevation;
+  late double elevation;
   // 单位说明
   late CurrentWeatherUnit currentUnits;
   // 当前详细信息
@@ -100,26 +100,26 @@ class CurrentWeatherUnit {
 }
 
 class CurrentWeather {
-  // 天气
-  late String time;
+  // 天气时间
+  late String? time;
   // 温度
-  late double temperature2m;
+  late double? temperature2m;
   // 相对湿度2m
-  late double relativeHumidity2m;
+  late int? relativeHumidity2m;
   // 体感温度
-  late double apparentTemperature;
+  late double? apparentTemperature;
   // 白天
-  late int isDay;
+  late int? isDay;
   // 降雨量
-  late double rain;
+  late double? rain;
   // 降雪量
-  late double snowfall;
+  late double? snowfall;
   // 天气代码
-  late int weatherCode;
+  late int? weatherCode;
   // 风向
-  late double windDirection10m;
+  late int? windDirection10m;
   // 风速
-  late double windSpeed10m;
+  late double? windSpeed10m;
 }
 
 final Map<String, String> commonHeader = {
