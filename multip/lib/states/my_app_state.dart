@@ -21,6 +21,10 @@ class MyAppState extends ChangeNotifier {
   String weekEn = '';
   String month = '';
   String date = '';
+  IpInfoO? ipInfo;
+  // 每隔一段时间重新查询天气
+  Timer? _timerW;
+  WeatherO? weather;
 
   void setScreenWidth(double n) {
     appScreenWidth = n;
@@ -59,5 +63,34 @@ class MyAppState extends ChangeNotifier {
       date = padZero(now.day);
       notifyListeners();
     });
+  }
+
+  void checkIp() async {
+    queryMyIp().then((o) {
+      if (o != null) {
+        ipInfo = o;
+        notifyListeners();
+      }
+    });
+  }
+
+  void checkWeather() async {
+    if (_timerW != null) return;
+    _fetchWeather();
+    _timerW = Timer.periodic(const Duration(minutes: 5), (_) {
+      _fetchWeather();
+    });
+  }
+
+  void _fetchWeather() {
+    if (ipInfo != null) {
+      queryWeather(
+        latitude: ipInfo!.latitude,
+        longitude: ipInfo!.longitude,
+      ).then((o) {
+        weather = o;
+        notifyListeners();
+      });
+    }
   }
 }

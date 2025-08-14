@@ -22,7 +22,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   void initState() {
-    context.read<MyAppState>().startTimeClock();
+    context.read<MyAppState>()
+      ..startTimeClock()
+      ..checkIp()
+      ..checkWeather();
+
     super.initState();
   }
 }
