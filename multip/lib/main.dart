@@ -1,4 +1,8 @@
+import 'dart:io';
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_acrylic/window.dart';
+import 'package:flutter_acrylic/window_effect.dart';
 import 'package:multip/screens/guild_screen.dart';
 import 'package:multip/screens/home_screen.dart';
 import 'package:multip/screens/schedule_screen.dart';
@@ -10,8 +14,27 @@ import 'package:multip/widgets/k_navigator.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Window.initialize();
+
   runApp(MyApp());
+
+  if (Platform.isWindows) {
+    await Window.hideWindowControls();
+    doWhenWindowReady(() async {
+      const initialSize = Size(800, 472);
+      appWindow.minSize = initialSize;
+      appWindow.size = initialSize;
+      appWindow.alignment = Alignment.center;
+      appWindow.show();
+
+      await Window.setEffect(
+        effect: WindowEffect.aero,
+        color: Colors.transparent,
+      );
+    });
+  }
 }
 
 class MyApp extends StatelessWidget {
@@ -102,4 +125,3 @@ class MyApp extends StatelessWidget {
     );
   }
 }
-

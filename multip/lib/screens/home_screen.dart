@@ -111,7 +111,7 @@ class NormalText extends StatelessWidget {
             style: TextStyle(
               color: Colors.white,
               fontFamily: 'PARaDOS',
-              fontSize: 18,
+              fontSize: 16,
             ),
           ),
         ),

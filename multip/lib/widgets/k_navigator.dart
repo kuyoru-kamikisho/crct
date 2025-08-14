@@ -84,7 +84,7 @@ class _KNavigatorState extends State<KNavigator> {
             ),
           ],
         ),
-        width: isSmallScreen ? 40 : 180,
+        width: isSmallScreen ? 40 : 160,
         child: ClipRect(
           child: Column(
             spacing: 1,
@@ -99,7 +99,7 @@ class _KNavigatorState extends State<KNavigator> {
                         },
                         style: FilledButton.styleFrom(
                           padding: EdgeInsets.only(
-                            left: isSmallScreen ? 10 : 32,
+                            left: isSmallScreen ? 10 : 26,
                             right: isSmallScreen ? 0 : 16,
                           ),
                           shape: RoundedRectangleBorder(
