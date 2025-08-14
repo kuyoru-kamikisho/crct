@@ -58,14 +58,35 @@ class NumClock extends StatelessWidget {
               ],
             ),
             SizedBox(width: 20),
-            Text(
-              '$weekJp $month月$date日',
-              style: TextStyle(
-                fontFamily: 'HYWenHei65w',
-                fontSize: 16,
-                letterSpacing: 1,
-                color: Colors.white,
-              ),
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(height: 40),
+                Text(
+                  '$weekJp $month月$date日',
+                  style: TextStyle(
+                    fontFamily: 'HYWenHei65w',
+                    fontSize: 20,
+                    letterSpacing: 1,
+                    color: Colors.white,
+                  ),
+                ),
+                Container(
+                  color: Colors.white,
+                  height: 1,
+                  width: 178,
+                  margin: EdgeInsets.only(top: 10),
+                ),
+                Text(
+                  weekEn,
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 48,
+                    fontFamily: 'PARaDOS',
+                    letterSpacing: 10,
+                  ),
+                ),
+              ],
             ),
           ],
         ),
