@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:multip/tools/ip_time.dart';
 import 'package:provider/provider.dart';
 import 'package:multip/states/my_app_state.dart';
 
@@ -55,10 +56,64 @@ class WeatherPanel extends StatelessWidget {
 
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [Text('天气：${weather?.weatherCn}')],
+        NormalText(text: weather?.current.isDay == 1 ? '白天' : '黑夜'),
+        NormalText(text: '天气：${weather?.weatherCn}'),
+        NormalText(
+          text:
+              '温度：${weather?.current.temperature2m} ${weather?.currentUnits.temperature2m}',
+        ),
+        NormalText(
+          text:
+              '体感温度：${weather?.current.apparentTemperature} ${weather?.currentUnits.apparentTemperature}',
+        ),
+        NormalText(
+          text:
+              '相对湿度：${weather?.current.relativeHumidity2m} ${weather?.currentUnits.relativeHumidity2m}',
+        ),
+        NormalText(
+          text: '降雨量：${weather?.current.rain} ${weather?.currentUnits.rain}',
+        ),
+        NormalText(
+          text:
+              '降雪量：${weather?.current.snowfall} ${weather?.currentUnits.snowfall}',
+        ),
+        NormalText(
+          text:
+              '风向：${weather?.current.windDirection10m} ${weather?.currentUnits.windDirection10m}',
+        ),
+        NormalText(
+          text:
+              '风速：${weather?.current.windSpeed10m} ${weather?.currentUnits.windSpeed10m}',
+        ),
+        NormalText(text: 'ip地址：${ipInfo?.ip}'),
+      ],
+    );
+  }
+}
+
+class NormalText extends StatelessWidget {
+  const NormalText({super.key, required this.text});
+
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
+          child: Text(
+            text,
+            style: TextStyle(
+              color: Colors.white,
+              fontFamily: 'PARaDOS',
+              fontSize: 18,
+            ),
+          ),
         ),
       ],
     );
