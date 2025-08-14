@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import 'package:multip/tools/ip_time.dart';
 import 'package:provider/provider.dart';
 import 'package:multip/states/my_app_state.dart';
 
@@ -16,7 +15,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.black54,
+      color: const Color.fromARGB(186, 0, 0, 0),
       child: Align(
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -88,6 +87,7 @@ class WeatherPanel extends StatelessWidget {
               '风速：${weather?.current.windSpeed10m} ${weather?.currentUnits.windSpeed10m}',
         ),
         NormalText(text: 'ip地址：${ipInfo?.ip}'),
+        NormalText(text: '天气更新时间：${weather?.current.time}'),
       ],
     );
   }

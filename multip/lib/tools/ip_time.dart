@@ -164,9 +164,9 @@ Future<WeatherO?> queryWeather({
   if (res.statusCode == 200) {
     var o = json.decode(res.body);
     wo.elevation = o['elevation'];
-    cw.time = o['time'];
 
     var ow = o['current'];
+    cw.time = ow['time'];
     cw.temperature2m = ow['temperature_2m'];
     cw.relativeHumidity2m = ow['relative_humidity_2m'];
     cw.apparentTemperature = ow['apparent_temperature'];
@@ -178,6 +178,7 @@ Future<WeatherO?> queryWeather({
     cw.windSpeed10m = ow['wind_speed_10m'];
 
     var ou = o['current_units'];
+    cu.time = ou['time'];
     cu.temperature2m = ou['temperature_2m'];
     cu.relativeHumidity2m = ou['relative_humidity_2m'];
     cu.apparentTemperature = ou['apparent_temperature'];
