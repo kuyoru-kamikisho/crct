@@ -74,15 +74,6 @@ class _KNavigatorState extends State<KNavigator> {
               width: 1.0,
             ),
           ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black26,
-              offset: Offset(1.0, 0.0),
-              blurRadius: 4.0,
-              spreadRadius: 0.0,
-              blurStyle: BlurStyle.outer,
-            ),
-          ],
         ),
         width: isSmallScreen ? 40 : 160,
         child: ClipRect(

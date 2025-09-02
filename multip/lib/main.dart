@@ -28,9 +28,9 @@ Future<void> main() async {
       appWindow.size = initialSize;
       appWindow.alignment = Alignment.center;
       appWindow.show();
-
-      await Window.setEffect(
-        effect: WindowEffect.aero,
+      Window.disableShadow();
+      Window.setEffect(
+        effect: WindowEffect.transparent,
         color: Colors.transparent,
       );
     });
@@ -69,10 +69,17 @@ class MyApp extends StatelessWidget {
                         );
                         return Scaffold(
                           backgroundColor: Colors.transparent,
-                          body: Row(
+                          body: Column(
                             children: [
-                              KNavigator(constraints: constraints),
-                              Expanded(child: routeWidget),
+                              AppTitleBar(),
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    KNavigator(constraints: constraints),
+                                    Expanded(child: routeWidget),
+                                  ],
+                                ),
+                              ),
                             ],
                           ),
                         );
@@ -119,6 +126,44 @@ class MyApp extends StatelessWidget {
                   ],
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class AppTitleBar extends StatelessWidget {
+  const AppTitleBar({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return WindowTitleBarBox(
+      child: Container(
+        height: 30,
+        color: Colors.black54,
+        child: Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onPanStart: (details) {
+                  appWindow.startDragging();
+                },
+                child: Padding(
+                  padding: const EdgeInsetsGeometry.only(left: 12, right: 0),
+                  child: Row(
+                    children: [
+                      Text('K', style: TextStyle(color: Colors.white)),
+                      Expanded(child: SizedBox()),
+                      CloseWindowButton(
+                        colors: WindowButtonColors(iconNormal: Colors.white),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
           ],
         ),

@@ -28,3 +28,11 @@
 
 小部件
 
+
+## 技术要点
+
+### 窗口透明化 无边框
+
+使用依赖：flutter_acrylic
+搭配依赖：bitsdojo_window 
+
