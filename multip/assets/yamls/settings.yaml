@@ -1,0 +1,10 @@
+# 软件的设置
+
+## 上一次停留的路由
+last_path: '/'
+
+## 是否开机自启
+run_on_boot: false
+
+## 总是在顶层显示
+kepp_top: false

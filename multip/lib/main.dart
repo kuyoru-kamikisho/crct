@@ -145,7 +145,7 @@ class AppTitleBar extends StatelessWidget {
         height: 30,
         decoration: BoxDecoration(
           color: Colors.black54,
-          border: BoxBorder.fromLTRB(bottom: BorderSide(color: Colors.black54)),
+          border: BoxBorder.fromLTRB(bottom: BorderSide(color: const Color.fromARGB(103, 39, 38, 39))),
         ),
         child: Row(
           children: [
