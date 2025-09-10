@@ -18,8 +18,6 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Window.initialize();
 
-  runApp(MyApp());
-
   if (Platform.isWindows) {
     await Window.hideWindowControls();
     doWhenWindowReady(() async {
@@ -27,14 +25,17 @@ Future<void> main() async {
       appWindow.minSize = initialSize;
       appWindow.size = initialSize;
       appWindow.alignment = Alignment.center;
-      appWindow.show();
       Window.disableShadow();
-      Window.setEffect(
+      await Window.setEffect(
         effect: WindowEffect.transparent,
-        color: Colors.transparent,
+        color: const Color.fromARGB(94, 189, 168, 230),
+        dark: false,
       );
     });
   }
+  appWindow.show();
+
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -142,7 +143,10 @@ class AppTitleBar extends StatelessWidget {
     return WindowTitleBarBox(
       child: Container(
         height: 30,
-        color: Colors.black54,
+        decoration: BoxDecoration(
+          color: Colors.black54,
+          border: BoxBorder.fromLTRB(bottom: BorderSide(color: Colors.black54)),
+        ),
         child: Row(
           children: [
             Expanded(
@@ -155,7 +159,7 @@ class AppTitleBar extends StatelessWidget {
                   padding: const EdgeInsetsGeometry.only(left: 12, right: 0),
                   child: Row(
                     children: [
-                      Text('K', style: TextStyle(color: Colors.white)),
+                      Text('Ktop', style: TextStyle(color: Colors.white)),
                       Expanded(child: SizedBox()),
                       CloseWindowButton(
                         colors: WindowButtonColors(iconNormal: Colors.white),

@@ -68,6 +68,7 @@ class _KNavigatorState extends State<KNavigator> {
         duration: const Duration(milliseconds: 200),
         curve: Curves.ease,
         decoration: const BoxDecoration(
+          color: Colors.black38,
           border: Border(
             right: BorderSide(
               color: Color.fromARGB(64, 36, 35, 36),
@@ -98,12 +99,12 @@ class _KNavigatorState extends State<KNavigator> {
                           ),
                           backgroundColor:
                               isSelected(leftNavItem['path'] as String)
-                              ? Colors.black87
-                              : Colors.black54,
+                              ? const Color.fromARGB(186, 0, 0, 0)
+                              : const Color.fromARGB(103, 0, 0, 0),
                           foregroundColor: Colors.white,
                         ),
                         child: SizedBox(
-                          height: 40,
+                          height: 36,
                           child: Row(
                             // 'spacing' property is not available for Row.
                             // Use SizedBox(width: X) for horizontal spacing.
@@ -123,6 +124,18 @@ class _KNavigatorState extends State<KNavigator> {
                                     // Ensure 'label' is treated as a String
                                     leftNavItem['label'] as String,
                                     style: TextStyle(
+                                      fontFamily: 'PARaDOS',
+                                      color:
+                                          isSelected(
+                                            leftNavItem['path'] as String,
+                                          )
+                                          ? const Color.fromARGB(
+                                              255,
+                                              233,
+                                              211,
+                                              17,
+                                            )
+                                          : Colors.white,
                                       fontSize: Theme.of(
                                         context,
                                       ).textTheme.labelSmall!.fontSize,
