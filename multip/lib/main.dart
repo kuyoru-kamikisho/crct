@@ -10,6 +10,7 @@ import 'package:multip/screens/settings_screen.dart';
 import 'package:multip/screens/site_screen.dart';
 import 'package:multip/screens/word_flashcards.dart';
 import 'package:multip/states/my_app_state.dart';
+import 'package:multip/tools/ip_time.dart';
 import 'package:multip/widgets/k_navigator.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -44,7 +45,11 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => MyAppState(),
+      create: (_) {
+        var appstate = MyAppState();
+        appstate.watchDevicePerformance();
+        return appstate;
+      },
       child: MaterialApp.router(
         theme: ThemeData(
           fontFamily: 'HYWenHei85w',
@@ -140,12 +145,17 @@ class AppTitleBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+    var cpu = appState.cpu;
+    var memory = appState.memory;
     return WindowTitleBarBox(
       child: Container(
         height: 30,
         decoration: BoxDecoration(
           color: Colors.black54,
-          border: BoxBorder.fromLTRB(bottom: BorderSide(color: const Color.fromARGB(103, 39, 38, 39))),
+          border: BoxBorder.fromLTRB(
+            bottom: BorderSide(color: const Color.fromARGB(103, 39, 38, 39)),
+          ),
         ),
         child: Row(
           children: [
@@ -159,7 +169,39 @@ class AppTitleBar extends StatelessWidget {
                   padding: const EdgeInsetsGeometry.only(left: 12, right: 0),
                   child: Row(
                     children: [
-                      Text('Ktop', style: TextStyle(color: Colors.white)),
+                      Text(
+                        'Ktop',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontFamily: 'PARaDOS',
+                        ),
+                      ),
+                      Container(
+                        margin: EdgeInsets.symmetric(horizontal: 8),
+                        width: 1,
+                        height: 16,
+                        color: const Color.fromARGB(40, 255, 255, 255),
+                      ),
+                      Text(
+                        padZero(cpu.toInt()),
+                        style: TextStyle(
+                          color: dmcColor(cpu),
+                          fontFamily: 'PARaDOS',
+                        ),
+                      ),
+                      Container(
+                        margin: EdgeInsets.symmetric(horizontal: 8),
+                        width: 1,
+                        height: 16,
+                        color: const Color.fromARGB(40, 255, 255, 255),
+                      ),
+                      Text(
+                        padZero(memory.toInt()),
+                        style: TextStyle(
+                          color: dmcColor(memory),
+                          fontFamily: 'PARaDOS',
+                        ),
+                      ),
                       Expanded(child: SizedBox()),
                       CloseWindowButton(
                         colors: WindowButtonColors(iconNormal: Colors.white),
@@ -174,4 +216,11 @@ class AppTitleBar extends StatelessWidget {
       ),
     );
   }
+}
+
+Color dmcColor(double num) {
+  if (num < 25) return const Color.fromARGB(255, 29, 147, 243);
+  if (num < 50) return const Color.fromARGB(255, 22, 238, 69);
+  if (num < 75) return const Color.fromARGB(255, 240, 163, 21);
+  return const Color.fromARGB(255, 237, 252, 27);
 }

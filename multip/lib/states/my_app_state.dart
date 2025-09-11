@@ -1,19 +1,23 @@
 import 'dart:async';
+import 'dart:isolate';
 import 'package:flutter/material.dart';
+import 'package:multip/tools/dmc.dart';
 import 'package:multip/tools/ip_time.dart';
 import 'package:multip/declares/schedule_o.dart';
 
 /// 全局存储
 class MyAppState extends ChangeNotifier {
-  // 全局用
+  
+  // ----------------------------------[变量区]----------------------------------
+  // ----------------------------------全局用----------------------------------
   double appScreenWidth = 320;
   double appScreenHeight = 720;
 
-  // 任务表用
+  // ----------------------------------任务表用----------------------------------
   int runningScheduleNum = 0;
   ScheduleMap? scheduleMap;
 
-  // 首页用
+  // ----------------------------------首页用----------------------------------
   Timer? _timer;
   String hour = '12';
   String minute = '00';
@@ -26,6 +30,20 @@ class MyAppState extends ChangeNotifier {
   Timer? _timerW;
   WeatherO? weather;
 
+  // ----------------------------------设备基础参数----------------------------------
+  final ReceivePort _receivePort = ReceivePort();
+  bool _isWatchingDevicePerformance = false;
+  double _cpu = 0;
+  double _dsk = 0;
+  double _mem = 0;
+  int _btt = 0;
+
+  double get cpu => _cpu;
+  double get disk => _dsk;
+  double get memory => _mem;
+  int get battery => _btt;
+
+  // ----------------------------------[函数区]----------------------------------
   void setScreenWidth(double n) {
     appScreenWidth = n;
     Future.microtask(() => notifyListeners());
@@ -95,5 +113,23 @@ class MyAppState extends ChangeNotifier {
         print('已获取到天气');
       });
     }
+  }
+
+  Future<void> watchDevicePerformance() async {
+    if (_isWatchingDevicePerformance) {
+      return;
+    }
+    _isWatchingDevicePerformance = true;
+    _receivePort.listen((d) {
+      if (d is Map<String, dynamic>) {
+        _cpu = double.parse(d['c']!.toStringAsFixed(2));
+        _dsk = double.parse(d['d']!.toStringAsFixed(2));
+        _mem = double.parse(d['m']!.toStringAsFixed(2));
+        _btt = d['b'];
+        notifyListeners();
+      }
+    });
+    var dmc = DmcClass(mainPort1: _receivePort.sendPort);
+    dmc.spawn();
   }
 }
