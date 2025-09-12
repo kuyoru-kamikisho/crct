@@ -7,11 +7,12 @@ import 'package:multip/declares/schedule_o.dart';
 
 /// 全局存储
 class MyAppState extends ChangeNotifier {
-  
   // ----------------------------------[变量区]----------------------------------
   // ----------------------------------全局用----------------------------------
   double appScreenWidth = 320;
   double appScreenHeight = 720;
+  bool appCollapsed = false;
+  bool appStayToped = false;
 
   // ----------------------------------任务表用----------------------------------
   int runningScheduleNum = 0;
@@ -115,7 +116,24 @@ class MyAppState extends ChangeNotifier {
     }
   }
 
+  void switchAppCollapse({bool? b}) {
+    if (b != null) {
+      appCollapsed = b;
+      notifyListeners();
+    } else {
+      appCollapsed = !appCollapsed;
+      notifyListeners();
+    }
+    print('appCollapsed: $appCollapsed');
+  }
+
+  void recordTopState(bool b) {
+    appStayToped = b;
+    notifyListeners();
+  }
+
   Future<void> watchDevicePerformance() async {
+    return;
     if (_isWatchingDevicePerformance) {
       return;
     }

@@ -20,16 +20,16 @@ Future<void> main() async {
   await Window.initialize();
 
   if (Platform.isWindows) {
-    await Window.hideWindowControls();
     doWhenWindowReady(() async {
+      await Window.hideWindowControls();
       const initialSize = Size(800, 472);
       appWindow.minSize = initialSize;
       appWindow.size = initialSize;
       appWindow.alignment = Alignment.center;
-      Window.disableShadow();
+      // Window.disableShadow();
       await Window.setEffect(
         effect: WindowEffect.transparent,
-        color: const Color.fromARGB(94, 189, 168, 230),
+        // color: const Color.fromARGB(94, 189, 168, 230),
         dark: false,
       );
     });
@@ -50,34 +50,45 @@ class MyApp extends StatelessWidget {
         appstate.watchDevicePerformance();
         return appstate;
       },
-      child: MaterialApp.router(
-        theme: ThemeData(
-          fontFamily: 'HYWenHei85w',
-          textTheme: TextTheme(labelSmall: TextStyle(fontSize: 16)),
-        ),
-        routerConfig: GoRouter(
-          initialLocation: '/',
-          routes: <RouteBase>[
-            ShellRoute(
-              builder:
-                  (
-                    BuildContext context,
-                    GoRouterState state,
-                    Widget routeWidget,
-                  ) {
-                    return LayoutBuilder(
-                      builder: (context, constraints) {
-                        context.read<MyAppState>().setScreenWidth(
-                          constraints.maxWidth,
-                        );
-                        context.read<MyAppState>().setScreenHeight(
-                          constraints.maxHeight,
-                        );
-                        return Scaffold(
-                          backgroundColor: Colors.transparent,
-                          body: Column(
-                            children: [
-                              AppTitleBar(),
+      child: RouteredApp(),
+    );
+  }
+}
+
+class RouteredApp extends StatelessWidget {
+  const RouteredApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    var appstate = context.watch<MyAppState>();
+    var appCollapsed = appstate.appCollapsed;
+
+    return MaterialApp.router(
+      theme: ThemeData(
+        fontFamily: 'HYWenHei85w',
+        textTheme: TextTheme(labelSmall: TextStyle(fontSize: 16)),
+      ),
+      routerConfig: GoRouter(
+        initialLocation: '/',
+        routes: <RouteBase>[
+          ShellRoute(
+            builder:
+                (
+                  BuildContext context,
+                  GoRouterState state,
+                  Widget routeWidget,
+                ) {
+                  return LayoutBuilder(
+                    builder: (context, constraints) {
+                      appstate.setScreenWidth(constraints.maxWidth);
+                      appstate.setScreenHeight(constraints.maxHeight);
+
+                      return Scaffold(
+                        backgroundColor: Colors.transparent,
+                        body: Column(
+                          children: [
+                            AppTitleBar(),
+                            if (!appCollapsed)
                               Expanded(
                                 child: Row(
                                   children: [
@@ -86,55 +97,54 @@ class MyApp extends StatelessWidget {
                                   ],
                                 ),
                               ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
-              routes: <RouteBase>[
-                GoRoute(
-                  path: '/',
-                  builder: (BuildContext context, GoRouterState state) {
-                    return HomeScreen();
-                  },
-                  routes: <RouteBase>[
-                    GoRoute(
-                      path: 'settings',
-                      builder: (BuildContext context, GoRouterState state) {
-                        return SettingsScreen();
-                      },
-                    ),
-                    GoRoute(
-                      path: 'websites',
-                      builder: (BuildContext context, GoRouterState state) {
-                        return SiteScreen();
-                      },
-                    ),
-                    GoRoute(
-                      path: 'schedule',
-                      builder: (BuildContext context, GoRouterState state) {
-                        return ScheduleScreen();
-                      },
-                    ),
-                    GoRoute(
-                      path: 'guild',
-                      builder: (BuildContext context, GoRouterState state) {
-                        return GuildScreen();
-                      },
-                    ),
-                    GoRoute(
-                      path: 'wordFlashcards',
-                      builder: (BuildContext context, GoRouterState state) {
-                        return WordFlashcards();
-                      },
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ],
-        ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/',
+                builder: (BuildContext context, GoRouterState state) {
+                  return HomeScreen();
+                },
+                routes: <RouteBase>[
+                  GoRoute(
+                    path: 'settings',
+                    builder: (BuildContext context, GoRouterState state) {
+                      return SettingsScreen();
+                    },
+                  ),
+                  GoRoute(
+                    path: 'websites',
+                    builder: (BuildContext context, GoRouterState state) {
+                      return SiteScreen();
+                    },
+                  ),
+                  GoRoute(
+                    path: 'schedule',
+                    builder: (BuildContext context, GoRouterState state) {
+                      return ScheduleScreen();
+                    },
+                  ),
+                  GoRoute(
+                    path: 'guild',
+                    builder: (BuildContext context, GoRouterState state) {
+                      return GuildScreen();
+                    },
+                  ),
+                  GoRoute(
+                    path: 'wordFlashcards',
+                    builder: (BuildContext context, GoRouterState state) {
+                      return WordFlashcards();
+                    },
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -145,9 +155,6 @@ class AppTitleBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var appState = context.watch<MyAppState>();
-    var cpu = appState.cpu;
-    var memory = appState.memory;
     return WindowTitleBarBox(
       child: Container(
         height: 30,
@@ -169,39 +176,40 @@ class AppTitleBar extends StatelessWidget {
                   padding: const EdgeInsetsGeometry.only(left: 12, right: 0),
                   child: Row(
                     children: [
-                      Text(
-                        'Ktop',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontFamily: 'PARaDOS',
+                      // GestureDetector(
+                      //   onTap: () {
+                      //     print('object');
+                      //     // context.read<MyAppState>().switchAppCollapse();
+                      //   },
+                      //   child: MouseRegion(
+                      //     opaque: false,
+                      //     hitTestBehavior: HitTestBehavior.translucent,
+                      //     cursor: SystemMouseCursors.click,
+                      //     child: Text(
+                      //       'Ktop',
+                      //       style: TextStyle(
+                      //         color: Colors.white,
+                      //         fontFamily: 'PARaDOS',
+                      //       ),
+                      //     ),
+                      //   ),
+                      // ),
+                      TextButton(
+                        onPressed: () {
+                          print('tbtned');
+                        },
+                        child: Text(
+                          'Ktop',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'PARaDOS',
+                          ),
                         ),
                       ),
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: 8),
-                        width: 1,
-                        height: 16,
-                        color: const Color.fromARGB(40, 255, 255, 255),
-                      ),
-                      Text(
-                        padZero(cpu.toInt()),
-                        style: TextStyle(
-                          color: dmcColor(cpu),
-                          fontFamily: 'PARaDOS',
-                        ),
-                      ),
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: 8),
-                        width: 1,
-                        height: 16,
-                        color: const Color.fromARGB(40, 255, 255, 255),
-                      ),
-                      Text(
-                        padZero(memory.toInt()),
-                        style: TextStyle(
-                          color: dmcColor(memory),
-                          fontFamily: 'PARaDOS',
-                        ),
-                      ),
+                      const DividerV(),
+                      CpuNumber(),
+                      const DividerV(),
+                      MemoryNumber(),
                       Expanded(child: SizedBox()),
                       CloseWindowButton(
                         colors: WindowButtonColors(iconNormal: Colors.white),
@@ -214,6 +222,50 @@ class AppTitleBar extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class DividerV extends StatelessWidget {
+  const DividerV({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: EdgeInsets.symmetric(horizontal: 8),
+      width: 1,
+      height: 16,
+      color: const Color.fromARGB(40, 255, 255, 255),
+    );
+  }
+}
+
+class MemoryNumber extends StatelessWidget {
+  const MemoryNumber({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+    var memory = appState.memory;
+
+    return Text(
+      padZero(memory.toInt()),
+      style: TextStyle(color: dmcColor(memory), fontFamily: 'PARaDOS'),
+    );
+  }
+}
+
+class CpuNumber extends StatelessWidget {
+  const CpuNumber({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+    var cpu = appState.cpu;
+
+    return Text(
+      padZero(cpu.toInt()),
+      style: TextStyle(color: dmcColor(cpu), fontFamily: 'PARaDOS'),
     );
   }
 }
