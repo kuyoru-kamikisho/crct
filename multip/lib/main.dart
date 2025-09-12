@@ -169,11 +169,19 @@ class AppTitleBar extends StatelessWidget {
                   padding: const EdgeInsetsGeometry.only(left: 12, right: 0),
                   child: Row(
                     children: [
-                      Text(
-                        'Ktop',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontFamily: 'PARaDOS',
+                      GestureDetector(
+                        onTap: () {
+                          appState.switchAppCollapse();
+                        },
+                        child: MouseRegion(
+                          cursor: SystemMouseCursors.click,
+                          child: Text(
+                            'Ktop',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontFamily: 'PARaDOS',
+                            ),
+                          ),
                         ),
                       ),
                       Container(
