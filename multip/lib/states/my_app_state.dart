@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:isolate';
+import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:multip/tools/dmc.dart';
 import 'package:multip/tools/ip_time.dart';
@@ -11,6 +12,8 @@ class MyAppState extends ChangeNotifier {
   // ----------------------------------全局用----------------------------------
   double appScreenWidth = 320;
   double appScreenHeight = 720;
+  double appLeftToScreenLeft = 0;
+  double appTopToScreenTop = 0;
   bool appCollapsed = false;
   bool appStayToped = false;
 
@@ -134,13 +137,24 @@ class MyAppState extends ChangeNotifier {
     dmc.spawn();
   }
 
-    void switchAppCollapse({bool? b}) {
+  void switchAppCollapse({bool? b}) {
     if (b != null) {
       appCollapsed = b;
       notifyListeners();
     } else {
       appCollapsed = !appCollapsed;
       notifyListeners();
+    }
+    if (appCollapsed) {
+      var collapsedSize = Size(140, 30);
+      appWindow.size = collapsedSize;
+      appWindow.minSize = collapsedSize;
+      appWindow.maxSize = collapsedSize;
+    } else {
+      var expandedSize = Size(800, 472);
+      appWindow.maxSize = null;
+      appWindow.minSize = expandedSize;
+      appWindow.size = expandedSize;
     }
     print('appCollapsed: $appCollapsed');
   }

@@ -75,18 +75,9 @@ class MyApp extends StatelessWidget {
                         );
                         return Scaffold(
                           backgroundColor: Colors.transparent,
-                          body: Column(
-                            children: [
-                              AppTitleBar(),
-                              Expanded(
-                                child: Row(
-                                  children: [
-                                    KNavigator(constraints: constraints),
-                                    Expanded(child: routeWidget),
-                                  ],
-                                ),
-                              ),
-                            ],
+                          body: AppOutestLayout(
+                            routeWidget: routeWidget,
+                            constraints: constraints,
                           ),
                         );
                       },
@@ -140,6 +131,36 @@ class MyApp extends StatelessWidget {
   }
 }
 
+class AppOutestLayout extends StatelessWidget {
+  const AppOutestLayout({
+    super.key,
+    required this.routeWidget,
+    required this.constraints,
+  });
+  final Widget routeWidget;
+  final BoxConstraints constraints;
+
+  @override
+  Widget build(BuildContext context) {
+    var appState = context.watch<MyAppState>();
+    var appCollapsed = appState.appCollapsed;
+    return Column(
+      children: [
+        AppTitleBar(),
+        if (!appCollapsed)
+          Expanded(
+            child: Row(
+              children: [
+                KNavigator(constraints: constraints),
+                Expanded(child: routeWidget),
+              ],
+            ),
+          ),
+      ],
+    );
+  }
+}
+
 class AppTitleBar extends StatelessWidget {
   const AppTitleBar({super.key});
 
@@ -148,6 +169,8 @@ class AppTitleBar extends StatelessWidget {
     var appState = context.watch<MyAppState>();
     var cpu = appState.cpu;
     var memory = appState.memory;
+    var appCollapsed = appState.appCollapsed;
+
     return WindowTitleBarBox(
       child: Container(
         height: 30,
@@ -211,9 +234,10 @@ class AppTitleBar extends StatelessWidget {
                         ),
                       ),
                       Expanded(child: SizedBox()),
-                      CloseWindowButton(
-                        colors: WindowButtonColors(iconNormal: Colors.white),
-                      ),
+                      if (!appCollapsed)
+                        CloseWindowButton(
+                          colors: WindowButtonColors(iconNormal: Colors.white),
+                        ),
                     ],
                   ),
                 ),
