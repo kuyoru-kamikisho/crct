@@ -20,6 +20,7 @@ Future<void> main() async {
   await Window.initialize();
 
   if (Platform.isWindows) {
+    
     await Window.hideWindowControls();
     doWhenWindowReady(() async {
       const initialSize = Size(800, 472);
@@ -171,80 +172,78 @@ class AppTitleBar extends StatelessWidget {
     var memory = appState.memory;
     var appCollapsed = appState.appCollapsed;
 
-    return WindowTitleBarBox(
-      child: Container(
-        height: 30,
-        decoration: BoxDecoration(
-          color: Colors.black54,
-          border: BoxBorder.fromLTRB(
-            bottom: BorderSide(color: const Color.fromARGB(103, 39, 38, 39)),
-          ),
+    return Container(
+      height: 32,
+      decoration: BoxDecoration(
+        color: Colors.black54,
+        border: BoxBorder.fromLTRB(
+          bottom: BorderSide(color: const Color.fromARGB(103, 39, 38, 39)),
         ),
-        child: Row(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onPanStart: (details) {
-                  appWindow.startDragging();
-                },
-                child: Padding(
-                  padding: const EdgeInsetsGeometry.only(left: 12, right: 0),
-                  child: Row(
-                    children: [
-                      GestureDetector(
-                        onTap: () {
-                          appState.switchAppCollapse();
-                        },
-                        child: MouseRegion(
-                          cursor: SystemMouseCursors.click,
-                          child: Text(
-                            'Ktop',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontFamily: 'PARaDOS',
-                            ),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onPanStart: (details) {
+                appWindow.startDragging();
+              },
+              child: Padding(
+                padding: const EdgeInsetsGeometry.only(left: 12, right: 0),
+                child: Row(
+                  children: [
+                    GestureDetector(
+                      onTap: () {
+                        appState.switchAppCollapse();
+                      },
+                      child: MouseRegion(
+                        cursor: SystemMouseCursors.click,
+                        child: Text(
+                          'Ktop',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontFamily: 'PARaDOS',
                           ),
                         ),
                       ),
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: 8),
-                        width: 1,
-                        height: 16,
-                        color: const Color.fromARGB(40, 255, 255, 255),
+                    ),
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: 8),
+                      width: 1,
+                      height: 16,
+                      color: const Color.fromARGB(40, 255, 255, 255),
+                    ),
+                    Text(
+                      padZero(cpu.toInt()),
+                      style: TextStyle(
+                        color: dmcColor(cpu),
+                        fontFamily: 'PARaDOS',
                       ),
-                      Text(
-                        padZero(cpu.toInt()),
-                        style: TextStyle(
-                          color: dmcColor(cpu),
-                          fontFamily: 'PARaDOS',
-                        ),
+                    ),
+                    Container(
+                      margin: EdgeInsets.symmetric(horizontal: 8),
+                      width: 1,
+                      height: 16,
+                      color: const Color.fromARGB(40, 255, 255, 255),
+                    ),
+                    Text(
+                      padZero(memory.toInt()),
+                      style: TextStyle(
+                        color: dmcColor(memory),
+                        fontFamily: 'PARaDOS',
                       ),
-                      Container(
-                        margin: EdgeInsets.symmetric(horizontal: 8),
-                        width: 1,
-                        height: 16,
-                        color: const Color.fromARGB(40, 255, 255, 255),
+                    ),
+                    Expanded(child: SizedBox()),
+                    if (!appCollapsed)
+                      CloseWindowButton(
+                        colors: WindowButtonColors(iconNormal: Colors.white),
                       ),
-                      Text(
-                        padZero(memory.toInt()),
-                        style: TextStyle(
-                          color: dmcColor(memory),
-                          fontFamily: 'PARaDOS',
-                        ),
-                      ),
-                      Expanded(child: SizedBox()),
-                      if (!appCollapsed)
-                        CloseWindowButton(
-                          colors: WindowButtonColors(iconNormal: Colors.white),
-                        ),
-                    ],
-                  ),
+                  ],
                 ),
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
