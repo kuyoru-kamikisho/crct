@@ -268,19 +268,34 @@ class _SchedulesContainerState extends State<SchedulesContainer>
                                 horizontal: 12,
                               ),
                               child: Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment: MainAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    time.name,
-                                    style: TextStyle(
-                                      letterSpacing: 1,
-                                      color: _foregeColor(
-                                        time.hovering.value,
-                                        time.running.value,
+                                  SizedBox(
+                                    width: 320,
+                                    child: Text(
+                                      time.name,
+                                      style: TextStyle(
+                                        letterSpacing: 1,
+                                        color: _foregeColor(
+                                          time.hovering.value,
+                                          time.running.value,
+                                        ),
                                       ),
                                     ),
                                   ),
+                                  Text(
+                                    '剩余时间: ${formatMillisecondsAsCountdown(time.remainTime)}',
+                                    style: TextStyle(
+                                      fontFamily: 'PARaDOS',
+                                      color: const Color.fromARGB(
+                                        92,
+                                        255,
+                                        255,
+                                        255,
+                                      ),
+                                    ),
+                                  ),
+                                  Expanded(child: SizedBox()),
                                   IconButton(
                                     constraints: BoxConstraints(),
                                     padding: EdgeInsets.zero,

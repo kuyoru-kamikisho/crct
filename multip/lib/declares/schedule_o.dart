@@ -136,6 +136,10 @@ class TimerO {
     required this.period,
   });
 
+  int get remainTime {
+    return startTime.value + delay * 1000 - currentTime.value;
+  }
+
   void run() {
     if (running.value) return;
 
@@ -210,4 +214,21 @@ class ScheduleMap {
       times: (json['times'] as List).map((i) => TimerO.fromJson(i)).toList(),
     );
   }
+}
+
+String formatMillisecondsAsCountdown(int milliseconds) {
+  // 计算总秒数
+  int totalSeconds = milliseconds ~/ 1000;
+  
+  // 计算小时、分钟、秒
+  int hours = totalSeconds ~/ 3600;
+  int minutes = (totalSeconds % 3600) ~/ 60;
+  int seconds = totalSeconds % 60;
+  
+  // 格式化字符串
+  final hourStr = hours.toString().padLeft(2, '0');
+  final minuteStr = minutes.toString().padLeft(2, '0');
+  final secondStr = seconds.toString().padLeft(2, '0');
+  
+  return '$hourStr:$minuteStr:$secondStr';
 }
