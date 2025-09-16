@@ -1,9 +1,8 @@
 import 'dart:io';
-import 'dart:ui';
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:multip/extensions/collection.dart';
 
-// CMD的类型
 class CmdO {
   final String id;
   final bool deleteAble;
@@ -12,8 +11,9 @@ class CmdO {
   final String? macCmd;
   final String? linuxCmd;
 
-  bool hovering = false;
-  bool running = false;
+  // 使用 ValueNotifier 包装状态
+  final ValueNotifier<bool> hovering = ValueNotifier(false);
+  final ValueNotifier<bool> running = ValueNotifier(false);
 
   Process? _process;
   VoidCallback? onRun;
@@ -39,6 +39,11 @@ class CmdO {
     final cmd = cmdForCurrentPlatform;
     if (cmd.isEmpty) return;
 
+    // 如果已经在运行，先停止
+    if (running.value) {
+      await stop();
+    }
+
     try {
       final parts = cmd.split(' ');
       final executable = parts.first;
@@ -46,23 +51,47 @@ class CmdO {
 
       _process = await Process.start(executable, arguments, runInShell: true);
 
-      running = true;
+      running.value = true;
       onRun?.call();
 
-      await _process!.exitCode;
-      running = false;
-      onStop?.call();
+      // 监听进程退出
+      _process!.exitCode
+          .then((code) {
+            running.value = false;
+            onStop?.call();
+          })
+          .catchError((e) {
+            running.value = false;
+            onStop?.call();
+          });
     } catch (e) {
       print('启动失败: $e');
+      running.value = false;
     }
   }
 
   Future<void> stop() async {
-    if (_process != null && running) {
-      _process!.kill();
-      running = false;
-      onStop?.call();
+    if (_process != null && running.value) {
+      try {
+        _process!.kill();
+        running.value = false;
+        onStop?.call();
+      } catch (e) {
+        print('停止失败: $e');
+      }
     }
+  }
+
+  // 设置悬停状态
+  void setHovering(bool value) {
+    hovering.value = value;
+  }
+
+  // 清理资源
+  void dispose() {
+    _process?.kill();
+    hovering.dispose();
+    running.dispose();
   }
 
   factory CmdO.fromJson(Map<String, dynamic> json) {
@@ -83,25 +112,20 @@ class TimerO {
   final String bindCmd;
   final String bindRecord;
   final String tiptext;
-  // 等待时间，等待结束后立即执行
   final int delay;
+  final int period;
 
   Timer? _timer;
-  bool running = false;
-  bool hovering = false;
+
+  final ValueNotifier<bool> running = ValueNotifier(false);
+  final ValueNotifier<bool> hovering = ValueNotifier(false);
+  final ValueNotifier<int> startTime = ValueNotifier(0);
+  final ValueNotifier<int> currentTime = ValueNotifier(0);
+  final ValueNotifier<double> progress = ValueNotifier(0.0);
+
   VoidCallback? onRun;
   VoidCallback? onStop;
   VoidCallback? onTimeReached;
-  VoidCallback? onStateChanged;
-
-  // 持续时间，持续时间到后强制结束：秒
-  final int period;
-  // 启动时间：毫秒
-  int startTime = 0;
-  // 当前进行到的时间：毫秒
-  int currentTime = 0;
-  // 当前执行进度 0 ~ 1
-  double progress = 0.0;
 
   TimerO({
     required this.name,
@@ -112,29 +136,23 @@ class TimerO {
     required this.period,
   });
 
-  void run(VoidCallback? notifier) {
-    if (running) return;
-    if (notifier != null) onStateChanged = notifier;
+  void run() {
+    if (running.value) return;
 
-    running = true;
-    startTime = DateTime.now().millisecondsSinceEpoch;
-    currentTime = startTime;
-    progress = 0.0;
+    running.value = true;
+    startTime.value = DateTime.now().millisecondsSinceEpoch;
+    currentTime.value = startTime.value;
+    progress.value = 0.0;
 
-    if (onRun != null) {
-      onRun!();
-    }
+    onRun?.call();
 
-    _notify();
+    _timer = Timer.periodic(const Duration(milliseconds: 100), (timer) {
+      currentTime.value = DateTime.now().millisecondsSinceEpoch;
+      final elapsedSeconds = (currentTime.value - startTime.value) / 1000;
 
-    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
-      currentTime = DateTime.now().millisecondsSinceEpoch;
-      final elapsedSeconds = (currentTime - startTime) / 1000;
+      progress.value = (elapsedSeconds / delay).clamp(0.0, 1.0);
 
-      progress = (elapsedSeconds / delay).clamp(0.0, 1.0);
-      _notify();
-
-      if (progress >= 1.0) {
+      if (progress.value >= 1.0) {
         onTimeReached?.call();
         stop();
       }
@@ -144,18 +162,21 @@ class TimerO {
   void stop() {
     _timer?.cancel();
     _timer = null;
-    running = false;
-    startTime = 0;
-    currentTime = 0;
-    progress = 0.0;
-    _notify();
-    if (onStop != null) {
-      onStop!();
-    }
+    running.value = false;
+    startTime.value = 0;
+    currentTime.value = 0;
+    progress.value = 0.0;
+    onStop?.call();
   }
 
-  void _notify() {
-    onStateChanged?.call();
+  void dispose() {
+    _timer?.cancel();
+    running.dispose();
+    hovering.dispose();
+    startTime.dispose();
+    currentTime.dispose();
+    progress.dispose();
+    print('data disposed.');
   }
 
   factory TimerO.fromJson(Map<String, dynamic> json) {

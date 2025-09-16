@@ -195,7 +195,8 @@ class _SchedulesContainerState extends State<SchedulesContainer>
 
   @override
   Widget build(BuildContext context) {
-    var scheduleMap = context.watch<MyAppState>().scheduleMap;
+    var appState = context.watch<MyAppState>();
+    var scheduleMap = appState.scheduleMap;
     final scrollController = ScrollController();
 
     if (scheduleMap == null) {
@@ -222,11 +223,16 @@ class _SchedulesContainerState extends State<SchedulesContainer>
                 if (widget.activeTabIndex == 0)
                   for (TimerO time in scheduleMap.times)
                     MouseRegion(
-                      onEnter: (_) => setState(() => time.hovering = true),
-                      onExit: (_) => setState(() => time.hovering = false),
+                      onEnter: (_) =>
+                          setState(() => time.hovering.value = true),
+                      onExit: (_) =>
+                          setState(() => time.hovering.value = false),
                       child: Container(
                         margin: EdgeInsets.only(bottom: 6),
-                        color: _backgroundColor(time.hovering, time.running),
+                        color: _backgroundColor(
+                          time.hovering.value,
+                          time.running.value,
+                        ),
                         child: Stack(
                           children: [
                             Positioned.fill(
@@ -236,7 +242,8 @@ class _SchedulesContainerState extends State<SchedulesContainer>
                                   builder: (context, constraints) {
                                     return AnimatedContainer(
                                       width:
-                                          constraints.maxWidth * time.progress,
+                                          constraints.maxWidth *
+                                          time.progress.value,
                                       duration: const Duration(
                                         milliseconds: 200,
                                       ),
@@ -269,8 +276,8 @@ class _SchedulesContainerState extends State<SchedulesContainer>
                                     style: TextStyle(
                                       letterSpacing: 1,
                                       color: _foregeColor(
-                                        time.hovering,
-                                        time.running,
+                                        time.hovering.value,
+                                        time.running.value,
                                       ),
                                     ),
                                   ),
@@ -279,32 +286,30 @@ class _SchedulesContainerState extends State<SchedulesContainer>
                                     padding: EdgeInsets.zero,
                                     onPressed: () {
                                       setState(() {
-                                        if (time.running) {
+                                        if (time.running.value) {
                                           time.stop();
                                         } else {
-                                          time.onStop = () => context
-                                              .read<MyAppState>()
-                                              .deleteASchedule();
-                                          time.onRun = () => context
-                                              .read<MyAppState>()
-                                              .addASchedule();
+                                          time.onStop = () =>
+                                              appState.deleteASchedule();
+                                          time.onRun = () =>
+                                              appState.addASchedule();
                                           time.onTimeReached = () {
                                             var cmd = scheduleMap.findCmdById(
                                               time.bindCmd,
                                             );
                                             cmd?.run();
                                           };
-                                          time.run(() => setState(() {}));
+                                          time.run();
                                         }
                                       });
                                     },
                                     icon: Icon(
-                                      time.running
+                                      time.running.value
                                           ? Icons.stop_circle_outlined
                                           : Icons.play_circle_outline,
                                       color: _foregeColor(
-                                        time.hovering,
-                                        time.running,
+                                        time.hovering.value,
+                                        time.running.value,
                                       ),
                                     ),
                                   ),
@@ -323,15 +328,15 @@ class _SchedulesContainerState extends State<SchedulesContainer>
                 if (widget.activeTabIndex == 2)
                   for (CmdO cmd in scheduleMap.cmds)
                     MouseRegion(
-                      onEnter: (_) => setState(() => cmd.hovering = true),
-                      onExit: (_) => setState(() => cmd.hovering = false),
+                      onEnter: (_) => setState(() => cmd.hovering.value = true),
+                      onExit: (_) => setState(() => cmd.hovering.value = false),
                       child: Row(
                         children: [
                           Expanded(
                             child: Container(
                               color: _backgroundColor(
-                                cmd.hovering,
-                                cmd.running,
+                                cmd.hovering.value,
+                                cmd.running.value,
                               ),
                               margin: EdgeInsets.only(bottom: 6),
                               padding: EdgeInsets.symmetric(
@@ -347,8 +352,8 @@ class _SchedulesContainerState extends State<SchedulesContainer>
                                       style: TextStyle(
                                         letterSpacing: 1,
                                         color: _foregeColor(
-                                          cmd.hovering,
-                                          cmd.running,
+                                          cmd.hovering.value,
+                                          cmd.running.value,
                                         ),
                                       ),
                                     ),
@@ -372,7 +377,7 @@ class _SchedulesContainerState extends State<SchedulesContainer>
                                       cmd.onRun = () => setState(() {});
                                       cmd.onStop = () => setState(() {});
                                       setState(() {
-                                        if (cmd.running) {
+                                        if (cmd.running.value) {
                                           cmd.stop();
                                         } else {
                                           cmd.run();
@@ -380,12 +385,12 @@ class _SchedulesContainerState extends State<SchedulesContainer>
                                       });
                                     },
                                     icon: Icon(
-                                      cmd.running
+                                      cmd.running.value
                                           ? Icons.stop_circle_outlined
                                           : Icons.play_circle_outline,
                                       color: _foregeColor(
-                                        cmd.hovering,
-                                        cmd.running,
+                                        cmd.hovering.value,
+                                        cmd.running.value,
                                       ),
                                     ),
                                   ),

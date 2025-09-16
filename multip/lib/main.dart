@@ -11,6 +11,7 @@ import 'package:multip/screens/site_screen.dart';
 import 'package:multip/screens/word_flashcards.dart';
 import 'package:multip/states/my_app_state.dart';
 import 'package:multip/tools/ip_time.dart';
+import 'package:multip/tools/window_shadow.dart';
 import 'package:multip/widgets/k_navigator.dart';
 import 'package:provider/provider.dart';
 import 'package:go_router/go_router.dart';
@@ -20,7 +21,6 @@ Future<void> main() async {
   await Window.initialize();
 
   if (Platform.isWindows) {
-    
     await Window.hideWindowControls();
     doWhenWindowReady(() async {
       const initialSize = Size(800, 472);
@@ -28,6 +28,7 @@ Future<void> main() async {
       appWindow.size = initialSize;
       appWindow.alignment = Alignment.center;
       Window.disableShadow();
+      removeWindows11RoundedCorners();
       await Window.setEffect(
         effect: WindowEffect.transparent,
         color: const Color.fromARGB(94, 189, 168, 230),
