@@ -104,7 +104,7 @@ class _KNavigatorState extends State<KNavigator> {
                           foregroundColor: Colors.white,
                         ),
                         child: SizedBox(
-                          height: 36,
+                          height: 34,
                           child: Row(
                             // 'spacing' property is not available for Row.
                             // Use SizedBox(width: X) for horizontal spacing.
@@ -136,9 +136,7 @@ class _KNavigatorState extends State<KNavigator> {
                                               17,
                                             )
                                           : Colors.white,
-                                      fontSize: Theme.of(
-                                        context,
-                                      ).textTheme.labelSmall!.fontSize,
+                                      fontSize: 13,
                                     ),
                                     overflow: TextOverflow.ellipsis,
                                     maxLines: 1,

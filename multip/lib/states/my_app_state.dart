@@ -2,6 +2,8 @@ import 'dart:async';
 import 'dart:isolate';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_acrylic/window.dart';
+import 'package:flutter_acrylic/window_effect.dart';
 import 'package:multip/tools/dmc.dart';
 import 'package:multip/tools/ip_time.dart';
 import 'package:multip/declares/schedule_o.dart';
@@ -150,11 +152,21 @@ class MyAppState extends ChangeNotifier {
       appWindow.size = collapsedSize;
       appWindow.minSize = collapsedSize;
       appWindow.maxSize = collapsedSize;
+      Window.setEffect(
+        effect: WindowEffect.transparent,
+        color: Colors.transparent,
+        dark: false,
+      );
     } else {
       var expandedSize = Size(800, 472);
-      appWindow.maxSize = null;
+      appWindow.maxSize = expandedSize;
       appWindow.minSize = expandedSize;
       appWindow.size = expandedSize;
+      Window.setEffect(
+        effect: WindowEffect.transparent,
+        color: const Color.fromARGB(94, 189, 168, 230),
+        dark: false,
+      );
     }
     print('appCollapsed: $appCollapsed');
   }
