@@ -4,7 +4,7 @@
             "id": "shutdown",
             "deleteAble": false,
             "name": "强制关机",
-            "winCmd": "shutdown /s /f /t 0",
+            "winCmd": "shutdown /s /t 0",
             "macCmd": "sudo shutdown -h now",
             "linuxCmd": "sudo systemctl poweroff -i"
         },
