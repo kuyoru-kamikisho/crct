@@ -1,8 +1,7 @@
 import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_acrylic/window.dart';
-import 'package:flutter_acrylic/window_effect.dart';
+import 'package:flutter_acrylic/flutter_acrylic.dart';
 import 'package:multip/screens/guild_screen.dart';
 import 'package:multip/screens/home_screen.dart';
 import 'package:multip/screens/schedule_screen.dart';
