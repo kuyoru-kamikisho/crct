@@ -51,6 +51,12 @@ class _KNavigatorState extends State<KNavigator> {
       'selectedIcon': const Icon(Icons.settings),
       'path': '/settings',
     },
+    {
+      'label': '关于',
+      'icon': const Icon(Icons.info_outline),
+      'selectedIcon': const Icon(Icons.info),
+      'path': '/about',
+    },
   ];
 
   @override

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:bitsdojo_window/bitsdojo_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_acrylic/flutter_acrylic.dart';
+import 'package:multip/screens/about_screen.dart';
 import 'package:multip/screens/guild_screen.dart';
 import 'package:multip/screens/home_screen.dart';
 import 'package:multip/screens/schedule_screen.dart';
@@ -120,6 +121,12 @@ class MyApp extends StatelessWidget {
                       path: 'wordFlashcards',
                       builder: (BuildContext context, GoRouterState state) {
                         return WordFlashcards();
+                      },
+                    ),
+                    GoRoute(
+                      path: 'about',
+                      builder: (BuildContext context, GoRouterState state) {
+                        return AboutScreen();
                       },
                     ),
                   ],
