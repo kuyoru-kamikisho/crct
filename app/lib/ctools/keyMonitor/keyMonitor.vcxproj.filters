@@ -18,13 +18,16 @@
     <ClCompile Include="keyMonitor.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="KeyMouseMonitor.cpp">
+    <ClCompile Include="InputHook.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="KeyMouseMonitor.h">
+    <ClInclude Include="InputHook.h">
       <Filter>头文件</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
   </ItemGroup>
 </Project>

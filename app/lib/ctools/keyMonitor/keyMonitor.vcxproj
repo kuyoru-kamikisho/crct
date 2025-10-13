@@ -128,10 +128,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="keyMonitor.cpp" />
-    <ClCompile Include="KeyMouseMonitor.cpp" />
+    <ClCompile Include="InputHook.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="KeyMouseMonitor.h" />
+    <ClInclude Include="InputHook.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
