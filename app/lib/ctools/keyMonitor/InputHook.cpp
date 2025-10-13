@@ -68,8 +68,20 @@ std::map<int, std::string> mouseButtonMap = {
 	{WM_RBUTTONDOWN, "rightclick"},
 	{WM_RBUTTONUP, "rightclick"},
 	{WM_MBUTTONDOWN, "middleclick"},
-	{WM_MBUTTONUP, "middleclick"}
+	{WM_MBUTTONUP, "middleclick"},
+	{WM_XBUTTONDOWN, "xbutton"},
+	{WM_XBUTTONUP, "xbutton"}
 };
+
+// 鼠标滚轮方向映射
+std::map<short, std::string> wheelDirectionMap = {
+	{1, "up"},
+	{-1, "down"}
+};
+
+// 配置选项
+static bool g_enableMouseMove = true;  // 是否启用鼠标移动监听
+static int g_mouseMoveThreshold = 5;   // 鼠标移动报告阈值（像素），避免过于频繁的报告
 
 // 获取键名
 std::string GetKeyName(int vkCode) {
@@ -91,6 +103,13 @@ std::string GetMouseButtonName(int message) {
 		return it->second;
 	}
 	return "unknown";
+}
+
+// 获取鼠标滚轮方向
+std::string GetWheelDirection(short delta) {
+	if (delta > 0) return "up";
+	if (delta < 0) return "down";
+	return "none";
 }
 
 // 键盘钩子过程
@@ -122,16 +141,56 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
 		MSLLHOOKSTRUCT* mouseStruct = (MSLLHOOKSTRUCT*)lParam;
 
 		std::string eventType;
-		if (wParam == WM_LBUTTONDOWN || wParam == WM_RBUTTONDOWN || wParam == WM_MBUTTONDOWN) {
+		std::stringstream ss;
+
+		switch (wParam) {
+		case WM_MOUSEMOVE:
+			if (g_enableMouseMove) {
+				// 报告鼠标移动事件
+				ss << "mousemove " << mouseStruct->pt.x << "," << mouseStruct->pt.y;
+				g_callback(ss.str().c_str());
+			}
+			break;
+
+		case WM_LBUTTONDOWN:
+		case WM_RBUTTONDOWN:
+		case WM_MBUTTONDOWN:
+		case WM_XBUTTONDOWN:
 			eventType = "mousedown";
-		}
-		else if (wParam == WM_LBUTTONUP || wParam == WM_RBUTTONUP || wParam == WM_MBUTTONUP) {
+			break;
+
+		case WM_LBUTTONUP:
+		case WM_RBUTTONUP:
+		case WM_MBUTTONUP:
+		case WM_XBUTTONUP:
 			eventType = "mouseup";
+			break;
+
+		case WM_MOUSEWHEEL:
+		{
+			// 鼠标滚轮事件
+			int delta = GET_WHEEL_DELTA_WPARAM(mouseStruct->mouseData);
+			std::string direction = GetWheelDirection(static_cast<short>(delta));
+			ss << "mousewheel " << direction << " " << mouseStruct->pt.x << "," << mouseStruct->pt.y;
+			g_callback(ss.str().c_str());
+		}
+		break;
+
+		case WM_MOUSEHWHEEL:
+		{
+			// 鼠标水平滚轮事件
+			int delta = GET_WHEEL_DELTA_WPARAM(mouseStruct->mouseData);
+			std::string direction = GetWheelDirection(static_cast<short>(delta));
+			ss << "mousehwheel " << direction << " " << mouseStruct->pt.x << "," << mouseStruct->pt.y;
+			g_callback(ss.str().c_str());
+		}
+		break;
 		}
 
+		// 处理鼠标按钮事件
 		if (!eventType.empty()) {
 			std::string buttonName = GetMouseButtonName(wParam);
-			std::stringstream ss;
+			ss.str(""); // 清空stringstream
 			ss << eventType << " " << buttonName << " " << mouseStruct->pt.x << "," << mouseStruct->pt.y;
 			g_callback(ss.str().c_str());
 		}
@@ -203,7 +262,12 @@ void StopListening() {
 	g_isListening = false;
 
 	// 发送一个空消息来唤醒消息循环
-	PostThreadMessage(GetThreadId(g_hookThread.native_handle()), WM_NULL, 0, 0);
+	if (g_hookThread.joinable()) {
+		DWORD threadId = GetThreadId(g_hookThread.native_handle());
+		if (threadId != 0) {
+			PostThreadMessage(threadId, WM_NULL, 0, 0);
+		}
+	}
 
 	if (g_hookThread.joinable()) {
 		g_hookThread.join();
