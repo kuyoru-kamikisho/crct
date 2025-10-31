@@ -7,6 +7,7 @@ import 'package:flutter_acrylic/window_effect.dart';
 import 'package:multip/tools/dmc.dart';
 import 'package:multip/tools/ip_time.dart';
 import 'package:multip/declares/schedule_o.dart';
+import 'package:multip/tools/key_monitor.dart';
 
 /// 全局存储
 class MyAppState extends ChangeNotifier {
@@ -48,6 +49,9 @@ class MyAppState extends ChangeNotifier {
   double get disk => _dsk;
   double get memory => _mem;
   int get battery => _btt;
+
+  // ----------------------------------设备事件监听与触发模块----------------------------------
+  final keyMonitorManager = KeyMonitorManager();
 
   // ----------------------------------[函数区]----------------------------------
   void setScreenWidth(double n) {
