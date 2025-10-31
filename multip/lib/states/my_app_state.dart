@@ -36,7 +36,7 @@ class MyAppState extends ChangeNotifier {
   Timer? _timerW;
   WeatherO? weather;
 
-  // ----------------------------------设备基础参数----------------------------------
+  // ----------------------------------设备性能变量区----------------------------------
   final ReceivePort _receivePort = ReceivePort();
   bool _isWatchingDevicePerformance = false;
   double _cpu = 0;
