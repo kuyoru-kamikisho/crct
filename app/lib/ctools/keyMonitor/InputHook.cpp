@@ -38,9 +38,12 @@ std::map<int, std::string> keyMap = {
 	{VK_SPACE, "space"}, {VK_BACK, "backspace"}, {VK_DELETE, "delete"},
 	{VK_INSERT, "insert"}, {VK_HOME, "home"}, {VK_END, "end"},
 	{VK_PRIOR, "pageup"}, {VK_NEXT, "pagedown"},
+	{0xA0,"leftShift"},{0xA1,"rightShift"},
+	{0xA2,"leftCtrl"},{0xA3,"rightCtrl"},
+	{0xA4,"leftAlt"},{0xA5,"rightAlt"},
 
 	// ·½Ïò¼ü
-	{VK_UP, "up"}, {VK_DOWN, "down"}, {VK_LEFT, "left"}, {VK_RIGHT, "right"},
+	{ VK_UP, "up" }, {VK_DOWN, "down"}, {VK_LEFT, "left"}, {VK_RIGHT, "right"},
 
 	// ·ûºÅ¼ü
 	{VK_OEM_COMMA, ","}, {VK_OEM_PERIOD, "."}, {VK_OEM_2, "/"},
