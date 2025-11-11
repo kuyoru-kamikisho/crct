@@ -50,7 +50,6 @@ class MyApp extends StatelessWidget {
     return ChangeNotifierProvider(
       create: (_) {
         var appstate = MyAppState();
-        appstate.keyMonitorManager.startMonitoring();
         appstate.watchDevicePerformance();
         return appstate;
       },

@@ -18,7 +18,7 @@ typedef StopListening = void Function();
 typedef IsListeningC = ffi.Int32 Function();
 typedef IsListening = int Function();
 
-// 回调函数类型定义 - 根据你的C++头文件定义修正
+// 回调函数类型定义
 typedef EventCallbackC = ffi.Void Function(ffi.Pointer<ffi.Int8> eventStr);
 typedef EventCallbackDart = void Function(ffi.Pointer<ffi.Int8> eventStr);
 
@@ -29,7 +29,6 @@ class KeyMonitor {
   late StartListening _startListening;
   late StopListening _stopListening;
   late IsListening _isListening;
-  static KeyMonitor? _currentInstance;
 
   /// 用来将信息发送到该主线程接口
   late SendPort mainPort1;
@@ -39,6 +38,9 @@ class KeyMonitor {
 
   // 保存回调指针，避免被GC
   late ffi.Pointer<ffi.NativeFunction<EventCallbackC>> _callbackPointer;
+
+  // 静态引用，用于在静态回调中访问实例
+  static KeyMonitor? _currentInstance;
 
   KeyMonitor({required this.mainPort1});
 
@@ -58,6 +60,9 @@ class KeyMonitor {
 
   /// 在隔离体中初始化
   void _initializeInIsolate() {
+    // 设置当前实例引用
+    _currentInstance = this;
+
     _loadLibrary();
     _setupCallbacks();
     _setupMessageHandling();
@@ -98,31 +103,36 @@ class KeyMonitor {
   }
 
   void _setupCallbacks() {
-    // 设置当前实例引用
-    _currentInstance = this;
-
-    // 使用静态函数
-    _callbackPointer = ffi.Pointer.fromFunction<EventCallbackC>(_staticOnEvent);
+    // 使用静态函数创建回调指针
+    _callbackPointer = ffi.Pointer.fromFunction<EventCallbackC>(_onEventStatic);
   }
 
-  /// 静态事件回调函数
-  static void _staticOnEvent(ffi.Pointer<ffi.Int8> eventStr) {
+  /// 静态事件回调函数 - 现在在隔离体内部
+  static void _onEventStatic(ffi.Pointer<ffi.Int8> eventStr) {
+    try {
+      // 通过静态引用调用实例方法
+      _currentInstance?._onEvent(eventStr);
+    } catch (e) {
+      print('Error in static event callback: $e');
+    }
+  }
+
+  /// 实例事件回调函数
+  void _onEvent(ffi.Pointer<ffi.Int8> eventStr) {
     try {
       String event = eventStr.cast<Utf8>().toDartString();
-      print('Input Event: $event');
+      print('Input Event in Isolate: $event');
 
-      // 通过静态引用访问当前实例
-      if (_currentInstance != null) {
-        _currentInstance!._handleNativeEvent(event);
-      }
+      // 直接处理事件，因为我们在正确的隔离体中
+      _handleNativeEvent(event);
     } catch (e) {
-      print('Error processing event in static callback: $e');
+      print('Error processing event in callback: $e');
     }
   }
 
   /// 处理来自原生的事件
   void _handleNativeEvent(String event) {
-    // 在这里处理事件，可以通过SendPort发送给主线程
+    // 通过SendPort发送给主线程
     mainPort1.send({'type': 'key_event', 'data': event});
   }
 
@@ -146,27 +156,32 @@ class KeyMonitor {
     switch (msg['type']) {
       case 'start':
         startListening();
+        break;
       case 'stop':
         stopListening();
+        break;
       case 'status':
         final status = isListening();
         mainPort1.send({'type': 'status', 'listening': status});
+        break;
     }
   }
 
   /// 清理资源
   void _cleanup() {
-    // 清理静态引用
-    _currentInstance = null;
     stopListening();
     selfPort1.close();
+    // 清除静态引用
+    _currentInstance = null;
     mainPort1.send({'type': 'closed'});
+    // 注意：这里不能关闭隔离体自身，由创建者负责
   }
 
   /// 开始监听
   bool startListening() {
     try {
       final result = _startListening(_callbackPointer);
+      print('Start listening result: $result');
       return result != 0;
     } catch (e) {
       print('Error starting listener: $e');
@@ -178,6 +193,7 @@ class KeyMonitor {
   void stopListening() {
     try {
       _stopListening();
+      print('Stop listening called');
     } catch (e) {
       print('Error stopping listener: $e');
     }
@@ -200,7 +216,7 @@ class KeyMonitorManager {
   SendPort? _portOfMonitor;
   KeyMonitor? _keyMonitorInstance;
   bool _isRunning = false;
-  bool _isMonitoring = false; // 监听状态
+  bool _isMonitoring = false;
 
   void start() {
     if (_isRunning) return;
@@ -218,33 +234,37 @@ class KeyMonitorManager {
         case 'port':
           _portOfMonitor = message['port'] as SendPort;
           print('Key monitor port received');
-          // 端口就绪后，自动开始监听（根据当前状态）
-          if (_isMonitoring) {
-            _sendStartCommand();
-          }
+          // 等待一小段时间确保隔离体完全初始化
+          Future.delayed(Duration(milliseconds: 100), () {
+            if (_isMonitoring) {
+              _sendStartCommand();
+            }
+          });
+          break;
         case 'key_event':
           _onKeyEvent(message['data'] as String);
+          break;
         case 'closed':
           print('Key monitor closed');
           _cleanup();
+          break;
         case 'status':
           print('Listening status: ${message['listening']}');
+          break;
       }
     }
   }
 
   void _onKeyEvent(String event) {
     if (_isMonitoring) {
-      // 只有在监听状态下才处理事件
       print('Key event: $event');
-      // 处理键盘事件
+      // 在这里处理键盘事件
     }
   }
 
   /// 开始/恢复监听
   void startMonitoring() {
     if (!_isRunning) {
-      // 如果隔离体没运行，先启动
       start();
     }
 
@@ -253,7 +273,6 @@ class KeyMonitorManager {
     if (_portOfMonitor != null) {
       _sendStartCommand();
     }
-    // 如果端口还没就绪，会在 port 消息中自动开始
   }
 
   /// 停止监听（但不关闭隔离体）
@@ -292,8 +311,8 @@ class KeyMonitorManager {
   }
 
   void dispose() {
+    stop();
     _keyMonitorPort.close();
-    _cleanup();
   }
 
   // 检查当前状态
