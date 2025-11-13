@@ -46,8 +46,8 @@ export default {
         wsInstance.send('hello')
       }
       wsInstance.onmessage = e => {
-        console.log(e)
-        this.wsMessage += e
+        console.log('收到消息:', e.data)
+        this.wsMessage += e.data + '\n'
       }
       wsInstance.onclose = e => {
         this.status = STATUS_ENUMS[5]

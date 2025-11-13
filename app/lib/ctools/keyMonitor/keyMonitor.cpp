@@ -1,4 +1,7 @@
-﻿#include <iostream>
+﻿#include <openssl/sha.h>
+#include <openssl/evp.h>
+#include <iomanip>
+#include <iostream>
 #include <string>
 #include <thread>
 #include <chrono>
@@ -241,8 +244,99 @@ void SendWSMessage(const std::string& message) {
 	}
 }
 
+// Base64编码函数
+std::string base64_encode(const std::string& input) {
+	const char base64_chars[] =
+		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+		"abcdefghijklmnopqrstuvwxyz"
+		"0123456789+/";
+
+	std::string output;
+	int val = 0, valb = -6;
+	for (unsigned char c : input) {
+		val = (val << 8) + c;
+		valb += 8;
+		while (valb >= 0) {
+			output.push_back(base64_chars[(val >> valb) & 0x3F]);
+			valb -= 6;
+		}
+	}
+	if (valb > -6) {
+		output.push_back(base64_chars[((val << 8) >> (valb + 8)) & 0x3F]);
+	}
+	while (output.size() % 4) {
+		output.push_back('=');
+	}
+	return output;
+}
+
+// 处理WebSocket握手
+bool PerformWebSocketHandshake(SOCKET clientSocket) {
+	char buffer[2048];
+	int bytesReceived = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
+	if (bytesReceived <= 0) {
+		return false;
+	}
+
+	buffer[bytesReceived] = '\0';
+	std::string request(buffer);
+
+	// 检查是否是WebSocket升级请求
+	if (request.find("Upgrade: websocket") == std::string::npos) {
+		return false;
+	}
+
+	// 提取Sec-WebSocket-Key
+	std::string websocketKey;
+	size_t keyStart = request.find("Sec-WebSocket-Key: ");
+	if (keyStart != std::string::npos) {
+		keyStart += 19;
+		size_t keyEnd = request.find("\r\n", keyStart);
+		websocketKey = request.substr(keyStart, keyEnd - keyStart);
+	}
+
+	if (websocketKey.empty()) {
+		return false;
+	}
+
+	// 生成Accept key (key + magic string, then SHA1, then base64)
+	std::string magicString = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
+	std::string combined = websocketKey + magicString;
+
+	unsigned char sha1Hash[SHA_DIGEST_LENGTH];
+	SHA1(reinterpret_cast<const unsigned char*>(combined.c_str()), combined.length(), sha1Hash);
+
+	std::string acceptKey = base64_encode(std::string(reinterpret_cast<char*>(sha1Hash), SHA_DIGEST_LENGTH));
+
+	// 发送握手响应
+	std::string response =
+		"HTTP/1.1 101 Switching Protocols\r\n"
+		"Upgrade: websocket\r\n"
+		"Connection: Upgrade\r\n"
+		"Sec-WebSocket-Accept: " + acceptKey + "\r\n\r\n";
+
+	if (send(clientSocket, response.c_str(), response.length(), 0) <= 0) {
+		return false;
+	}
+
+	return true;
+}
+
 // 处理WebSocket客户端
 void HandleWSClient() {
+	// 执行WebSocket握手
+	if (!PerformWebSocketHandshake(wsClientSocket)) {
+		std::cout << "WebSocket握手失败" << std::endl;
+		wsClientConnected = false;
+		return;
+	}
+
+	std::cout << "WebSocket握手成功，连接已建立" << std::endl;
+
+	// 发送欢迎消息
+	SendWSMessage("WebSocket连接已建立");
+	SendWSMessage("可用命令: start, stop, status, count, clear, exit");
+
 	char buffer[1024];
 	while (wsClientConnected) {
 		// 发送队列中的消息
@@ -396,7 +490,7 @@ bool StartWSServer(int port) {
 
 	CleanupNetwork();
 	return true;
-}
+	}
 
 // 解析命令行参数
 bool ParseCommandLine(int argc, char* argv[], std::string& mode, int& port) {
