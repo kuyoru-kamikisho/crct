@@ -47,3 +47,4 @@ android/app/release
 Release
 Debug
 node_modules
+yarn.lock
