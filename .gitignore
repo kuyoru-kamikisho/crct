@@ -46,3 +46,4 @@ android/app/release
 .vs
 Release
 Debug
+node_modules
