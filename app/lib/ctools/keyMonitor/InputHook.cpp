@@ -5,6 +5,7 @@
 #include <thread>
 #include <atomic>
 #include <sstream>
+#include <iomanip>
 
 // global variable
 static HHOOK g_keyboardHook = nullptr;
@@ -12,6 +13,18 @@ static HHOOK g_mouseHook = nullptr;
 static EventCallback g_callback = nullptr;
 static std::atomic<bool> g_isListening{ false };
 static std::thread g_hookThread;
+
+std::string GetTimestamp() {
+	using namespace std::chrono;
+	auto now = system_clock::now();
+	time_t t = system_clock::to_time_t(now);
+	struct tm localTime;
+	localtime_s(&localTime, &t);
+
+	std::ostringstream oss;
+	oss << std::put_time(&localTime, "%H:%M:%S");
+	return oss.str();
+}
 
 // Virtual key code mapping
 std::map<int, std::string> keyMap = {
@@ -131,7 +144,8 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
 		if (!eventType.empty()) {
 			std::string keyName = GetKeyName(kbStruct->vkCode);
 			std::string eventStr = eventType + " " + keyName;
-			g_callback(eventStr.c_str());
+			std::string timestamp = GetTimestamp();
+			g_callback((timestamp + " " + eventStr).c_str());
 		}
 	}
 
@@ -151,7 +165,8 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
 			if (g_enableMouseMove) {
 				// Report mouse movement events
 				ss << "mousemove " << mouseStruct->pt.x << "," << mouseStruct->pt.y;
-				g_callback(ss.str().c_str());
+				std::string timestamp = GetTimestamp();
+				g_callback((timestamp + " " + ss.str()).c_str());
 			}
 			break;
 
@@ -175,7 +190,8 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
 			int delta = GET_WHEEL_DELTA_WPARAM(mouseStruct->mouseData);
 			std::string direction = GetWheelDirection(static_cast<short>(delta));
 			ss << "mousewheel " << direction << " " << mouseStruct->pt.x << "," << mouseStruct->pt.y;
-			g_callback(ss.str().c_str());
+			std::string timestamp = GetTimestamp();
+			g_callback((timestamp + " " + ss.str()).c_str());
 		}
 		break;
 
@@ -185,7 +201,8 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
 			int delta = GET_WHEEL_DELTA_WPARAM(mouseStruct->mouseData);
 			std::string direction = GetWheelDirection(static_cast<short>(delta));
 			ss << "mousehwheel " << direction << " " << mouseStruct->pt.x << "," << mouseStruct->pt.y;
-			g_callback(ss.str().c_str());
+			std::string timestamp = GetTimestamp();
+			g_callback((timestamp + " " + ss.str()).c_str());
 		}
 		break;
 		}
@@ -195,7 +212,8 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
 			std::string buttonName = GetMouseButtonName(wParam);
 			ss.str(""); // clear stringstream
 			ss << eventType << " " << buttonName << " " << mouseStruct->pt.x << "," << mouseStruct->pt.y;
-			g_callback(ss.str().c_str());
+			std::string timestamp = GetTimestamp();
+			g_callback((timestamp + " " + ss.str()).c_str());
 		}
 	}
 
