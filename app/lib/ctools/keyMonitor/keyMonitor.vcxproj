@@ -134,6 +134,7 @@
     <ClCompile Include="InputHook.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DeviceEventsMap.h" />
     <ClInclude Include="InputHook.h" />
   </ItemGroup>
   <ItemGroup>

@@ -26,6 +26,9 @@
     <ClInclude Include="InputHook.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="DeviceEventsMap.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
