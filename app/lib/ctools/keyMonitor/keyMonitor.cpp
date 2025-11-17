@@ -10,8 +10,10 @@
 #include <sstream>
 #include <mutex>
 #include "InputHook.h"
+#include <cstring>
+#include <cstdint>
 
-// 添加WebSocket支持
+// Add WebSocket support
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -25,12 +27,14 @@
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <netdb.h>
+#define INVALID_SOCKET (-1)
+typedef int SOCKET;
 #endif
 
-// 全局变量，用于统计事件数量
+// Global variable, used to count the number of events
 std::atomic<int> eventCount{ 0 };
 
-// WebSocket相关全局变量
+// WebSocket related global variables
 std::atomic<bool> wsMode{ false };
 std::atomic<int> wsPort{ 0 };
 std::atomic<SOCKET> wsServerSocket{ INVALID_SOCKET };
@@ -39,141 +43,140 @@ std::atomic<bool> wsClientConnected{ false };
 std::vector<std::string> wsMessageQueue;
 std::mutex wsQueueMutex;
 
-// 事件回调函数
+// event callbacks 
 void OnInputEvent(const char* eventStr) {
 	eventCount++;
 	std::string eventMessage = "[" + std::to_string(eventCount) + "] " + eventStr;
 
-	// 控制台输出
+	// console output
 	std::cout << eventMessage << std::endl;
 
-	// WebSocket模式下的额外处理
+	// Additional processing in WebSocket mode
 	if (wsMode && wsClientConnected) {
 		std::lock_guard<std::mutex> lock(wsQueueMutex);
 		wsMessageQueue.push_back(eventMessage);
 	}
 }
 
-// 显示帮助信息
+// show help
 void ShowHelp() {
 	std::cout << "==========================================" << std::endl;
-	std::cout << "InputHook 测试程序" << std::endl;
+	std::cout << "InputHook test program" << std::endl;
 	std::cout << "==========================================" << std::endl;
-	std::cout << "命令列表:" << std::endl;
-	std::cout << "  start  - 开始监听输入事件" << std::endl;
-	std::cout << "  stop   - 停止监听输入事件" << std::endl;
-	std::cout << "  status - 显示监听状态" << std::endl;
-	std::cout << "  count  - 显示事件计数" << std::endl;
-	std::cout << "  clear  - 清空事件计数" << std::endl;
-	std::cout << "  ws     - 套接字通信模式" << std::endl;
-	std::cout << "  help   - 显示此帮助信息" << std::endl;
-	std::cout << "  exit   - 退出程序" << std::endl;
+	std::cout << "commands list:" << std::endl;
+	std::cout << "  start  - Start monitoring input events" << std::endl;
+	std::cout << "  stop   - Stop monitoring input events" << std::endl;
+	std::cout << "  status - Display monitoring status" << std::endl;
+	std::cout << "  count  - Display event count" << std::endl;
+	std::cout << "  clear  - Clear event count" << std::endl;
+	std::cout << "  ws     - Socket communication mode" << std::endl;
+	std::cout << "  help   - Display this help information" << std::endl;
+	std::cout << "  exit   - Exit the program" << std::endl;
 	std::cout << "==========================================" << std::endl;
-	std::cout << "命令行用法:" << std::endl;
-	std::cout << "  mo.exe -m <命令>          # 直接执行命令" << std::endl;
-	std::cout << "  mo.exe -m ws -p <端口>    # WebSocket模式" << std::endl;
+	std::cout << "Command line usage:" << std::endl;
+	std::cout << "  mo.exe -m <command>          # Directly execute commands" << std::endl;
+	std::cout << "  mo.exe -m ws -p <port>    # WebSocket mode" << std::endl;
 	std::cout << "==========================================" << std::endl;
-	std::cout << "开始测试前，请确保:" << std::endl;
-	std::cout << "1. 在Visual Studio中以Debug模式运行" << std::endl;
-	std::cout << "2. 程序运行后切换到其他窗口进行输入测试" << std::endl;
-	std::cout << "3. 低权限程序可能无法捕获某些系统按键" << std::endl;
+	std::cout << "Before starting the test, please ensure that:" << std::endl;
+	std::cout << "2. Switch to another window for input testing after the program runs" << std::endl;
+	std::cout << "3. Low privilege programs may not be able to capture certain system keys" << std::endl;
 	std::cout << "==========================================" << std::endl;
 }
 
-// 显示监听状态
+// Display monitoring status
 void ShowStatus() {
 	bool isListening = IsListening();
-	std::cout << "监听状态: " << (isListening ? "运行中" : "已停止") << std::endl;
-	std::cout << "事件计数: " << eventCount << std::endl;
+	std::cout << "Monitoring status: " << (isListening ? "running" : "stopped") << std::endl;
+	std::cout << "event count: " << eventCount << std::endl;
 	if (wsMode) {
-		std::cout << "WebSocket模式: 已启用 (端口: " << wsPort << ")" << std::endl;
-		std::cout << "客户端连接: " << (wsClientConnected ? "已连接" : "未连接") << std::endl;
+		std::cout << "WebSocket mode: enabled (port: " << wsPort << ")" << std::endl;
+		std::cout << "Client connection: " << (wsClientConnected ? "connected" : "unconnected") << std::endl;
 	}
 }
 
-// 清空事件计数
+// Clear event count
 void ClearCount() {
 	eventCount = 0;
-	std::cout << "事件计数已清空" << std::endl;
+	std::cout << "event count cleared" << std::endl;
 }
 
-// 开始监听
+// Start monitoring
 void StartListening() {
 	if (IsListening()) {
-		std::cout << "监听已经在运行中!" << std::endl;
+		std::cout << "Monitoring is already running!" << std::endl;
 		return;
 	}
 
 	if (StartListening(OnInputEvent)) {
-		std::cout << "开始监听输入事件..." << std::endl;
-		std::cout << "请切换到其他窗口进行键盘鼠标操作测试" << std::endl;
-		std::cout << "返回本窗口输入 'stop' 停止监听" << std::endl;
+		std::cout << "Start monitoring input events..." << std::endl;
+		std::cout << "Please switch to another window for keyboard and mouse operation testing" << std::endl;
+		std::cout << "Return to this window and enter 'top' to stop listening" << std::endl;
 	}
 	else {
-		std::cout << "启动监听失败!" << std::endl;
+		std::cout << "Failed to start listening!" << std::endl;
 	}
 }
 
-// 停止监听
+// Stop monitoring
 void stopKeyMonitor() {
 	if (!IsListening()) {
-		std::cout << "监听未在运行!" << std::endl;
+		std::cout << "Monitoring is not running!" << std::endl;
 		return;
 	}
 
 	StopListening();
-	std::cout << "已停止监听输入事件" << std::endl;
-	std::cout << "总共捕获 " << eventCount << " 个事件" << std::endl;
+	std::cout << "Stopped listening for input events" << std::endl;
+	std::cout << "Total capture " << eventCount << " event" << std::endl;
 }
 
-// 自动测试函数
+// Automatic testing function
 void AutoTest() {
-	std::cout << "开始自动测试..." << std::endl;
-	std::cout << "5秒后开始监听，请准备进行键盘鼠标操作测试" << std::endl;
+	std::cout << "Start automatic testing..." << std::endl;
+	std::cout << "Start monitoring in 5 seconds, please prepare for keyboard and mouse operation testing" << std::endl;
 
 	std::this_thread::sleep_for(std::chrono::seconds(5));
 
 	if (StartListening(OnInputEvent)) {
-		std::cout << "监听已启动，请在10秒内进行键盘鼠标操作..." << std::endl;
-		std::cout << "尝试按下: A, B, C, 空格, 回车, 退格等键" << std::endl;
-		std::cout << "尝试移动鼠标和点击鼠标按钮" << std::endl;
+		std::cout << "Monitoring has started, please perform keyboard and mouse operations within 10 seconds..." << std::endl;
+		std::cout << "Try pressing: A, B, C, Space, Enter, Backspace, etc" << std::endl;
+		std::cout << "Try moving the mouse and clicking mouse buttons" << std::endl;
 
-		// 监听10秒
+		// Monitor for 10 seconds
 		std::this_thread::sleep_for(std::chrono::seconds(10));
 
 		stopKeyMonitor();
-		std::cout << "自动测试结束" << std::endl;
-		std::cout << "总共捕获 " << eventCount << " 个事件" << std::endl;
+		std::cout << "Automatic testing has ended" << std::endl;
+		std::cout << "Captured " << eventCount << " event" << std::endl;
 	}
 	else {
-		std::cout << "自动测试启动失败!" << std::endl;
+		std::cout << "Automatic test startup failed!" << std::endl;
 	}
 }
 
-// 网络初始化
+// network initialization
 bool InitializeNetwork() {
 #ifdef _WIN32
 	WSADATA wsaData;
 	int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
 	if (result != 0) {
-		std::cout << "WSAStartup失败: " << result << std::endl;
+		std::cout << "WSAStartup failed: " << result << std::endl;
 		return false;
 	}
 #endif
 	return true;
 }
 
-// 网络清理
+// Network Cleanup
 void CleanupNetwork() {
 #ifdef _WIN32
 	WSACleanup();
 #endif
 }
 
-// 获取本地IP地址（使用现代API）
+// Get local IP address (using modern APIs)
 std::string GetLocalIP() {
 #ifdef _WIN32
-	// Windows版本 - 使用getaddrinfo替代gethostbyname
+	// Windows version - using getaaddrinfo instead of gethostbyname
 	char hostname[256];
 	if (gethostname(hostname, sizeof(hostname)) == 0) {
 		struct addrinfo hints, * result, * ptr;
@@ -197,18 +200,18 @@ std::string GetLocalIP() {
 		}
 	}
 #else
-	// Linux/Unix版本
+	// Linux/Unix version
 	struct ifaddrs* ifaddr, * ifa;
 	if (getifaddrs(&ifaddr) != -1) {
 		for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
 			if (ifa->ifa_addr == NULL) continue;
 
-			// 只关注IPv4
+			// Only focus on IPv4
 			if (ifa->ifa_addr->sa_family == AF_INET) {
 				struct sockaddr_in* sa = (struct sockaddr_in*)ifa->ifa_addr;
 				char ipstr[INET_ADDRSTRLEN];
 				if (inet_ntop(AF_INET, &(sa->sin_addr), ipstr, sizeof(ipstr)) != NULL) {
-					// 跳过回环地址
+					// Skip loopback address
 					if (strcmp(ipstr, "127.0.0.1") != 0) {
 						freeifaddrs(ifaddr);
 						return std::string(ipstr);
@@ -222,29 +225,7 @@ std::string GetLocalIP() {
 	return "127.0.0.1";
 }
 
-// 发送WebSocket消息
-void SendWSMessage(const std::string& message) {
-	if (wsClientConnected && wsClientSocket != INVALID_SOCKET) {
-		// 简单的WebSocket帧格式 (文本帧)
-		std::vector<unsigned char> frame;
-		frame.push_back(0x81); // FIN=1, 文本帧
-
-		if (message.length() < 126) {
-			frame.push_back(static_cast<unsigned char>(message.length()));
-		}
-		else if (message.length() < 65536) {
-			frame.push_back(126);
-			frame.push_back(static_cast<unsigned char>((message.length() >> 8) & 0xFF));
-			frame.push_back(static_cast<unsigned char>(message.length() & 0xFF));
-		}
-
-		frame.insert(frame.end(), message.begin(), message.end());
-
-		send(wsClientSocket, reinterpret_cast<const char*>(frame.data()), frame.size(), 0);
-	}
-}
-
-// Base64编码函数
+// Base64 encoding function
 std::string base64_encode(const std::string& input) {
 	const char base64_chars[] =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -270,36 +251,110 @@ std::string base64_encode(const std::string& input) {
 	return output;
 }
 
-// 处理WebSocket握手
+// Assist: Ensure that the specified length is read from the socket (handle TCP packet splitting)
+static bool recv_all(SOCKET s, void* buf, size_t len) {
+	char* p = reinterpret_cast<char*>(buf);
+	size_t received = 0;
+	while (received < len) {
+		int r = recv(s, p + received, static_cast<int>(len - received), 0);
+		if (r <= 0) return false;
+		received += static_cast<size_t>(r);
+	}
+	return true;
+}
+
+// Send all data
+static bool send_all(SOCKET s, const void* buf, size_t len) {
+	const char* p = reinterpret_cast<const char*>(buf);
+	size_t sent = 0;
+	while (sent < len) {
+		int r = send(s, p + sent, static_cast<int>(len - sent), 0);
+		if (r <= 0) return false;
+		sent += static_cast<size_t>(r);
+	}
+	return true;
+}
+
+// Send WebSocket text frames (server ->client, no mask required)
+void SendWSMessage(const std::string& message) {
+	if (!wsClientConnected || wsClientSocket == INVALID_SOCKET) return;
+
+	std::vector<unsigned char> frame;
+	const size_t len = message.size();
+
+	// first byte: FIN + opcode (text)
+	frame.push_back(0x81);
+
+	// payload length
+	if (len <= 125) {
+		frame.push_back(static_cast<unsigned char>(len));
+	}
+	else if (len <= 0xFFFF) {
+		frame.push_back(126);
+		frame.push_back(static_cast<unsigned char>((len >> 8) & 0xFF));
+		frame.push_back(static_cast<unsigned char>(len & 0xFF));
+	}
+	else {
+		frame.push_back(127);
+		// 8 bytes length (network byte order)
+		for (int i = 7; i >= 0; --i) {
+			frame.push_back(static_cast<unsigned char>((len >> (8 * i)) & 0xFF));
+		}
+	}
+
+	// append payload
+	frame.insert(frame.end(), message.begin(), message.end());
+
+	// send all
+	send_all(wsClientSocket, frame.data(), frame.size());
+}
+
+// Handle handshake (read requests more robustly)
 bool PerformWebSocketHandshake(SOCKET clientSocket) {
-	char buffer[2048];
-	int bytesReceived = recv(clientSocket, buffer, sizeof(buffer) - 1, 0);
-	if (bytesReceived <= 0) {
+	// Read HTTP request header (until \ r \ n \ r \ n), note that it may be unpacked and read multiple times
+	std::string request;
+	char buf[1024];
+	while (true) {
+		int r = recv(clientSocket, buf, sizeof(buf) - 1, 0);
+		if (r <= 0) return false;
+		buf[r] = '\0';
+		request.append(buf, r);
+		if (request.find("\r\n\r\n") != std::string::npos) break;
+		// Protective: If the head is too large, it will fail
+		if (request.size() > 16 * 1024) return false;
+	}
+
+	// Check the Upgrade field
+	if (request.find("Upgrade: websocket") == std::string::npos &&
+		request.find("upgrade: websocket") == std::string::npos) {
 		return false;
 	}
 
-	buffer[bytesReceived] = '\0';
-	std::string request(buffer);
-
-	// 检查是否是WebSocket升级请求
-	if (request.find("Upgrade: websocket") == std::string::npos) {
-		return false;
-	}
-
-	// 提取Sec-WebSocket-Key
+	// get Sec-WebSocket-Key
 	std::string websocketKey;
-	size_t keyStart = request.find("Sec-WebSocket-Key: ");
-	if (keyStart != std::string::npos) {
-		keyStart += 19;
-		size_t keyEnd = request.find("\r\n", keyStart);
-		websocketKey = request.substr(keyStart, keyEnd - keyStart);
+	size_t keyPos = request.find("Sec-WebSocket-Key:");
+	if (keyPos == std::string::npos) {
+		// Also try lowercase form
+		keyPos = request.find("sec-websocket-key:");
+	}
+	if (keyPos != std::string::npos) {
+		keyPos = request.find(':', keyPos);
+		if (keyPos != std::string::npos) {
+			keyPos++;
+			// skip space
+			while (keyPos < request.size() && (request[keyPos] == ' ' || request[keyPos] == '\t')) keyPos++;
+			size_t eol = request.find("\r\n", keyPos);
+			if (eol != std::string::npos) {
+				websocketKey = request.substr(keyPos, eol - keyPos);
+				// trim
+				while (!websocketKey.empty() && (websocketKey.back() == '\r' || websocketKey.back() == '\n' || websocketKey.back() == ' ')) websocketKey.pop_back();
+			}
+		}
 	}
 
-	if (websocketKey.empty()) {
-		return false;
-	}
+	if (websocketKey.empty()) return false;
 
-	// 生成Accept key (key + magic string, then SHA1, then base64)
+	// generate Accept key
 	std::string magicString = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 	std::string combined = websocketKey + magicString;
 
@@ -308,38 +363,120 @@ bool PerformWebSocketHandshake(SOCKET clientSocket) {
 
 	std::string acceptKey = base64_encode(std::string(reinterpret_cast<char*>(sha1Hash), SHA_DIGEST_LENGTH));
 
-	// 发送握手响应
-	std::string response =
-		"HTTP/1.1 101 Switching Protocols\r\n"
-		"Upgrade: websocket\r\n"
-		"Connection: Upgrade\r\n"
-		"Sec-WebSocket-Accept: " + acceptKey + "\r\n\r\n";
+	// Send handshake response
+	std::ostringstream resp;
+	resp << "HTTP/1.1 101 Switching Protocols\r\n";
+	resp << "Upgrade: websocket\r\n";
+	resp << "Connection: Upgrade\r\n";
+	resp << "Sec-WebSocket-Accept: " << acceptKey << "\r\n\r\n";
 
-	if (send(clientSocket, response.c_str(), response.length(), 0) <= 0) {
+	std::string response = resp.str();
+	if (!send_all(clientSocket, response.data(), response.size())) {
 		return false;
 	}
-
 	return true;
 }
 
-// 处理WebSocket客户端
-void HandleWSClient() {
-	// 执行WebSocket握手
-	if (!PerformWebSocketHandshake(wsClientSocket)) {
-		std::cout << "WebSocket握手失败" << std::endl;
-		wsClientConnected = false;
-		return;
+// Read and parse a complete WebSocket frame from the browser (return true and assign the text to outMessage)
+// Currently, only text frames (opcode 0x1) and control shutdown are supported
+bool ReadWSFrame(SOCKET client, std::string& outMessage) {
+	unsigned char header[2];
+	if (!recv_all(client, header, 2)) return false;
+
+	bool fin = (header[0] & 0x80) != 0;
+	unsigned char opcode = header[0] & 0x0F;
+	bool masked = (header[1] & 0x80) != 0;
+	uint64_t payloadLen = header[1] & 0x7F;
+
+	// Extended length
+	if (payloadLen == 126) {
+		unsigned char ext[2];
+		if (!recv_all(client, ext, 2)) return false;
+		payloadLen = (static_cast<uint64_t>(ext[0]) << 8) | static_cast<uint64_t>(ext[1]);
+	}
+	else if (payloadLen == 127) {
+		unsigned char ext[8];
+		if (!recv_all(client, ext, 8)) return false;
+		payloadLen = 0;
+		for (int i = 0; i < 8; ++i) {
+			payloadLen = (payloadLen << 8) | ext[i];
+		}
 	}
 
-	std::cout << "WebSocket握手成功，连接已建立" << std::endl;
+	// Mask key must exist (must be masked when the browser sends frames)
+	unsigned char maskKey[4] = { 0 };
+	if (masked) {
+		if (!recv_all(client, maskKey, 4)) return false;
+	}
+	else {
+		// Browsers should always be masked; If not, it is considered a protocol error
+		return false;
+	}
 
-	// 发送欢迎消息
-	SendWSMessage("WebSocket连接已建立");
-	SendWSMessage("可用命令: start, stop, status, count, clear, exit");
+	// Payload reading (PayloadLen may be very large, be careful)
+	std::vector<unsigned char> payload;
+	if (payloadLen > 0) {
+		try {
+			payload.resize(payloadLen);
+		}
+		catch (...) {
+			return false;
+		}
+		if (!recv_all(client, payload.data(), payloadLen)) return false;
+		// decode mask
+		for (uint64_t i = 0; i < payloadLen; ++i) {
+			payload[i] ^= maskKey[i % 4];
+		}
+	}
 
-	char buffer[1024];
+	// Process opcode
+	if (opcode == 0x8) {
+		// close frame
+		return false; // Return false to indicate connection closure
+	}
+	else if (opcode == 0x1) {
+		// Text frame
+		outMessage.assign(reinterpret_cast<char*>(payload.data()), payload.size());
+		return true;
+	}
+	else if (opcode == 0x9) {
+		// ping -> response pong
+		// send pong (payload copy) directly
+		std::vector<unsigned char> pongFrame;
+		pongFrame.push_back(0x8A); // FIN + opcode pong (0xA)
+		size_t plen = payload.size();
+		if (plen <= 125) {
+			pongFrame.push_back(static_cast<unsigned char>(plen));
+		}
+		else if (plen <= 0xFFFF) {
+			pongFrame.push_back(126);
+			pongFrame.push_back(static_cast<unsigned char>((plen >> 8) & 0xFF));
+			pongFrame.push_back(static_cast<unsigned char>(plen & 0xFF));
+		}
+		else {
+			pongFrame.push_back(127);
+			for (int i = 7; i >= 0; --i) pongFrame.push_back(static_cast<unsigned char>((plen >> (8 * i)) & 0xFF));
+		}
+		pongFrame.insert(pongFrame.end(), payload.begin(), payload.end());
+		send_all(client, pongFrame.data(), pongFrame.size());
+		return true; // continue loop
+	}
+	// Other opcodes are currently not supported (extensible)
+	return true;
+}
+
+// Handling WebSocket client main loop
+void HandleWSClient() {
+	// Handshake completed in StartWSServer and wsClientConnected set to true
+	std::cout << "WebSocket connected" << std::endl;
+
+	// Send a welcome message
+	SendWSMessage("WebSocket connected.");
+	SendWSMessage("Commands available: start, stop, status, count, clear, exit");
+
+	// Main loop: send queue+read client frames
 	while (wsClientConnected) {
-		// 发送队列中的消息
+		// Sending messages in the queue
 		{
 			std::lock_guard<std::mutex> lock(wsQueueMutex);
 			for (const auto& msg : wsMessageQueue) {
@@ -348,81 +485,64 @@ void HandleWSClient() {
 			wsMessageQueue.clear();
 		}
 
-		// 接收客户端消息
-		int bytesReceived = recv(wsClientSocket, buffer, sizeof(buffer) - 1, 0);
-		if (bytesReceived > 0) {
-			buffer[bytesReceived] = '\0';
-			std::string message(buffer);
+		// Non blocking waiting reception: We will block the reading of a frame (ReadWSFrame will handle unpacking)
+		std::string received;
+		bool ok = ReadWSFrame(wsClientSocket, received);
+		if (!ok) {
+			// Read failed or client request to close
+			wsClientConnected = false;
+			break;
+		}
 
-			// 简单的WebSocket消息解析 (跳过掩码和帧头)
-			if (message.length() >= 2) {
-				size_t payloadLen = static_cast<unsigned char>(message[1]) & 0x7F;
-				size_t headerSize = 2;
+		// If an empty string is received (e.g. only ping/ong without payload), continue
+		if (!received.empty()) {
+			std::cout << "Received WebSocket command: " << received << std::endl;
+			SendWSMessage("Command received: " + received);
 
-				if (payloadLen == 126) headerSize += 2;
-				else if (payloadLen == 127) headerSize += 8;
-
-				if (message.length() > headerSize + 4) {
-					std::string actualMessage;
-					for (size_t i = headerSize + 4; i < message.length(); i++) {
-						actualMessage += message[i];
-					}
-
-					std::cout << "收到WebSocket命令: " << actualMessage << std::endl;
-					SendWSMessage("命令已接收: " + actualMessage);
-
-					// 处理命令
-					if (actualMessage == "start") StartListening();
-					else if (actualMessage == "stop") stopKeyMonitor();
-					else if (actualMessage == "status") ShowStatus();
-					else if (actualMessage == "count") SendWSMessage("事件计数: " + std::to_string(eventCount));
-					else if (actualMessage == "clear") ClearCount();
-					else if (actualMessage == "exit") {
-						SendWSMessage("正在退出...");
-						wsClientConnected = false;
-						break;
-					}
-				}
+			// process command
+			if (received == "start") StartListening();
+			else if (received == "stop") stopKeyMonitor();
+			else if (received == "status") ShowStatus();
+			else if (received == "count") SendWSMessage("event count: " + std::to_string(eventCount));
+			else if (received == "clear") ClearCount();
+			else if (received == "exit") {
+				SendWSMessage("exitting...");
+				wsClientConnected = false;
+				break;
 			}
 		}
-		else {
-			wsClientConnected = false;
-			std::cout << "WebSocket客户端断开连接" << std::endl;
-		}
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(100));
+		// Napping to reduce CPU usage (adjustable)
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
 	}
+
+	std::cout << "WebSocket client processing loop ends" << std::endl;
 }
 
-// 启动WebSocket服务器
+// Start WebSocket server (blocking, single client)
 bool StartWSServer(int port) {
-	if (!InitializeNetwork()) {
+	if (!InitializeNetwork()) return false;
+
+	// Create server socket
+	SOCKET serverSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	if (serverSock == INVALID_SOCKET) {
+		std::cout << "Failed to create socket" << std::endl;
 		return false;
 	}
+	wsServerSocket = serverSock;
 
-	// 创建服务器socket
-	wsServerSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-	if (wsServerSocket == INVALID_SOCKET) {
-		std::cout << "创建socket失败" << std::endl;
-		return false;
-	}
-
-	// 设置socket选项
 	int opt = 1;
-#ifdef _WIN32
 	setsockopt(wsServerSocket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&opt), sizeof(opt));
-#else
-	setsockopt(wsServerSocket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
-#endif
 
-	// 绑定地址和端口
+	// bind
 	sockaddr_in serverAddr;
+	memset(&serverAddr, 0, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
 	serverAddr.sin_addr.s_addr = INADDR_ANY;
-	serverAddr.sin_port = htons(port);
+	serverAddr.sin_port = htons(static_cast<uint16_t>(port));
 
 	if (bind(wsServerSocket, reinterpret_cast<sockaddr*>(&serverAddr), sizeof(serverAddr)) != 0) {
-		std::cout << "绑定端口 " << port << " 失败" << std::endl;
+		std::cout << "Bind port " << port << " failed" << std::endl;
 #ifdef _WIN32
 		closesocket(wsServerSocket);
 #else
@@ -432,9 +552,8 @@ bool StartWSServer(int port) {
 		return false;
 	}
 
-	// 监听
 	if (listen(wsServerSocket, 1) != 0) {
-		std::cout << "监听失败" << std::endl;
+		std::cout << "Monitoring failed" << std::endl;
 #ifdef _WIN32
 		closesocket(wsServerSocket);
 #else
@@ -448,34 +567,42 @@ bool StartWSServer(int port) {
 	wsPort = port;
 
 	std::string localIP = GetLocalIP();
-	std::cout << "WebSocket服务器已启动" << std::endl;
-	std::cout << "服务地址: ws://" << localIP << ":" << port << std::endl;
-	std::cout << "等待客户端连接..." << std::endl;
+	std::cout << "WebSocket server started" << std::endl;
+	std::cout << "Server address: ws://" << localIP << ":" << port << std::endl;
+	std::cout << "Waiting for client connection..." << std::endl;
 
-	// 接受客户端连接
+	// Accept client (blocking)
 	sockaddr_in clientAddr;
 	socklen_t clientLen = sizeof(clientAddr);
-	wsClientSocket = accept(wsServerSocket, reinterpret_cast<sockaddr*>(&clientAddr), &clientLen);
+	SOCKET clientSock = accept(wsServerSocket, reinterpret_cast<sockaddr*>(&clientAddr), &clientLen);
 
-	if (wsClientSocket == INVALID_SOCKET) {
-		std::cout << "接受客户端连接失败" << std::endl;
+	if (clientSock == INVALID_SOCKET) {
+		std::cout << "Failed to accept client connection" << std::endl;
 		return false;
 	}
 
 	char clientIP[INET_ADDRSTRLEN];
 	inet_ntop(AF_INET, &clientAddr.sin_addr, clientIP, INET_ADDRSTRLEN);
-	std::cout << "客户端已连接: " << clientIP << std::endl;
+	std::cout << "The client has been connected: " << clientIP << std::endl;
 
+	// handshake
+	if (!PerformWebSocketHandshake(clientSock)) {
+#ifdef _WIN32
+		closesocket(clientSock);
+#else
+		close(clientSock);
+#endif
+		std::cout << "WebSocket handshake failed" << std::endl;
+		return false;
+	}
+
+	wsClientSocket = clientSock;
 	wsClientConnected = true;
 
-	// 发送欢迎消息
-	SendWSMessage("WebSocket连接已建立");
-	SendWSMessage("可用命令: start, stop, status, count, clear, exit");
-
-	// 处理客户端通信
+	// Enter the processing loop (this function will block until the client disconnects)
 	HandleWSClient();
 
-	// 清理
+	// Clean handle
 #ifdef _WIN32
 	closesocket(wsClientSocket);
 	closesocket(wsServerSocket);
@@ -490,9 +617,9 @@ bool StartWSServer(int port) {
 
 	CleanupNetwork();
 	return true;
-	}
+}
 
-// 解析命令行参数
+// Analyze command-line parameters
 bool ParseCommandLine(int argc, char* argv[], std::string& mode, int& port) {
 	for (int i = 1; i < argc; i++) {
 		std::string arg = argv[i];
@@ -510,12 +637,12 @@ bool ParseCommandLine(int argc, char* argv[], std::string& mode, int& port) {
 	return true;
 }
 
-// 主函数
+// main function
 int main(int argc, char* argv[]) {
-	std::cout << "InputHook 本地测试程序" << std::endl;
-	std::cout << "编译时间: " << __DATE__ << " " << __TIME__ << std::endl;
+	std::cout << "InputHook local testing program" << std::endl;
+	std::cout << "Compilation time: " << __DATE__ << " " << __TIME__ << std::endl;
 
-	// 命令行参数处理
+	// Command line parameter processing
 	if (argc > 1) {
 		std::string mode;
 		int port = 0;
@@ -527,8 +654,8 @@ int main(int argc, char* argv[]) {
 		if (!mode.empty()) {
 			if (mode == "start") {
 				StartListening();
-				// 保持程序运行
-				std::cout << "按回车键退出..." << std::endl;
+				// Keep the program running
+				std::cout << "press Enter to abort..." << std::endl;
 				std::cin.get();
 				if (IsListening()) {
 					stopKeyMonitor();
@@ -544,7 +671,7 @@ int main(int argc, char* argv[]) {
 				return 0;
 			}
 			else if (mode == "count") {
-				std::cout << "事件计数: " << eventCount << std::endl;
+				std::cout << "event count: " << eventCount << std::endl;
 				return 0;
 			}
 			else if (mode == "clear") {
@@ -553,11 +680,11 @@ int main(int argc, char* argv[]) {
 			}
 			else if (mode == "ws") {
 				if (port == 0) {
-					std::cout << "WebSocket模式需要指定端口，使用 -p <端口号>" << std::endl;
+					std::cout << "WebSocket mode requires specifying a port, using - p<port number>" << std::endl;
 					return 1;
 				}
 				if (!StartWSServer(port)) {
-					std::cout << "WebSocket服务器启动失败，端口可能被占用" << std::endl;
+					std::cout << "WebSocket server failed to start, port may be occupied" << std::endl;
 					return 1;
 				}
 				return 0;
@@ -567,21 +694,21 @@ int main(int argc, char* argv[]) {
 				return 0;
 			}
 			else {
-				std::cout << "未知模式: " << mode << std::endl;
+				std::cout << "Unknown mode: " << mode << std::endl;
 				ShowHelp();
 				return 1;
 			}
 		}
 	}
 
-	// 原有的交互式模式
+	// The original interactive mode
 	ShowHelp();
 
 	std::string command;
 	bool running = true;
 
 	while (running) {
-		std::cout << std::endl << "请输入命令: ";
+		std::cout << std::endl << "Please enter the command: ";
 		std::getline(std::cin, command);
 
 		if (command == "start") {
@@ -594,23 +721,23 @@ int main(int argc, char* argv[]) {
 			ShowStatus();
 		}
 		else if (command == "count") {
-			std::cout << "事件计数: " << eventCount << std::endl;
+			std::cout << "Event Count: " << eventCount << std::endl;
 		}
 		else if (command == "clear") {
 			ClearCount();
 		}
 		else if (command == "ws") {
-			std::cout << "请输入端口号: ";
+			std::cout << "Please enter the port number: ";
 			std::string portStr;
 			std::getline(std::cin, portStr);
 			try {
 				int port = std::stoi(portStr);
 				if (!StartWSServer(port)) {
-					std::cout << "WebSocket服务器启动失败，端口可能被占用" << std::endl;
+					std::cout << "WebSocket server failed to start, port may be occupied" << std::endl;
 				}
 			}
 			catch (const std::exception& e) {
-				std::cout << "无效的端口号: " << portStr << std::endl;
+				std::cout << "Invalid port number: " << portStr << std::endl;
 			}
 		}
 		else if (command == "help") {
@@ -620,17 +747,17 @@ int main(int argc, char* argv[]) {
 			AutoTest();
 		}
 		else if (command == "exit" || command == "quit") {
-			// 确保在退出前停止监听
+			// Ensure to stop listening before exiting
 			if (IsListening()) {
-				std::cout << "正在停止监听..." << std::endl;
+				std::cout << "Stopping listening .." << std::endl;
 				stopKeyMonitor();
 			}
 			running = false;
-			std::cout << "程序退出" << std::endl;
+			std::cout << "Program exit" << std::endl;
 		}
 		else if (!command.empty()) {
-			std::cout << "未知命令: " << command << std::endl;
-			std::cout << "输入 'help' 查看可用命令" << std::endl;
+			std::cout << "Unknown command: " << command << std::endl;
+			std::cout << "Enter 'help' to view available commands" << std::endl;
 		}
 	}
 

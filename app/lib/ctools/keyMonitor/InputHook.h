@@ -9,17 +9,17 @@
 
 #include <string>
 
-// 回调函数类型定义
+// Callback function type definition
 typedef void (*EventCallback)(const char* eventStr);
 
 extern "C" {
-	// 启动监听
+	// Start monitoring
 	INPUTHOOK_API bool StartListening(EventCallback callback);
 
-	// 停止监听
+	// Stop monitoring
 	INPUTHOOK_API void StopListening();
 
-	// 检查是否正在监听
+	// Check if it is listening
 	INPUTHOOK_API bool IsListening();
 }
 

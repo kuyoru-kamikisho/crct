@@ -6,16 +6,16 @@
 #include <atomic>
 #include <sstream>
 
-// 全局变量
+// global variable
 static HHOOK g_keyboardHook = nullptr;
 static HHOOK g_mouseHook = nullptr;
 static EventCallback g_callback = nullptr;
 static std::atomic<bool> g_isListening{ false };
 static std::thread g_hookThread;
 
-// 虚拟键码映射
+// Virtual key code mapping
 std::map<int, std::string> keyMap = {
-	// 字母键
+	// Alphabet keys
 	{0x41, "a"}, {0x42, "b"}, {0x43, "c"}, {0x44, "d"}, {0x45, "e"},
 	{0x46, "f"}, {0x47, "g"}, {0x48, "h"}, {0x49, "i"}, {0x4A, "j"},
 	{0x4B, "k"}, {0x4C, "l"}, {0x4D, "m"}, {0x4E, "n"}, {0x4F, "o"},
@@ -23,16 +23,16 @@ std::map<int, std::string> keyMap = {
 	{0x55, "u"}, {0x56, "v"}, {0x57, "w"}, {0x58, "x"}, {0x59, "y"},
 	{0x5A, "z"},
 
-	// 数字键
+	// Number keys
 	{0x30, "0"}, {0x31, "1"}, {0x32, "2"}, {0x33, "3"}, {0x34, "4"},
 	{0x35, "5"}, {0x36, "6"}, {0x37, "7"}, {0x38, "8"}, {0x39, "9"},
 
-	// 功能键 F1-F12
+	// function key F1-F12
 	{VK_F1, "f1"}, {VK_F2, "f2"}, {VK_F3, "f3"}, {VK_F4, "f4"},
 	{VK_F5, "f5"}, {VK_F6, "f6"}, {VK_F7, "f7"}, {VK_F8, "f8"},
 	{VK_F9, "f9"}, {VK_F10, "f10"}, {VK_F11, "f11"}, {VK_F12, "f12"},
 
-	// 导航键
+	// Navigation keys
 	{VK_RETURN, "enter"}, {VK_TAB, "tab"}, {VK_CAPITAL, "capslock"},
 	{VK_SHIFT, "shift"}, {VK_CONTROL, "ctrl"}, {VK_MENU, "alt"},
 	{VK_SPACE, "space"}, {VK_BACK, "backspace"}, {VK_DELETE, "delete"},
@@ -42,16 +42,16 @@ std::map<int, std::string> keyMap = {
 	{0xA2,"leftCtrl"},{0xA3,"rightCtrl"},
 	{0xA4,"leftAlt"},{0xA5,"rightAlt"},
 
-	// 方向键
+	// arrow keys
 	{ VK_UP, "up" }, {VK_DOWN, "down"}, {VK_LEFT, "left"}, {VK_RIGHT, "right"},
 
-	// 符号键
+	// Symbol key
 	{VK_OEM_COMMA, ","}, {VK_OEM_PERIOD, "."}, {VK_OEM_2, "/"},
 	{VK_OEM_1, ";"}, {VK_OEM_7, "\""}, {VK_OEM_4, "["}, {VK_OEM_6, "]"},
 	{VK_OEM_5, "\\"}, {VK_OEM_MINUS, "-"}, {VK_OEM_PLUS, "="},
 	{VK_OEM_3, "`"},
 
-	// 数字小键盘
+	// Numeric keypad
 	{VK_NUMPAD0, "num0"}, {VK_NUMPAD1, "num1"}, {VK_NUMPAD2, "num2"},
 	{VK_NUMPAD3, "num3"}, {VK_NUMPAD4, "num4"}, {VK_NUMPAD5, "num5"},
 	{VK_NUMPAD6, "num6"}, {VK_NUMPAD7, "num7"}, {VK_NUMPAD8, "num8"},
@@ -59,12 +59,12 @@ std::map<int, std::string> keyMap = {
 	{VK_NUMLOCK, "numlock"}, {VK_MULTIPLY, "num*"}, {VK_ADD, "num+"},
 	{VK_SUBTRACT, "num-"}, {VK_DECIMAL, "num."}, {VK_DIVIDE, "num/"},
 
-	// 其他特殊键
+	// Other special keys
 	{VK_ESCAPE, "esc"}, {VK_SNAPSHOT, "printscreen"}, {VK_SCROLL, "scrolllock"},
 	{VK_PAUSE, "pause"}, {VK_LWIN, "win"}, {VK_APPS, "apps"}
 };
 
-// 鼠标按钮映射
+// Mouse button mapping
 std::map<int, std::string> mouseButtonMap = {
 	{WM_LBUTTONDOWN, "leftclick"},
 	{WM_LBUTTONUP, "leftclick"},
@@ -76,30 +76,30 @@ std::map<int, std::string> mouseButtonMap = {
 	{WM_XBUTTONUP, "xbutton"}
 };
 
-// 鼠标滚轮方向映射
+// Mouse wheel direction mapping
 std::map<short, std::string> wheelDirectionMap = {
 	{1, "up"},
 	{-1, "down"}
 };
 
-// 配置选项
-static bool g_enableMouseMove = true;  // 是否启用鼠标移动监听
-static int g_mouseMoveThreshold = 5;   // 鼠标移动报告阈值（像素），避免过于频繁的报告
+// configuration options
+static bool g_enableMouseMove = true;  // Do you want to enable mouse movement monitoring
+static int g_mouseMoveThreshold = 5;   // Mouse movement report threshold (in pixels) to avoid overly frequent reports
 
-// 获取键名
+// Get key names
 std::string GetKeyName(int vkCode) {
 	auto it = keyMap.find(vkCode);
 	if (it != keyMap.end()) {
 		return it->second;
 	}
 
-	// 对于未知键，返回十六进制代码
+	// For unknown keys, return hexadecimal code
 	char buffer[16];
 	sprintf_s(buffer, "0x%02X", vkCode);
 	return std::string(buffer);
 }
 
-// 获取鼠标按钮名
+// Get mouse button name
 std::string GetMouseButtonName(int message) {
 	auto it = mouseButtonMap.find(message);
 	if (it != mouseButtonMap.end()) {
@@ -108,14 +108,14 @@ std::string GetMouseButtonName(int message) {
 	return "unknown";
 }
 
-// 获取鼠标滚轮方向
+// Get the direction of the mouse wheel
 std::string GetWheelDirection(short delta) {
 	if (delta > 0) return "up";
 	if (delta < 0) return "down";
 	return "none";
 }
 
-// 键盘钩子过程
+// Keyboard Hook Process
 LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
 	if (nCode >= 0 && g_callback != nullptr) {
 		KBDLLHOOKSTRUCT* kbStruct = (KBDLLHOOKSTRUCT*)lParam;
@@ -138,7 +138,7 @@ LRESULT CALLBACK KeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
 	return CallNextHookEx(g_keyboardHook, nCode, wParam, lParam);
 }
 
-// 鼠标钩子过程
+// Mouse hook process
 LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
 	if (nCode >= 0 && g_callback != nullptr) {
 		MSLLHOOKSTRUCT* mouseStruct = (MSLLHOOKSTRUCT*)lParam;
@@ -149,7 +149,7 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
 		switch (wParam) {
 		case WM_MOUSEMOVE:
 			if (g_enableMouseMove) {
-				// 报告鼠标移动事件
+				// Report mouse movement events
 				ss << "mousemove " << mouseStruct->pt.x << "," << mouseStruct->pt.y;
 				g_callback(ss.str().c_str());
 			}
@@ -171,7 +171,7 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
 
 		case WM_MOUSEWHEEL:
 		{
-			// 鼠标滚轮事件
+			// Mouse Wheel Event
 			int delta = GET_WHEEL_DELTA_WPARAM(mouseStruct->mouseData);
 			std::string direction = GetWheelDirection(static_cast<short>(delta));
 			ss << "mousewheel " << direction << " " << mouseStruct->pt.x << "," << mouseStruct->pt.y;
@@ -181,7 +181,7 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
 
 		case WM_MOUSEHWHEEL:
 		{
-			// 鼠标水平滚轮事件
+			// Mouse horizontal scroll wheel event
 			int delta = GET_WHEEL_DELTA_WPARAM(mouseStruct->mouseData);
 			std::string direction = GetWheelDirection(static_cast<short>(delta));
 			ss << "mousehwheel " << direction << " " << mouseStruct->pt.x << "," << mouseStruct->pt.y;
@@ -190,10 +190,10 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
 		break;
 		}
 
-		// 处理鼠标按钮事件
+		// Handling mouse button events
 		if (!eventType.empty()) {
 			std::string buttonName = GetMouseButtonName(wParam);
-			ss.str(""); // 清空stringstream
+			ss.str(""); // clear stringstream
 			ss << eventType << " " << buttonName << " " << mouseStruct->pt.x << "," << mouseStruct->pt.y;
 			g_callback(ss.str().c_str());
 		}
@@ -202,17 +202,17 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam) {
 	return CallNextHookEx(g_mouseHook, nCode, wParam, lParam);
 }
 
-// 钩子线程函数
+// Hook thread function
 void HookThread() {
 	HINSTANCE hInstance = GetModuleHandle(NULL);
 
-	// 安装键盘钩子
+	// Install keyboard hook
 	g_keyboardHook = SetWindowsHookEx(WH_KEYBOARD_LL, KeyboardProc, hInstance, 0);
 	if (!g_keyboardHook) {
 		return;
 	}
 
-	// 安装鼠标钩子
+	// Install mouse hook
 	g_mouseHook = SetWindowsHookEx(WH_MOUSE_LL, MouseProc, hInstance, 0);
 	if (!g_mouseHook) {
 		UnhookWindowsHookEx(g_keyboardHook);
@@ -220,14 +220,14 @@ void HookThread() {
 		return;
 	}
 
-	// 消息循环
+	// Message loop
 	MSG msg;
 	while (g_isListening && GetMessage(&msg, NULL, 0, 0)) {
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
 
-	// 清理钩子
+	// Clean the hook
 	if (g_keyboardHook) {
 		UnhookWindowsHookEx(g_keyboardHook);
 		g_keyboardHook = nullptr;
@@ -238,20 +238,20 @@ void HookThread() {
 	}
 }
 
-// 导出函数实现
+// Export function implementation
 bool StartListening(EventCallback callback) {
 	if (g_isListening) {
-		return false; // 已经在监听
+		return false; // Already monitoring
 	}
 
 	if (callback == nullptr) {
-		return false; // 回调函数不能为空
+		return false; // The callback function cannot be empty
 	}
 
 	g_callback = callback;
 	g_isListening = true;
 
-	// 在新线程中启动钩子
+	// Start the hook in a new thread
 	g_hookThread = std::thread(HookThread);
 
 	return true;
@@ -264,7 +264,7 @@ void StopListening() {
 
 	g_isListening = false;
 
-	// 发送一个空消息来唤醒消息循环
+	// Send an empty message to wake up the message loop
 	if (g_hookThread.joinable()) {
 		DWORD threadId = GetThreadId(g_hookThread.native_handle());
 		if (threadId != 0) {
