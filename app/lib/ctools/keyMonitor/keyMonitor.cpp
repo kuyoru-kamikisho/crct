@@ -1,4 +1,8 @@
-﻿#include <openssl/sha.h>
+﻿// keyMonitor.cpp
+// WebSocket-stable version: keeps connection until client sends "exit".
+// Only WS-related logic changed; InputHook logic is preserved.
+
+#include <openssl/sha.h>
 #include <openssl/evp.h>
 #include <iomanip>
 #include <iostream>
@@ -13,7 +17,6 @@
 #include <cstring>
 #include <cstdint>
 
-// Add WebSocket support
 #ifdef _WIN32
 #include <winsock2.h>
 #include <ws2tcpip.h>
@@ -27,14 +30,15 @@
 #include <arpa/inet.h>
 #include <ifaddrs.h>
 #include <netdb.h>
+#include <fcntl.h>
 #define INVALID_SOCKET (-1)
 typedef int SOCKET;
 #endif
 
-// Global variable, used to count the number of events
+// Global variables
 std::atomic<int> eventCount{ 0 };
 
-// WebSocket related global variables
+// WebSocket variables
 std::atomic<bool> wsMode{ false };
 std::atomic<int> wsPort{ 0 };
 std::atomic<SOCKET> wsServerSocket{ INVALID_SOCKET };
@@ -43,22 +47,31 @@ std::atomic<bool> wsClientConnected{ false };
 std::vector<std::string> wsMessageQueue;
 std::mutex wsQueueMutex;
 
-// event callbacks 
+// Forward declarations (InputHook functions exist in InputHook.cpp)
+void OnInputEvent(const char* eventStr);
+void ShowHelp();
+void ShowStatus();
+void ClearCount();
+void StartListening();
+void stopKeyMonitor();
+void AutoTest();
+
+// ---------------- InputHook callback ----------------
 void OnInputEvent(const char* eventStr) {
 	eventCount++;
 	std::string eventMessage = "[" + std::to_string(eventCount) + "] " + eventStr;
 
-	// console output
+	// Console output
 	std::cout << eventMessage << std::endl;
 
-	// Additional processing in WebSocket mode
+	// If WS mode and client connected, queue message
 	if (wsMode && wsClientConnected) {
 		std::lock_guard<std::mutex> lock(wsQueueMutex);
 		wsMessageQueue.push_back(eventMessage);
 	}
 }
 
-// show help
+// ---------------- Utility / UI ----------------
 void ShowHelp() {
 	std::cout << "==========================================" << std::endl;
 	std::cout << "InputHook test program" << std::endl;
@@ -73,17 +86,8 @@ void ShowHelp() {
 	std::cout << "  help   - Display this help information" << std::endl;
 	std::cout << "  exit   - Exit the program" << std::endl;
 	std::cout << "==========================================" << std::endl;
-	std::cout << "Command line usage:" << std::endl;
-	std::cout << "  mo.exe -m <command>          # Directly execute commands" << std::endl;
-	std::cout << "  mo.exe -m ws -p <port>    # WebSocket mode" << std::endl;
-	std::cout << "==========================================" << std::endl;
-	std::cout << "Before starting the test, please ensure that:" << std::endl;
-	std::cout << "2. Switch to another window for input testing after the program runs" << std::endl;
-	std::cout << "3. Low privilege programs may not be able to capture certain system keys" << std::endl;
-	std::cout << "==========================================" << std::endl;
 }
 
-// Display monitoring status
 void ShowStatus() {
 	bool isListening = IsListening();
 	std::cout << "Monitoring status: " << (isListening ? "running" : "stopped") << std::endl;
@@ -94,13 +98,11 @@ void ShowStatus() {
 	}
 }
 
-// Clear event count
 void ClearCount() {
 	eventCount = 0;
 	std::cout << "event count cleared" << std::endl;
 }
 
-// Start monitoring
 void StartListening() {
 	if (IsListening()) {
 		std::cout << "Monitoring is already running!" << std::endl;
@@ -109,15 +111,14 @@ void StartListening() {
 
 	if (StartListening(OnInputEvent)) {
 		std::cout << "Start monitoring input events..." << std::endl;
-		std::cout << "Please switch to another window for keyboard and mouse operation testing" << std::endl;
-		std::cout << "Return to this window and enter 'top' to stop listening" << std::endl;
+		std::cout << "Please switch to another window for keyboard/mouse testing" << std::endl;
+		std::cout << "Return to this window and enter 'stop' to stop listening" << std::endl;
 	}
 	else {
 		std::cout << "Failed to start listening!" << std::endl;
 	}
 }
 
-// Stop monitoring
 void stopKeyMonitor() {
 	if (!IsListening()) {
 		std::cout << "Monitoring is not running!" << std::endl;
@@ -126,34 +127,28 @@ void stopKeyMonitor() {
 
 	StopListening();
 	std::cout << "Stopped listening for input events" << std::endl;
-	std::cout << "Total capture " << eventCount << " event" << std::endl;
+	std::cout << "Captured total " << eventCount << " events" << std::endl;
 }
 
-// Automatic testing function
 void AutoTest() {
 	std::cout << "Start automatic testing..." << std::endl;
-	std::cout << "Start monitoring in 5 seconds, please prepare for keyboard and mouse operation testing" << std::endl;
+	std::cout << "Start monitoring in 5 seconds..." << std::endl;
 
 	std::this_thread::sleep_for(std::chrono::seconds(5));
 
 	if (StartListening(OnInputEvent)) {
-		std::cout << "Monitoring has started, please perform keyboard and mouse operations within 10 seconds..." << std::endl;
-		std::cout << "Try pressing: A, B, C, Space, Enter, Backspace, etc" << std::endl;
-		std::cout << "Try moving the mouse and clicking mouse buttons" << std::endl;
-
-		// Monitor for 10 seconds
+		std::cout << "Monitoring started; interact for 10 seconds..." << std::endl;
 		std::this_thread::sleep_for(std::chrono::seconds(10));
-
 		stopKeyMonitor();
-		std::cout << "Automatic testing has ended" << std::endl;
-		std::cout << "Captured " << eventCount << " event" << std::endl;
+		std::cout << "Automatic test ended" << std::endl;
+		std::cout << "Captured " << eventCount << " events" << std::endl;
 	}
 	else {
-		std::cout << "Automatic test startup failed!" << std::endl;
+		std::cout << "Automatic test failed to start" << std::endl;
 	}
 }
 
-// network initialization
+// ---------------- Network helpers ----------------
 bool InitializeNetwork() {
 #ifdef _WIN32
 	WSADATA wsaData;
@@ -166,22 +161,19 @@ bool InitializeNetwork() {
 	return true;
 }
 
-// Network Cleanup
 void CleanupNetwork() {
 #ifdef _WIN32
 	WSACleanup();
 #endif
 }
 
-// Get local IP address (using modern APIs)
 std::string GetLocalIP() {
 #ifdef _WIN32
-	// Windows version - using getaaddrinfo instead of gethostbyname
 	char hostname[256];
 	if (gethostname(hostname, sizeof(hostname)) == 0) {
 		struct addrinfo hints, * result, * ptr;
 		memset(&hints, 0, sizeof(hints));
-		hints.ai_family = AF_INET; // IPv4
+		hints.ai_family = AF_INET;
 		hints.ai_socktype = SOCK_STREAM;
 
 		int error = getaddrinfo(hostname, NULL, &hints, &result);
@@ -200,18 +192,15 @@ std::string GetLocalIP() {
 		}
 	}
 #else
-	// Linux/Unix version
-	struct ifaddrs* ifaddr, * ifa;
+	struct ifaddrs* ifaddr;
+	struct ifaddrs* ifa;
 	if (getifaddrs(&ifaddr) != -1) {
 		for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next) {
 			if (ifa->ifa_addr == NULL) continue;
-
-			// Only focus on IPv4
 			if (ifa->ifa_addr->sa_family == AF_INET) {
 				struct sockaddr_in* sa = (struct sockaddr_in*)ifa->ifa_addr;
 				char ipstr[INET_ADDRSTRLEN];
 				if (inet_ntop(AF_INET, &(sa->sin_addr), ipstr, sizeof(ipstr)) != NULL) {
-					// Skip loopback address
 					if (strcmp(ipstr, "127.0.0.1") != 0) {
 						freeifaddrs(ifaddr);
 						return std::string(ipstr);
@@ -222,10 +211,10 @@ std::string GetLocalIP() {
 		freeifaddrs(ifaddr);
 	}
 #endif
-	return "127.0.0.1";
+	return std::string("127.0.0.1");
 }
 
-// Base64 encoding function
+// ---------------- Base64 for handshake ----------------
 std::string base64_encode(const std::string& input) {
 	const char base64_chars[] =
 		"ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -251,7 +240,7 @@ std::string base64_encode(const std::string& input) {
 	return output;
 }
 
-// Assist: Ensure that the specified length is read from the socket (handle TCP packet splitting)
+// ---------------- socket helpers ----------------
 static bool recv_all(SOCKET s, void* buf, size_t len) {
 	char* p = reinterpret_cast<char*>(buf);
 	size_t received = 0;
@@ -263,7 +252,6 @@ static bool recv_all(SOCKET s, void* buf, size_t len) {
 	return true;
 }
 
-// Send all data
 static bool send_all(SOCKET s, const void* buf, size_t len) {
 	const char* p = reinterpret_cast<const char*>(buf);
 	size_t sent = 0;
@@ -275,17 +263,16 @@ static bool send_all(SOCKET s, const void* buf, size_t len) {
 	return true;
 }
 
-// Send WebSocket text frames (server ->client, no mask required)
+// ---------------- WebSocket send function (server->client) ----------------
 void SendWSMessage(const std::string& message) {
 	if (!wsClientConnected || wsClientSocket == INVALID_SOCKET) return;
 
 	std::vector<unsigned char> frame;
 	const size_t len = message.size();
 
-	// first byte: FIN + opcode (text)
+	// FIN + text frame
 	frame.push_back(0x81);
 
-	// payload length
 	if (len <= 125) {
 		frame.push_back(static_cast<unsigned char>(len));
 	}
@@ -296,22 +283,17 @@ void SendWSMessage(const std::string& message) {
 	}
 	else {
 		frame.push_back(127);
-		// 8 bytes length (network byte order)
 		for (int i = 7; i >= 0; --i) {
 			frame.push_back(static_cast<unsigned char>((len >> (8 * i)) & 0xFF));
 		}
 	}
 
-	// append payload
 	frame.insert(frame.end(), message.begin(), message.end());
-
-	// send all
 	send_all(wsClientSocket, frame.data(), frame.size());
 }
 
-// Handle handshake (read requests more robustly)
+// ---------------- Handshake ----------------
 bool PerformWebSocketHandshake(SOCKET clientSocket) {
-	// Read HTTP request header (until \ r \ n \ r \ n), note that it may be unpacked and read multiple times
 	std::string request;
 	char buf[1024];
 	while (true) {
@@ -320,41 +302,31 @@ bool PerformWebSocketHandshake(SOCKET clientSocket) {
 		buf[r] = '\0';
 		request.append(buf, r);
 		if (request.find("\r\n\r\n") != std::string::npos) break;
-		// Protective: If the head is too large, it will fail
 		if (request.size() > 16 * 1024) return false;
 	}
 
-	// Check the Upgrade field
 	if (request.find("Upgrade: websocket") == std::string::npos &&
 		request.find("upgrade: websocket") == std::string::npos) {
 		return false;
 	}
 
-	// get Sec-WebSocket-Key
 	std::string websocketKey;
 	size_t keyPos = request.find("Sec-WebSocket-Key:");
-	if (keyPos == std::string::npos) {
-		// Also try lowercase form
-		keyPos = request.find("sec-websocket-key:");
-	}
+	if (keyPos == std::string::npos) keyPos = request.find("sec-websocket-key:");
 	if (keyPos != std::string::npos) {
 		keyPos = request.find(':', keyPos);
 		if (keyPos != std::string::npos) {
 			keyPos++;
-			// skip space
 			while (keyPos < request.size() && (request[keyPos] == ' ' || request[keyPos] == '\t')) keyPos++;
 			size_t eol = request.find("\r\n", keyPos);
 			if (eol != std::string::npos) {
 				websocketKey = request.substr(keyPos, eol - keyPos);
-				// trim
 				while (!websocketKey.empty() && (websocketKey.back() == '\r' || websocketKey.back() == '\n' || websocketKey.back() == ' ')) websocketKey.pop_back();
 			}
 		}
 	}
-
 	if (websocketKey.empty()) return false;
 
-	// generate Accept key
 	std::string magicString = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11";
 	std::string combined = websocketKey + magicString;
 
@@ -363,7 +335,6 @@ bool PerformWebSocketHandshake(SOCKET clientSocket) {
 
 	std::string acceptKey = base64_encode(std::string(reinterpret_cast<char*>(sha1Hash), SHA_DIGEST_LENGTH));
 
-	// Send handshake response
 	std::ostringstream resp;
 	resp << "HTTP/1.1 101 Switching Protocols\r\n";
 	resp << "Upgrade: websocket\r\n";
@@ -377,18 +348,23 @@ bool PerformWebSocketHandshake(SOCKET clientSocket) {
 	return true;
 }
 
-// Read and parse a complete WebSocket frame from the browser (return true and assign the text to outMessage)
-// Currently, only text frames (opcode 0x1) and control shutdown are supported
+// ---------------- Read one WebSocket frame (blocking) ----------------
+// Returns:
+//  - true  : a text frame was read and outMessage contains payload
+//  - true  : a control frame was processed (ping/pong) and outMessage may be empty
+//  - false : connection closed or error
 bool ReadWSFrame(SOCKET client, std::string& outMessage) {
 	unsigned char header[2];
 	if (!recv_all(client, header, 2)) return false;
 
-	bool fin = (header[0] & 0x80) != 0;
-	unsigned char opcode = header[0] & 0x0F;
-	bool masked = (header[1] & 0x80) != 0;
-	uint64_t payloadLen = header[1] & 0x7F;
+	unsigned char b0 = header[0];
+	unsigned char b1 = header[1];
 
-	// Extended length
+	bool fin = (b0 & 0x80) != 0;
+	unsigned char opcode = b0 & 0x0F;
+	bool masked = (b1 & 0x80) != 0;
+	uint64_t payloadLen = b1 & 0x7F;
+
 	if (payloadLen == 126) {
 		unsigned char ext[2];
 		if (!recv_all(client, ext, 2)) return false;
@@ -403,17 +379,15 @@ bool ReadWSFrame(SOCKET client, std::string& outMessage) {
 		}
 	}
 
-	// Mask key must exist (must be masked when the browser sends frames)
 	unsigned char maskKey[4] = { 0 };
 	if (masked) {
 		if (!recv_all(client, maskKey, 4)) return false;
 	}
 	else {
-		// Browsers should always be masked; If not, it is considered a protocol error
+		// According to RFC, client-to-server frames MUST be masked
 		return false;
 	}
 
-	// Payload reading (PayloadLen may be very large, be careful)
 	std::vector<unsigned char> payload;
 	if (payloadLen > 0) {
 		try {
@@ -423,60 +397,70 @@ bool ReadWSFrame(SOCKET client, std::string& outMessage) {
 			return false;
 		}
 		if (!recv_all(client, payload.data(), payloadLen)) return false;
-		// decode mask
 		for (uint64_t i = 0; i < payloadLen; ++i) {
 			payload[i] ^= maskKey[i % 4];
 		}
 	}
 
-	// Process opcode
+	// Handle opcodes
 	if (opcode == 0x8) {
-		// close frame
-		return false; // Return false to indicate connection closure
+		// Close frame: attempt to send a close in response (no payload required)
+		unsigned char closeFrame[2] = { 0x88, 0x00 };
+		send_all(client, closeFrame, 2);
+		return false;
+	}
+	else if (opcode == 0x9) {
+		// Ping -> send Pong with same payload
+		std::vector<unsigned char> pong;
+		pong.push_back(0x8A); // FIN + pong opcode (0xA)
+		size_t plen = payload.size();
+		if (plen <= 125) {
+			pong.push_back(static_cast<unsigned char>(plen));
+		}
+		else if (plen <= 0xFFFF) {
+			pong.push_back(126);
+			pong.push_back(static_cast<unsigned char>((plen >> 8) & 0xFF));
+			pong.push_back(static_cast<unsigned char>(plen & 0xFF));
+		}
+		else {
+			pong.push_back(127);
+			for (int i = 7; i >= 0; --i) pong.push_back(static_cast<unsigned char>((plen >> (8 * i)) & 0xFF));
+		}
+		pong.insert(pong.end(), payload.begin(), payload.end());
+		send_all(client, pong.data(), pong.size());
+		outMessage.clear();
+		return true; // processed ping
+	}
+	else if (opcode == 0xA) {
+		// Pong: ignore
+		outMessage.clear();
+		return true;
 	}
 	else if (opcode == 0x1) {
-		// Text frame
+		// Text frame: return payload (assumed UTF-8)
 		outMessage.assign(reinterpret_cast<char*>(payload.data()), payload.size());
 		return true;
 	}
-	else if (opcode == 0x9) {
-		// ping -> response pong
-		// send pong (payload copy) directly
-		std::vector<unsigned char> pongFrame;
-		pongFrame.push_back(0x8A); // FIN + opcode pong (0xA)
-		size_t plen = payload.size();
-		if (plen <= 125) {
-			pongFrame.push_back(static_cast<unsigned char>(plen));
-		}
-		else if (plen <= 0xFFFF) {
-			pongFrame.push_back(126);
-			pongFrame.push_back(static_cast<unsigned char>((plen >> 8) & 0xFF));
-			pongFrame.push_back(static_cast<unsigned char>(plen & 0xFF));
-		}
-		else {
-			pongFrame.push_back(127);
-			for (int i = 7; i >= 0; --i) pongFrame.push_back(static_cast<unsigned char>((plen >> (8 * i)) & 0xFF));
-		}
-		pongFrame.insert(pongFrame.end(), payload.begin(), payload.end());
-		send_all(client, pongFrame.data(), pongFrame.size());
-		return true; // continue loop
-	}
-	// Other opcodes are currently not supported (extensible)
+
+	// other opcodes: ignore for now
+	outMessage.clear();
 	return true;
 }
 
-// Handling WebSocket client main loop
+// ---------------- Main client handling loop (non-blocking via select) ----------------
 void HandleWSClient() {
-	// Handshake completed in StartWSServer and wsClientConnected set to true
 	std::cout << "WebSocket connected" << std::endl;
 
-	// Send a welcome message
+	// Send initial welcome messages (English UTF-8)
 	SendWSMessage("WebSocket connected.");
 	SendWSMessage("Commands available: start, stop, status, count, clear, exit");
 
-	// Main loop: send queue+read client frames
+	// Ensure wsClientConnected is true
+	wsClientConnected = true;
+
+	// Loop until client sends exit (which will set wsClientConnected=false) or socket error
 	while (wsClientConnected) {
-		// Sending messages in the queue
+		// 1) Flush message queue first
 		{
 			std::lock_guard<std::mutex> lock(wsQueueMutex);
 			for (const auto& msg : wsMessageQueue) {
@@ -485,45 +469,99 @@ void HandleWSClient() {
 			wsMessageQueue.clear();
 		}
 
-		// Non blocking waiting reception: We will block the reading of a frame (ReadWSFrame will handle unpacking)
-		std::string received;
-		bool ok = ReadWSFrame(wsClientSocket, received);
-		if (!ok) {
-			// Read failed or client request to close
+		// 2) Use select with timeout to wait for incoming data or timeout to re-loop
+		fd_set readfds;
+		FD_ZERO(&readfds);
+		SOCKET s = wsClientSocket;
+		FD_SET(s, &readfds);
+
+		struct timeval tv;
+		tv.tv_sec = 0;
+		tv.tv_usec = 200 * 1000; // 200 ms
+
+		int nfds = 0;
+#ifdef _WIN32
+		// on Windows, first param is ignored
+		int sel = select(0, &readfds, NULL, NULL, &tv);
+#else
+		nfds = s + 1;
+		int sel = select(nfds, &readfds, NULL, NULL, &tv);
+#endif
+		if (sel < 0) {
+			// select error -> break
 			wsClientConnected = false;
 			break;
 		}
+		else if (sel == 0) {
+			// timeout, loop again to flush queue / check flags
+			continue;
+		}
+		else {
+			if (FD_ISSET(s, &readfds)) {
+				// There is data -> read frame(s)
+				std::string received;
+				bool ok = ReadWSFrame(s, received);
+				if (!ok) {
+					wsClientConnected = false;
+					break;
+				}
+				if (!received.empty()) {
+					// Normalize CRLF and trim spaces
+					// Handle command
+					std::string cmd = received;
+					// trim
+					while (!cmd.empty() && (cmd.back() == '\r' || cmd.back() == '\n' || cmd.back() == ' ')) cmd.pop_back();
+					while (!cmd.empty() && (cmd.front() == '\r' || cmd.front() == '\n' || cmd.front() == ' ')) cmd.erase(0, 1);
 
-		// If an empty string is received (e.g. only ping/ong without payload), continue
-		if (!received.empty()) {
-			std::cout << "Received WebSocket command: " << received << std::endl;
-			SendWSMessage("Command received: " + received);
+					std::cout << "Received WebSocket command: " << cmd << std::endl;
+					SendWSMessage("Command received: " + cmd);
 
-			// process command
-			if (received == "start") StartListening();
-			else if (received == "stop") stopKeyMonitor();
-			else if (received == "status") ShowStatus();
-			else if (received == "count") SendWSMessage("event count: " + std::to_string(eventCount));
-			else if (received == "clear") ClearCount();
-			else if (received == "exit") {
-				SendWSMessage("exitting...");
-				wsClientConnected = false;
-				break;
+					if (cmd == "start") {
+						StartListening();
+						SendWSMessage("Started listening");
+					}
+					else if (cmd == "stop") {
+						stopKeyMonitor();
+						SendWSMessage("Stopped listening");
+					}
+					else if (cmd == "status") {
+						ShowStatus();
+						// Also return status over ws directly
+						SendWSMessage(std::string("Listening: ") + (IsListening() ? "true" : "false"));
+						SendWSMessage(std::string("EventCount: ") + std::to_string(eventCount));
+					}
+					else if (cmd == "count") {
+						SendWSMessage("Event count: " + std::to_string(eventCount));
+					}
+					else if (cmd == "clear") {
+						ClearCount();
+						SendWSMessage("Event count cleared");
+					}
+					else if (cmd == "help") {
+						// send help text over ws
+						SendWSMessage("Commands: start, stop, status, count, clear, help, exit");
+					}
+					else if (cmd == "exit") {
+						SendWSMessage("Exiting as requested");
+						wsClientConnected = false;
+						break;
+					}
+					else {
+						// Unknown command: echo back
+						SendWSMessage("Unknown command: " + cmd);
+					}
+				}
 			}
 		}
-
-		// Napping to reduce CPU usage (adjustable)
-		std::this_thread::sleep_for(std::chrono::milliseconds(10));
-	}
+	} // end while
 
 	std::cout << "WebSocket client processing loop ends" << std::endl;
 }
 
-// Start WebSocket server (blocking, single client)
+// ---------------- Start WebSocket server (single client blocking accept) ----------------
 bool StartWSServer(int port) {
 	if (!InitializeNetwork()) return false;
 
-	// Create server socket
 	SOCKET serverSock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 	if (serverSock == INVALID_SOCKET) {
 		std::cout << "Failed to create socket" << std::endl;
@@ -534,7 +572,6 @@ bool StartWSServer(int port) {
 	int opt = 1;
 	setsockopt(wsServerSocket, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&opt), sizeof(opt));
 
-	// bind
 	sockaddr_in serverAddr;
 	memset(&serverAddr, 0, sizeof(serverAddr));
 	serverAddr.sin_family = AF_INET;
@@ -553,7 +590,7 @@ bool StartWSServer(int port) {
 	}
 
 	if (listen(wsServerSocket, 1) != 0) {
-		std::cout << "Monitoring failed" << std::endl;
+		std::cout << "Listen failed" << std::endl;
 #ifdef _WIN32
 		closesocket(wsServerSocket);
 #else
@@ -571,7 +608,6 @@ bool StartWSServer(int port) {
 	std::cout << "Server address: ws://" << localIP << ":" << port << std::endl;
 	std::cout << "Waiting for client connection..." << std::endl;
 
-	// Accept client (blocking)
 	sockaddr_in clientAddr;
 	socklen_t clientLen = sizeof(clientAddr);
 	SOCKET clientSock = accept(wsServerSocket, reinterpret_cast<sockaddr*>(&clientAddr), &clientLen);
@@ -583,9 +619,9 @@ bool StartWSServer(int port) {
 
 	char clientIP[INET_ADDRSTRLEN];
 	inet_ntop(AF_INET, &clientAddr.sin_addr, clientIP, INET_ADDRSTRLEN);
-	std::cout << "The client has been connected: " << clientIP << std::endl;
+	std::cout << "Client connected: " << clientIP << std::endl;
 
-	// handshake
+	// Perform handshake
 	if (!PerformWebSocketHandshake(clientSock)) {
 #ifdef _WIN32
 		closesocket(clientSock);
@@ -599,10 +635,10 @@ bool StartWSServer(int port) {
 	wsClientSocket = clientSock;
 	wsClientConnected = true;
 
-	// Enter the processing loop (this function will block until the client disconnects)
+	// Enter processing loop (blocks until exit or error)
 	HandleWSClient();
 
-	// Clean handle
+	// Clean up sockets
 #ifdef _WIN32
 	closesocket(wsClientSocket);
 	closesocket(wsServerSocket);
@@ -619,7 +655,7 @@ bool StartWSServer(int port) {
 	return true;
 }
 
-// Analyze command-line parameters
+// ---------------- CLI parsing ----------------
 bool ParseCommandLine(int argc, char* argv[], std::string& mode, int& port) {
 	for (int i = 1; i < argc; i++) {
 		std::string arg = argv[i];
@@ -637,12 +673,11 @@ bool ParseCommandLine(int argc, char* argv[], std::string& mode, int& port) {
 	return true;
 }
 
-// main function
+// ---------------- main ----------------
 int main(int argc, char* argv[]) {
 	std::cout << "InputHook local testing program" << std::endl;
 	std::cout << "Compilation time: " << __DATE__ << " " << __TIME__ << std::endl;
 
-	// Command line parameter processing
 	if (argc > 1) {
 		std::string mode;
 		int port = 0;
@@ -654,7 +689,6 @@ int main(int argc, char* argv[]) {
 		if (!mode.empty()) {
 			if (mode == "start") {
 				StartListening();
-				// Keep the program running
 				std::cout << "press Enter to abort..." << std::endl;
 				std::cin.get();
 				if (IsListening()) {
@@ -680,11 +714,11 @@ int main(int argc, char* argv[]) {
 			}
 			else if (mode == "ws") {
 				if (port == 0) {
-					std::cout << "WebSocket mode requires specifying a port, using - p<port number>" << std::endl;
+					std::cout << "WebSocket mode requires specifying a port: -p <port>" << std::endl;
 					return 1;
 				}
 				if (!StartWSServer(port)) {
-					std::cout << "WebSocket server failed to start, port may be occupied" << std::endl;
+					std::cout << "WebSocket server failed to start, port may be used" << std::endl;
 					return 1;
 				}
 				return 0;
@@ -701,7 +735,7 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	// The original interactive mode
+	// interactive CLI mode
 	ShowHelp();
 
 	std::string command;
@@ -747,7 +781,6 @@ int main(int argc, char* argv[]) {
 			AutoTest();
 		}
 		else if (command == "exit" || command == "quit") {
-			// Ensure to stop listening before exiting
 			if (IsListening()) {
 				std::cout << "Stopping listening .." << std::endl;
 				stopKeyMonitor();

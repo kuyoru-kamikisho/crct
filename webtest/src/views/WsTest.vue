@@ -4,6 +4,7 @@
       {{ nowStatusIndex }}:{{ status }}
     </button>
 
+    <input v-model="myMessage" @keyup.enter.prevent="sendMyMsg" type="text" placeholder="输入要发送的内容">
     <textarea :value="wsMessage"></textarea>
   </div>
 </template>
@@ -19,14 +20,18 @@ const STATUS_ENUMS = {
   6: '遇到错误',
 }
 
-let wsInstance
+let wsInstance = null
 export default {
   name: "WsTest",
   data: () => ({
     status: '未连接',
     wsMessage: '',
+    myMessage: '',
   }),
   computed: {
+    wsActivating() {
+      return [1, 3, 4].includes(this.nowStatusIndex)
+    },
     nowStatusIndex() {
       const enums = []
       for (let key in STATUS_ENUMS) {
@@ -36,8 +41,18 @@ export default {
     }
   },
   methods: {
+    sendMyMsg() {
+      if (!this.myMessage) return;
+      if (this.wsActivating) {
+        wsInstance.send(this.myMessage)
+        this.wsMessage += `[已发送] ${this.myMessage}\n`
+        this.myMessage = ''
+      } else {
+        this.wsMessage += `[未发送] ${this.myMessage}，ws服务端未连接\n`
+      }
+    },
     connectAction() {
-      if ([1, 3, 4].includes(this.nowStatusIndex)) return
+      if (this.wsActivating) return
 
       this.status = STATUS_ENUMS[1]
       wsInstance = new WebSocket('ws://192.168.110.50:7077')
@@ -76,6 +91,14 @@ export default {
     width: 60%;
     margin-top: 12px;
     height: 200px;
+  }
+
+  input {
+    display: inline-block;
+    margin-left: 20px;
+    font-size: 16px;
+    outline: none;
+    padding: 5px 6px;
   }
 }
 </style>
