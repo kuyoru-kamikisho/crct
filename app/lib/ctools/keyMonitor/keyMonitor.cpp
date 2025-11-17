@@ -1,8 +1,4 @@
-﻿// keyMonitor.cpp
-// WebSocket-stable version: keeps connection until client sends "exit".
-// Only WS-related logic changed; InputHook logic is preserved.
-
-#include <openssl/sha.h>
+﻿#include <openssl/sha.h>
 #include <openssl/evp.h>
 #include <iomanip>
 #include <iostream>
@@ -37,6 +33,7 @@ typedef int SOCKET;
 
 // Global variables
 std::atomic<int> eventCount{ 0 };
+std::atomic<bool> programShouldExit{ false };
 
 // WebSocket variables
 std::atomic<bool> wsMode{ false };
@@ -542,7 +539,10 @@ void HandleWSClient() {
 						SendWSMessage("Commands: start, stop, status, count, clear, help, exit");
 					}
 					else if (cmd == "exit") {
-						SendWSMessage("Exiting as requested");
+						SendWSMessage("Exiting program as requested");
+
+						stopKeyMonitor();
+						programShouldExit = true;    // <- 通知主程序退出
 						wsClientConnected = false;
 						break;
 					}
@@ -652,7 +652,7 @@ bool StartWSServer(int port) {
 	wsMode = false;
 
 	CleanupNetwork();
-	return true;
+	return !programShouldExit;   // 如果收到 exit，则返回 false
 }
 
 // ---------------- CLI parsing ----------------
@@ -718,6 +718,11 @@ int main(int argc, char* argv[]) {
 					return 1;
 				}
 				if (!StartWSServer(port)) {
+					// 如果是 exit 触发的退出，则这里接管
+					if (programShouldExit) {
+						return 0;   // <-- 正常退出整个程序
+					}
+
 					std::cout << "WebSocket server failed to start, port may be used" << std::endl;
 					return 1;
 				}
@@ -739,9 +744,8 @@ int main(int argc, char* argv[]) {
 	ShowHelp();
 
 	std::string command;
-	bool running = true;
 
-	while (running) {
+	while (!programShouldExit) {
 		std::cout << std::endl << "Please enter the command: ";
 		std::getline(std::cin, command);
 
@@ -785,7 +789,7 @@ int main(int argc, char* argv[]) {
 				std::cout << "Stopping listening .." << std::endl;
 				stopKeyMonitor();
 			}
-			running = false;
+			programShouldExit = true;
 			std::cout << "Program exit" << std::endl;
 		}
 		else if (!command.empty()) {

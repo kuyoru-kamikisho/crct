@@ -3,9 +3,9 @@
     <button @click="connectAction">
       {{ nowStatusIndex }}:{{ status }}
     </button>
-
     <input v-model="myMessage" @keyup.enter.prevent="sendMyMsg" type="text" placeholder="输入要发送的内容">
-    <textarea :value="wsMessage"></textarea>
+    <button @click="clearWsMsg" class="clear-btn">清空</button>
+    <textarea v-model="wsMessage"></textarea>
   </div>
 </template>
 
@@ -41,6 +41,9 @@ export default {
     }
   },
   methods: {
+    clearWsMsg() {
+      this.wsMessage = ''
+    },
     sendMyMsg() {
       if (!this.myMessage) return;
       if (this.wsActivating) {
@@ -54,6 +57,8 @@ export default {
     connectAction() {
       if (this.wsActivating) return
 
+      const textareaDom = document.querySelector('textarea')
+
       this.status = STATUS_ENUMS[1]
       wsInstance = new WebSocket('ws://192.168.110.50:7077')
       wsInstance.onopen = e => {
@@ -63,6 +68,12 @@ export default {
       wsInstance.onmessage = e => {
         console.log('收到消息:', e.data)
         this.wsMessage += e.data + '\n'
+        requestAnimationFrame(() => {
+          textareaDom.scrollTo({
+            top: textareaDom.scrollHeight,
+            behavior: 'smooth'
+          })
+        })
       }
       wsInstance.onclose = e => {
         this.status = STATUS_ENUMS[5]
@@ -99,6 +110,10 @@ export default {
     font-size: 16px;
     outline: none;
     padding: 5px 6px;
+  }
+
+  .clear-btn {
+    margin-left: 20px;
   }
 }
 </style>
