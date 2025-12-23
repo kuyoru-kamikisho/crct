@@ -337,7 +337,13 @@ class _SchedulesContainerState extends State<SchedulesContainer>
                     ),
 
                 // ------------------TAB 1-----------------------
-                if (widget.activeTabIndex == 1) Container(),
+                if (widget.activeTabIndex == 1) Row(
+                  spacing: 6,
+                  children: [
+                    Expanded(flex: 2,child: Container(color: Colors.black12,height: 100,)),
+                    Expanded(flex: 3,child: Container(color: Colors.black12,height: 100,))
+                  ],
+                ),
 
                 // ------------------TAB 2-----------------------
                 if (widget.activeTabIndex == 2)

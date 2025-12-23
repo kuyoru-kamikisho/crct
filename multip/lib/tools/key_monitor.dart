@@ -52,7 +52,7 @@ class KeyMonitor with ChangeNotifier {
   // 停止 exe 程序
   Future<void> stop() async {
     if (_process != null) {
-      await _process?.kill();
+      _process?.kill();
       isRunning = false;
       notifyListeners();
     }
