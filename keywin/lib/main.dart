@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:keywin/outexe/key_monitor.dart';
 import 'package:keywin/store/main_provider.dart';
 import 'package:provider/provider.dart';
 
@@ -8,19 +9,59 @@ void main() {
       providers: [
         ChangeNotifierProvider(create: (_) => EventRecordProvider()),
         ChangeNotifierProvider(create: (_) => FileListProvider()),
+        ChangeNotifierProvider(
+          create: (_) {
+            var appInfo = AppInfoProvider();
+            appInfo.loadAppDir();
+            return appInfo;
+          },
+        ),
+        ChangeNotifierProvider(create: (_) => KeyMonitorWsConnector()),
       ],
       child: const MainApp(),
     ),
   );
 }
 
-class MainApp extends StatelessWidget {
+class MainApp extends StatefulWidget {
   const MainApp({super.key});
 
   @override
+  State<MainApp> createState() => _MainAppState();
+}
+
+class _MainAppState extends State<MainApp> {
+  final ScrollController _scrollController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    // 监听事件变化，滚动到底部
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(_scrollController.position.maxScrollExtent);
+      }
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    print('渲染+');
     final eventRecords = Provider.of<EventRecordProvider>(context);
     final fileList = Provider.of<FileListProvider>(context);
+    final appInfo = Provider.of<AppInfoProvider>(context);
+    final keyMonitor = Provider.of<KeyMonitorWsConnector>(context);
+
+    // 当事件记录变化时，滚动到底部
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.animateTo(
+          _scrollController.position.maxScrollExtent,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOut,
+        );
+      }
+    });
 
     return MaterialApp(
       home: Scaffold(
@@ -31,21 +72,23 @@ class MainApp extends StatelessWidget {
               color: Colors.black26,
               padding: EdgeInsets.all(12),
               margin: EdgeInsets.only(right: 4),
-              child: const Column(
+              child: Column(
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('这是一个用于“测试按键操作监听、复现”的专用项目，期望目标如下：'),
-                  Text('1. 可以实现键盘、鼠标动作的监听'),
-                  Text('2. 将监听结果实时存储到设备硬盘里面，用于根据该数据文件复现'),
-                  Text('3. 支持文件命名，并根据文件名重新生成“已录制的文件列表”并展示出来'),
-                  Text('4. 点击某个复现文件，可以实现动作重现'),
-                  Text('5. 支持循环'),
-                  Text('6. 支持结束后关机'),
-                  Text('7. 支持定时自动执行'),
-                  Text('8. 尽量低的内存占用'),
-                  Text('9. 尽量快的响应速度'),
-                  Text('10. 以上为本期的实现目标。'),
+                  const Text('这是一个用于“测试按键操作监听、复现”的专用项目，期望目标如下：'),
+                  const Text('1. 可以实现键盘、鼠标动作的监听'),
+                  const Text('2. 将监听结果实时存储到设备硬盘里面，用于根据该数据文件复现'),
+                  const Text('3. 支持文件命名，并根据文件名重新生成“已录制的文件列表”并展示出来'),
+                  const Text('4. 点击某个复现文件，可以实现动作重现'),
+                  const Text('5. 支持循环'),
+                  const Text('6. 支持结束后关机'),
+                  const Text('7. 支持定时自动执行'),
+                  const Text('8. 尽量低的内存占用'),
+                  const Text('9. 尽量快的响应速度'),
+                  const Text('10. 以上为本期的实现目标。'),
+                  const Text('\n'),
+                  Text('当前应用运行所在目录：${appInfo.appDir}'),
                 ],
               ),
             ),
@@ -58,17 +101,30 @@ class MainApp extends StatelessWidget {
                   color: Colors.black26,
                   child: Column(
                     children: [
-                      Text('这里是按钮区域'),
+                      const Text('这里是按钮区域'),
                       Wrap(
                         spacing: 4,
                         runSpacing: 4,
                         alignment: WrapAlignment.start,
                         children: [
-                          CommonBtn(child: Text('启动监听'), onTap: () {}),
-                          CommonBtn(child: Text('结束监听'), onTap: () {}),
-                          CommonBtn(child: Text('保存此文件'), onTap: () {}),
-                          CommonBtn(child: Text('删除此文件'), onTap: () {}),
-                          CommonBtn(child: Text('查询已记录文件'), onTap: () {}),
+                          CommonBtn(
+                            child: Text(keyMonitor.connected ? '已连接' : '启动监听'),
+                            onTap: () {
+                              keyMonitor.onMessage = (message) {
+                                eventRecords.addEventString(message);
+                              };
+                              keyMonitor.startConnectWs();
+                            },
+                          ),
+                          CommonBtn(
+                            child: const Text('结束监听'),
+                            onTap: () {
+                              keyMonitor.closeMonitor();
+                            },
+                          ),
+                          CommonBtn(child: const Text('保存此文件'), onTap: () {}),
+                          CommonBtn(child: const Text('删除此文件'), onTap: () {}),
+                          CommonBtn(child: const Text('查询已记录文件'), onTap: () {}),
                         ],
                       ),
                     ],
@@ -79,37 +135,41 @@ class MainApp extends StatelessWidget {
                   padding: EdgeInsets.all(12),
                   margin: EdgeInsets.only(right: 4),
                   color: Colors.black26,
-                  child: Column(crossAxisAlignment: CrossAxisAlignment.start,children: [
-                    Text('这里是已记录的文件展示区域'),
-                    Wrap(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('这里是已记录的文件展示区域'),
+                      Wrap(
                         alignment: WrapAlignment.start,
                         children: fileList.fileList.isEmpty
                             ? [const Text('暂无数据')]
-                            : fileList.fileList
-                                  .map((str) => Text(str))
-                                  .toList(),
+                            : fileList.fileList.map((str) => Text(str)).toList(),
                       ),
-                  ]),
+                    ],
+                  ),
                 ),
               ],
             ),
+            // 右侧日志区域（可滚动）
             Column(
               children: [
                 Container(
                   width: 300,
+                  height: MediaQuery.of(context).size.height * 0.9,
                   padding: EdgeInsets.all(12),
                   color: Colors.black26,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('这里是监听日志区域'),
-                      Wrap(
-                        alignment: WrapAlignment.start,
-                        children: eventRecords.eventsRecord.isEmpty
-                            ? [const Text('暂无数据')]
-                            : eventRecords.eventsRecord
-                                  .map((str) => Text(str))
-                                  .toList(),
+                      const Text('这里是监听日志区域'),
+                      Expanded(
+                        child: ListView.builder(
+                          controller: _scrollController,
+                          itemCount: eventRecords.eventsRecord.length,
+                          itemBuilder: (context, index) {
+                            return Text(eventRecords.eventsRecord[index]);
+                          },
+                        ),
                       ),
                     ],
                   ),

@@ -60,7 +60,7 @@ export default {
       const textareaDom = document.querySelector('textarea')
 
       this.status = STATUS_ENUMS[1]
-      wsInstance = new WebSocket('ws://192.168.110.50:7077')
+      wsInstance = new WebSocket('ws://127.0.0.1:7077')
       wsInstance.onopen = e => {
         this.status = STATUS_ENUMS[3]
         wsInstance.send('hello')
