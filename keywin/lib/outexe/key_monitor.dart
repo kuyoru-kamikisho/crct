@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:keywin/outexe/external_process_manager.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 
 class KeyMonitorWsConnector extends ChangeNotifier {
   final String port = '7097';
   final String ip = '127.0.0.1';
+  final epmForKeyMonitor = ExternalProcessManager();
 
   bool connected = false;
   WebSocketChannel? wsInstance;
@@ -43,7 +45,7 @@ class KeyMonitorWsConnector extends ChangeNotifier {
     } catch (e) {
       print('WebSocket 连接失败catched: $e');
       _handleDisconnection();
-      return; // 或者根据需求处理错误
+      return;
     }
   }
 
@@ -64,6 +66,7 @@ class KeyMonitorWsConnector extends ChangeNotifier {
   void closeMonitor() {
     try {
       wsInstance?.sink.add('exit');
+      epmForKeyMonitor.stopProcess();
     } catch (e) {
       print('发送 exit 命令失败: $e');
     } finally {

@@ -89,6 +89,7 @@ class _MainAppState extends State<MainApp> {
                   const Text('10. 以上为本期的实现目标。'),
                   const Text('\n'),
                   Text('当前应用运行所在目录：${appInfo.appDir}'),
+                  Text('插件1：${appInfo.keyMonitorExePath}'),
                 ],
               ),
             ),
@@ -110,10 +111,26 @@ class _MainAppState extends State<MainApp> {
                           CommonBtn(
                             child: Text(keyMonitor.connected ? '已连接' : '启动监听'),
                             onTap: () {
-                              keyMonitor.onMessage = (message) {
-                                eventRecords.addEventString(message);
-                              };
-                              keyMonitor.startConnectWs();
+                              keyMonitor.epmForKeyMonitor
+                                  .startProcess(
+                                    appInfo.keyMonitorExePath,
+                                    args: ['-m', 'ws', '-p', keyMonitor.port],
+                                  )
+                                  .then((b) {
+                                    if (b) {
+                                      eventRecords.resetEventRecord();
+                                      print('已启动插件1');
+                                      // TODO：帮我诊断：
+                                      // 我的程序已经成功连上 这个exe程序会启动一个ws服务会不断的向我发送信息，而我会把发送过来的信息都存储到全局变量里，然而现在我的这个程序有个问题
+                                      // 当接收消息超过二十几条之后（几乎是一瞬间我就可以收到这么多数量的消息），我的程序会变得很卡（或者说整个电脑都被拖累的很卡，因为鼠标的移动都变得很卡了）
+                                      // 这到底是哪里的问题，这个exe程序我使用cmd执行并且用flutter连接接收消息完全不会出现这种现象，
+                                      // 靠我的flutter程序执行就出现这个问题了
+                                      keyMonitor.onMessage = (message) {
+                                        eventRecords.addEventString(message);
+                                      };
+                                      keyMonitor.startConnectWs();
+                                    }
+                                  });
                             },
                           ),
                           CommonBtn(
@@ -141,9 +158,16 @@ class _MainAppState extends State<MainApp> {
                       const Text('这里是已记录的文件展示区域'),
                       Wrap(
                         alignment: WrapAlignment.start,
-                        children: fileList.fileList.isEmpty
-                            ? [const Text('暂无数据')]
-                            : fileList.fileList.map((str) => Text(str)).toList(),
+                        children: [
+                          fileList.fileList.isEmpty
+                              ? const Text('暂无数据')
+                              : Text(
+                                  fileList.fileList.join('\n'), // 用换行符连接所有字符串
+                                  style: const TextStyle(
+                                    height: 1.5,
+                                  ), // 调整行高，使换行更美观
+                                ),
+                        ],
                       ),
                     ],
                   ),
