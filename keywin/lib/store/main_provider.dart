@@ -21,6 +21,14 @@ class EventRecordProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void addEventStrings(List<String> items) {
+    if (items.isEmpty) {
+      return;
+    }
+    eventsRecord.addAll(items);
+    notifyListeners();
+  }
+
   void resetEventRecord() {
     eventsRecord.clear();
     notifyListeners();
