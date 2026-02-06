@@ -41,6 +41,7 @@ class _KeyMonitorHomeState extends State<KeyMonitorHome> {
   WebSocket? _ws;
   StreamSubscription? _wsSubscription;
   Timer? _flushTimer;
+  Stopwatch? _wsUptime;
   bool _connecting = false;
   bool _startingProcess = false;
   bool _wsConnected = false;
@@ -72,11 +73,12 @@ class _KeyMonitorHomeState extends State<KeyMonitorHome> {
     try {
       final String exePath =
           '${Directory.current.path}\\plugins\\keyMonitor.exe';
-      _keyMonitorProcess = await Process.start(
-        exePath,
-        const ['-m', 'ws', '-p', '7098'],
-        runInShell: true,
-      );
+      _keyMonitorProcess = await Process.start(exePath, const [
+        '-m',
+        'ws',
+        '-p',
+        '7098',
+      ], runInShell: true);
       _stdoutSub = _keyMonitorProcess!.stdout.listen(
         (_) {},
         onError: (_) {},
@@ -151,11 +153,18 @@ class _KeyMonitorHomeState extends State<KeyMonitorHome> {
     try {
       _ws = await WebSocket.connect('ws://127.0.0.1:7098');
       _wsConnected = true;
+      _wsUptime?.stop();
+      _wsUptime = Stopwatch()..start();
       _ws!.add('start');
       _wsSubscription = _ws!.listen(
         (dynamic data) {
           final String message = data.toString();
-          _appendLog(message);
+          final List<String> lines = message.split('\n');
+          final List<String> formatted = <String>[];
+          for (final String line in lines) {
+            formatted.add(_applyTimestampIfNeeded(line));
+          }
+          _appendLogs(formatted);
         },
         onError: (Object err) {
           if (!mounted) return;
@@ -209,6 +218,8 @@ class _KeyMonitorHomeState extends State<KeyMonitorHome> {
     } catch (_) {}
     await _wsSubscription?.cancel();
     _wsSubscription = null;
+    _wsUptime?.stop();
+    _wsUptime = null;
     if (mounted) {
       setState(() {
         _wsConnected = false;
@@ -225,12 +236,38 @@ class _KeyMonitorHomeState extends State<KeyMonitorHome> {
     _flushTimer = null;
   }
 
-  void _appendLog(String message) {
-    wsMessageStore.add(message);
+  String _applyTimestampIfNeeded(String line) {
+    if (line.isEmpty || line.codeUnitAt(0) != 0x5B) {
+      return line;
+    }
+    final int closeIndex = line.indexOf(']');
+    if (closeIndex <= 1) {
+      return line;
+    }
+    for (int i = 1; i < closeIndex; i++) {
+      final int code = line.codeUnitAt(i);
+      if (code < 0x30 || code > 0x39) {
+        return line;
+      }
+    }
+    final Stopwatch? uptime = _wsUptime;
+    if (uptime == null) {
+      return line;
+    }
+    final Duration elapsed = uptime.elapsed;
+    final String hh = elapsed.inHours.toString().padLeft(2, '0');
+    final String mm = (elapsed.inMinutes % 60).toString().padLeft(2, '0');
+    final String ss = (elapsed.inSeconds % 60).toString().padLeft(2, '0');
+    return '[$hh:$mm:$ss]${line.substring(closeIndex + 1)}';
+  }
+
+  void _appendLogs(List<String> messages) {
+    if (messages.isEmpty) return;
+    wsMessageStore.addAll(messages);
     if (wsMessageStore.length > _maxLogs) {
       wsMessageStore.removeRange(0, wsMessageStore.length - _maxLogs);
     }
-    _pendingLogs.add(message);
+    _pendingLogs.addAll(messages);
     _flushTimer ??= Timer(_flushInterval, _flushPendingLogs);
   }
 
@@ -262,9 +299,7 @@ class _KeyMonitorHomeState extends State<KeyMonitorHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('KeyMonitor WS'),
-      ),
+      appBar: AppBar(title: const Text('KeyMonitor WS')),
       body: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(
@@ -272,8 +307,9 @@ class _KeyMonitorHomeState extends State<KeyMonitorHome> {
             Row(
               children: <Widget>[
                 ElevatedButton(
-                  onPressed:
-                      _startingProcess || _connecting ? null : _handleConnect,
+                  onPressed: _startingProcess || _connecting
+                      ? null
+                      : _handleConnect,
                   child: const Text('Connect'),
                 ),
                 const SizedBox(width: 12),
@@ -293,9 +329,7 @@ class _KeyMonitorHomeState extends State<KeyMonitorHome> {
             const SizedBox(height: 8),
             Row(
               children: <Widget>[
-                Text(
-                  'WS: ${_wsConnected ? 'Connected' : 'Disconnected'}',
-                ),
+                Text('WS: ${_wsConnected ? 'Connected' : 'Disconnected'}'),
                 const SizedBox(width: 16),
                 Text(
                   'Process: ${_keyMonitorProcess != null ? 'Running' : 'Stopped'}',
@@ -304,10 +338,7 @@ class _KeyMonitorHomeState extends State<KeyMonitorHome> {
             ),
             if (_lastError.isNotEmpty) ...<Widget>[
               const SizedBox(height: 6),
-              Text(
-                _lastError,
-                style: const TextStyle(color: Colors.red),
-              ),
+              Text(_lastError, style: const TextStyle(color: Colors.red)),
             ],
             const SizedBox(height: 12),
             Expanded(
@@ -317,14 +348,16 @@ class _KeyMonitorHomeState extends State<KeyMonitorHome> {
                 decoration: BoxDecoration(
                   border: Border.all(color: Colors.grey.shade400),
                 ),
-                child: Scrollbar(
-                  controller: _scrollController,
-                  child: ListView.builder(
+                child: SelectionArea(
+                  child: Scrollbar(
                     controller: _scrollController,
-                    itemCount: _logs.length,
-                    itemBuilder: (BuildContext context, int index) {
-                      return Text(_logs[index]);
-                    },
+                    child: SingleChildScrollView(
+                      controller: _scrollController,
+                      child: SelectableText(
+                        _logs.join('\n'),
+                        style: const TextStyle(fontFamily: 'monospace'),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -335,4 +368,3 @@ class _KeyMonitorHomeState extends State<KeyMonitorHome> {
     );
   }
 }
-
