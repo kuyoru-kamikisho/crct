@@ -4,3 +4,4 @@ target/
 dist/
 node_modules/
 *.lock
+application.yml
