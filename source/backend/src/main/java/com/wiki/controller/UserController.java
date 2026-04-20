@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -35,8 +37,16 @@ public class UserController {
     // 创建用户
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {
-        User savedUser = userService.save(user);
-        return ResponseEntity.ok(savedUser);
+        user.setId(null);
+        if (user.getDeletedAt() != null) {
+            return ResponseEntity.badRequest().build();
+        }
+        try {
+            User savedUser = userService.save(user);
+            return ResponseEntity.ok(savedUser);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     // 更新用户
@@ -47,8 +57,12 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
         user.setId(id);
-        User updatedUser = userService.save(user);
-        return ResponseEntity.ok(updatedUser);
+        try {
+            User updatedUser = userService.save(user);
+            return ResponseEntity.ok(updatedUser);
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().build();
+        }
     }
 
     // 删除用户
@@ -60,5 +74,34 @@ public class UserController {
         }
         userService.deleteById(id);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/{username}/access-status")
+    public ResponseEntity<Map<String, Object>> getAccessStatus(@PathVariable String username) {
+        User user = userService.findActiveByUsername(username);
+        Map<String, Object> response = new HashMap<String, Object>();
+        String reason = userService.getAccessBlockReason(user);
+        response.put("canAccess", reason == null);
+        response.put("reason", reason);
+        response.put("username", username);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/{username}/login-success")
+    public ResponseEntity<User> recordLoginSuccess(@PathVariable String username) {
+        User user = userService.recordLoginSuccess(username);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(user);
+    }
+
+    @PostMapping("/{username}/login-failure")
+    public ResponseEntity<User> recordLoginFailure(@PathVariable String username) {
+        User user = userService.recordLoginFailure(username);
+        if (user == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(user);
     }
 }

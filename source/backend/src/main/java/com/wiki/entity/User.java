@@ -15,14 +15,14 @@ public class User {
     @Column(name = "username", unique = true, nullable = false, length = 20)
     private String username;
 
-    @Column(name = "pwd", nullable = false, length = 255)
+    @Column(name = "password_hash", nullable = false, length = 255)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
-    private String pwd;
+    private String passwordHash;
 
-    @Column(name = "ipAddress", nullable = false, length = 45)
+    @Column(name = "ip_address", nullable = false, length = 45)
     private String ipAddress;
 
-    @Column(name = "userType", nullable = false)
+    @Column(name = "user_type", nullable = false)
     private Byte userType;
 
     @Column(name = "created_at", nullable = false)
@@ -32,6 +32,7 @@ public class User {
     private Date deletedAt;
 
     @Column(name = "birthday")
+    @Temporal(TemporalType.DATE)
     private Date birthday;
 
     @Column(name = "bio", length = 300)
@@ -49,11 +50,20 @@ public class User {
     @Column(name = "marked", nullable = false)
     private Boolean marked;
 
-    @Column(name = "markTime")
+    @Column(name = "mark_time")
     private Date markTime;
 
-    @Column(name = "markReason", length = 500)
+    @Column(name = "mark_reason", length = 500)
     private String markReason;
+
+    @Column(name = "password_updated_at", nullable = false)
+    private Date passwordUpdatedAt;
+
+    @Column(name = "failed_login_count", nullable = false)
+    private Integer failedLoginCount;
+
+    @Column(name = "locked_until")
+    private Date lockedUntil;
 
     // Getters and Setters
     public Integer getId() {
@@ -72,12 +82,12 @@ public class User {
         this.username = username;
     }
 
-    public String getPwd() {
-        return pwd;
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
-    public void setPwd(String pwd) {
-        this.pwd = pwd;
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public String getIpAddress() {
@@ -174,5 +184,29 @@ public class User {
 
     public void setMarkReason(String markReason) {
         this.markReason = markReason;
+    }
+
+    public Date getPasswordUpdatedAt() {
+        return passwordUpdatedAt;
+    }
+
+    public void setPasswordUpdatedAt(Date passwordUpdatedAt) {
+        this.passwordUpdatedAt = passwordUpdatedAt;
+    }
+
+    public Integer getFailedLoginCount() {
+        return failedLoginCount;
+    }
+
+    public void setFailedLoginCount(Integer failedLoginCount) {
+        this.failedLoginCount = failedLoginCount;
+    }
+
+    public Date getLockedUntil() {
+        return lockedUntil;
+    }
+
+    public void setLockedUntil(Date lockedUntil) {
+        this.lockedUntil = lockedUntil;
     }
 }
