@@ -13,6 +13,7 @@ class RegisterPage extends StatefulWidget {
 class _RegisterPageState extends State<RegisterPage> {
   final _api = ApiClient();
   final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _recoveryKeyController;
   String _username = '';
   String _password = '';
   int _gender = 2;
@@ -21,6 +22,18 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _loading = false;
   int _countdown = 0;
   bool _usernameAvailable = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _recoveryKeyController = TextEditingController(text: _recoveryKey);
+  }
+
+  @override
+  void dispose() {
+    _recoveryKeyController.dispose();
+    super.dispose();
+  }
 
   Future<void> _checkUsername(String value) async {
     if (value.trim().isEmpty) {
@@ -58,6 +71,7 @@ class _RegisterPageState extends State<RegisterPage> {
       _formKey.currentState!.reset();
       setState(() {
         _recoveryKey = randomRecoveryKey();
+        _recoveryKeyController.text = _recoveryKey;
         _usernameAvailable = false;
         _countdown = 10;
       });
@@ -85,6 +99,9 @@ class _RegisterPageState extends State<RegisterPage> {
   @override
   Widget build(BuildContext context) {
     final disabled = _loading || _countdown > 0 || !_usernameAvailable;
+    final birthdayText = _birthday == null
+        ? '请选择生日（可选）'
+        : '${_birthday!.year.toString().padLeft(4, '0')}-${_birthday!.month.toString().padLeft(2, '0')}-${_birthday!.day.toString().padLeft(2, '0')}';
     return Scaffold(
       appBar: AppBar(title: const Text('注册')),
       body: Padding(
@@ -120,29 +137,45 @@ class _RegisterPageState extends State<RegisterPage> {
                 onChanged: (v) => setState(() => _gender = v ?? 2),
                 decoration: const InputDecoration(labelText: '性别'),
               ),
-              TextButton(
-                onPressed: () async {
+              InkWell(
+                borderRadius: BorderRadius.circular(4),
+                onTap: () async {
                   final picked = await showDatePicker(
                     context: context,
+                    locale: const Locale('zh', 'CN'),
                     firstDate: DateTime(1900),
                     lastDate: DateTime.now(),
-                    initialDate: DateTime.now(),
+                    initialDate: _birthday ?? DateTime.now(),
                   );
                   if (picked != null) {
                     setState(() => _birthday = picked);
                   }
                 },
-                child: Text(_birthday == null ? '选择生日(可选)' : _birthday.toString().substring(0, 10)),
+                child: InputDecorator(
+                  decoration: const InputDecoration(
+                    labelText: '生日',
+                    border: OutlineInputBorder(),
+                  ),
+                  child: Text(
+                    birthdayText,
+                    style: TextStyle(
+                      color: _birthday == null ? Theme.of(context).hintColor : null,
+                    ),
+                  ),
+                ),
               ),
               TextFormField(
-                initialValue: _recoveryKey,
+                controller: _recoveryKeyController,
                 readOnly: true,
-                decoration: const InputDecoration(labelText: '恢复密钥'),
+                decoration: const InputDecoration(labelText: '恢复密钥，重置密码的唯一方式，请妥善保管'),
               ),
               Row(
                 children: [
                   TextButton(
-                    onPressed: () => setState(() => _recoveryKey = randomRecoveryKey()),
+                    onPressed: () => setState(() {
+                      _recoveryKey = randomRecoveryKey();
+                      _recoveryKeyController.text = _recoveryKey;
+                    }),
                     child: const Text('刷新密钥'),
                   ),
                   TextButton(

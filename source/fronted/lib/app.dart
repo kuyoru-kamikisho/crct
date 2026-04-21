@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 
 import 'pages/home_page.dart';
@@ -17,6 +18,15 @@ class MainApp extends StatelessWidget {
       value: authStore,
       child: MaterialApp(
         title: 'Auth Demo',
+        localizationsDelegates: const [
+          GlobalMaterialLocalizations.delegate,
+          GlobalWidgetsLocalizations.delegate,
+          GlobalCupertinoLocalizations.delegate,
+        ],
+        supportedLocales: const [
+          Locale('zh', 'CN'),
+          Locale('en', 'US'),
+        ],
         routes: {
           '/': (context) => const HomePage(),
           '/login': (context) => const LoginPage(),
