@@ -16,7 +16,7 @@ class HomePage extends StatelessWidget {
         children: [
           Text(auth.loggedIn ? '当前用户：${auth.user?['username'] ?? ''}' : '未登录，去登录'),
           const SizedBox(height: 16),
-          Container(height: 120, margin: const EdgeInsets.all(16), color: Colors.grey.shade200),
+          Container(height: 120, margin: const EdgeInsets.all(16), color: const Color.fromARGB(255, 30, 22, 31)),
           const Spacer(),
           Row(
             mainAxisAlignment: MainAxisAlignment.center,

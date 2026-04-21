@@ -110,14 +110,22 @@ class _RegisterPageState extends State<RegisterPage> {
           key: _formKey,
           child: ListView(
             children: [
+              const Text('用户名'),
+              const SizedBox(height: 8),
               TextFormField(
-                decoration: InputDecoration(labelText: '用户名', helperText: _usernameAvailable ? '用户名可用' : '用户名不可用'),
+                decoration: InputDecoration(
+                  hintText: '请输入用户名',
+                  helperText: _usernameAvailable ? '用户名可用' : '用户名不可用',
+                ),
                 validator: (v) => v == null || v.trim().isEmpty ? '用户名不能为空' : null,
                 onChanged: _checkUsername,
                 onSaved: (v) => _username = v!.trim(),
               ),
+              const SizedBox(height: 16),
+              const Text('密码'),
+              const SizedBox(height: 8),
               TextFormField(
-                decoration: const InputDecoration(labelText: '密码'),
+                decoration: const InputDecoration(hintText: '请输入密码'),
                 obscureText: true,
                 validator: (v) {
                   final value = v ?? '';
@@ -127,16 +135,36 @@ class _RegisterPageState extends State<RegisterPage> {
                 },
                 onSaved: (v) => _password = v!,
               ),
-              DropdownButtonFormField<int>(
-                value: _gender,
-                items: const [
-                  DropdownMenuItem(value: 1, child: Text('男')),
-                  DropdownMenuItem(value: 2, child: Text('女')),
-                  DropdownMenuItem(value: 3, child: Text('未知')),
+              const SizedBox(height: 16),
+              const Text('性别'),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  RadioMenuButton<int>(
+                    value: 1,
+                    groupValue: _gender,
+                    onChanged: (v) => setState(() => _gender = v ?? 2),
+                    child: const Text('男'),
+                  ),
+                  const SizedBox(width: 12),
+                  RadioMenuButton<int>(
+                    value: 2,
+                    groupValue: _gender,
+                    onChanged: (v) => setState(() => _gender = v ?? 2),
+                    child: const Text('女'),
+                  ),
+                  const SizedBox(width: 12),
+                  RadioMenuButton<int>(
+                    value: 3,
+                    groupValue: _gender,
+                    onChanged: (v) => setState(() => _gender = v ?? 2),
+                    child: const Text('未知'),
+                  ),
                 ],
-                onChanged: (v) => setState(() => _gender = v ?? 2),
-                decoration: const InputDecoration(labelText: '性别'),
               ),
+              const SizedBox(height: 16),
+              const Text('生日'),
+              const SizedBox(height: 8),
               InkWell(
                 borderRadius: BorderRadius.circular(4),
                 onTap: () async {
@@ -153,8 +181,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 },
                 child: InputDecorator(
                   decoration: const InputDecoration(
-                    labelText: '生日',
-                    border: OutlineInputBorder(),
+                    hintText: '请选择生日（可选）',
                   ),
                   child: Text(
                     birthdayText,
@@ -164,11 +191,17 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ),
               ),
+              const SizedBox(height: 16),
+              const Text('恢复密钥'),
+              const SizedBox(height: 8),
               TextFormField(
                 controller: _recoveryKeyController,
                 readOnly: true,
-                decoration: const InputDecoration(labelText: '恢复密钥，重置密码的唯一方式，请妥善保管'),
+                decoration: const InputDecoration(
+                  helperText: '重置密码的唯一方式，请妥善保管',
+                ),
               ),
+              const SizedBox(height: 8),
               Row(
                 children: [
                   TextButton(
@@ -184,10 +217,12 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                 ],
               ),
+              const SizedBox(height: 16),
               ElevatedButton(
                 onPressed: disabled ? null : _submit,
                 child: Text(disabled && _countdown > 0 ? '$_countdown 秒后可再次注册' : (_loading ? '提交中...' : '注册')),
               ),
+              const SizedBox(height: 8),
               TextButton(
                 onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
                 child: const Text('已有账号？点此登录'),
