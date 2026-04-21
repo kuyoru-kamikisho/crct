@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../services/api_client.dart';
 import '../utils/recovery_key.dart';
@@ -14,13 +15,26 @@ class _RetrievePageState extends State<RetrievePage> {
   final _api = ApiClient();
   bool _resetMode = true;
   final _formKey = GlobalKey<FormState>();
+  late final TextEditingController _newRecoveryKeyController;
   String _username = '';
   String _userId = '';
   String _recoveryKey = '';
   String _newPassword = '';
-  final String _newRecoveryKey = randomRecoveryKey();
+  String _newRecoveryKey = randomRecoveryKey();
   String _foundUsername = '';
   bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _newRecoveryKeyController = TextEditingController(text: _newRecoveryKey);
+  }
+
+  @override
+  void dispose() {
+    _newRecoveryKeyController.dispose();
+    super.dispose();
+  }
 
   Future<void> _submit() async {
     if (!_formKey.currentState!.validate() || _loading) {
@@ -102,10 +116,36 @@ class _RetrievePageState extends State<RetrievePage> {
                   obscureText: true,
                   validator: (v) => v == _newPassword ? null : '两次密码不一致',
                 ),
-                TextFormField(
-                  initialValue: _newRecoveryKey,
-                  readOnly: true,
-                  decoration: const InputDecoration(labelText: '新恢复密钥'),
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: TextFormField(
+                        controller: _newRecoveryKeyController,
+                        readOnly: true,
+                        decoration: const InputDecoration(labelText: '新恢复密钥'),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () => setState(() {
+                        _newRecoveryKey = randomRecoveryKey();
+                        _newRecoveryKeyController.text = _newRecoveryKey;
+                      }),
+                      child: const Text('更换密钥'),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        await Clipboard.setData(ClipboardData(text: _newRecoveryKeyController.text));
+                        if (!mounted) {
+                          return;
+                        }
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('密钥已复制到剪贴板')),
+                        );
+                      },
+                      child: const Text('复制密钥'),
+                    ),
+                  ],
                 ),
               ] else ...[
                 TextFormField(
