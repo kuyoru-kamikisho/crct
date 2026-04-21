@@ -19,6 +19,10 @@ public class User {
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String passwordHash;
 
+    @Column(name = "recovery_key", nullable = false, length = 255)
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String recoveryKey;
+
     @Column(name = "ip_address", nullable = false, length = 45)
     private String ipAddress;
 
@@ -96,6 +100,14 @@ public class User {
 
     public void setIpAddress(String ipAddress) {
         this.ipAddress = ipAddress;
+    }
+
+    public String getRecoveryKey() {
+        return recoveryKey;
+    }
+
+    public void setRecoveryKey(String recoveryKey) {
+        this.recoveryKey = recoveryKey;
     }
 
     public Byte getUserType() {

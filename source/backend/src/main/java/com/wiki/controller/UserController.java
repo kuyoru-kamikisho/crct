@@ -12,6 +12,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
+@CrossOrigin
 public class UserController {
 
     @Autowired
@@ -103,5 +104,78 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
         return ResponseEntity.ok(user);
+    }
+
+    @GetMapping("/check-username")
+    public ResponseEntity<Map<String, Object>> checkUsername(@RequestParam("username") String username) {
+        Map<String, Object> response = new HashMap<String, Object>();
+        boolean available = userService.isUsernameAvailable(username);
+        response.put("code", 200);
+        response.put("msg", available ? "用户名可用" : "用户名已存在");
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("available", available);
+        response.put("data", data);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<Map<String, Object>> register(@RequestBody Map<String, Object> body) {
+        Map<String, Object> result = userService.register(
+                stringVal(body.get("username")),
+                stringVal(body.get("password")),
+                stringVal(body.get("recoveryKey")),
+                stringVal(body.get("ipAddress")),
+                stringVal(body.get("birthday")),
+                body.get("gender") == null ? null : Byte.valueOf(String.valueOf(body.get("gender")))
+        );
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<Map<String, Object>> login(@RequestBody Map<String, Object> body) {
+        Map<String, Object> result = userService.login(
+                stringVal(body.get("username")),
+                stringVal(body.get("password")),
+                stringVal(body.get("ipAddress"))
+        );
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping("/retrieve/reset-password")
+    public ResponseEntity<Map<String, Object>> resetPassword(@RequestBody Map<String, Object> body) {
+        Integer userId = null;
+        if (body.get("userId") != null && !"".equals(String.valueOf(body.get("userId")).trim())) {
+            userId = Integer.valueOf(String.valueOf(body.get("userId")));
+        }
+        Map<String, Object> result = userService.resetPassword(
+                stringVal(body.get("username")),
+                userId,
+                stringVal(body.get("recoveryKey")),
+                stringVal(body.get("newPassword")),
+                stringVal(body.get("newRecoveryKey"))
+        );
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/retrieve/username")
+    public ResponseEntity<Map<String, Object>> retrieveUsername(@RequestParam("userId") Integer userId) {
+        User user = userService.findByUserIdForRetrieve(userId);
+        Map<String, Object> result = new HashMap<String, Object>();
+        if (user == null) {
+            result.put("code", 404);
+            result.put("msg", "该用户ID不存在");
+            result.put("data", null);
+            return ResponseEntity.ok(result);
+        }
+        result.put("code", 200);
+        result.put("msg", "查询成功");
+        Map<String, Object> data = new HashMap<String, Object>();
+        data.put("username", user.getUsername());
+        result.put("data", data);
+        return ResponseEntity.ok(result);
+    }
+
+    private String stringVal(Object value) {
+        return value == null ? null : String.valueOf(value);
     }
 }
