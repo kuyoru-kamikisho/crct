@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import 'pages/home_page.dart';
 import 'pages/login_page.dart';
+import 'pages/profile_page.dart';
 import 'pages/register_page.dart';
 import 'pages/retrieve_page.dart';
 import 'store/auth_store.dart';
@@ -17,7 +18,8 @@ class MainApp extends StatelessWidget {
     return ChangeNotifierProvider.value(
       value: authStore,
       child: MaterialApp(
-        title: 'Auth Demo',
+        title: 'Promilia Tavern',
+        debugShowCheckedModeBanner: false,
         themeMode: ThemeMode.dark,
         localizationsDelegates: const [
           GlobalMaterialLocalizations.delegate,
@@ -85,6 +87,7 @@ class MainApp extends StatelessWidget {
           '/login': (context) => const LoginPage(),
           '/register': (context) => const RegisterPage(),
           '/retrieve': (context) => const RetrievePage(),
+          '/profile_page': (context) => const ProfilePage(),
         },
         initialRoute: '/',
       ),

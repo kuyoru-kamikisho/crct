@@ -16,6 +16,7 @@ class _LoginPageState extends State<LoginPage> {
   final _formKey = GlobalKey<FormState>();
   String _username = '';
   String _password = '';
+  bool _obscurePassword = true;
   bool _loading = false;
   int _countdown = 0;
 
@@ -85,8 +86,14 @@ class _LoginPageState extends State<LoginPage> {
                 onSaved: (v) => _username = v!.trim(),
               ),
               TextFormField(
-                decoration: const InputDecoration(labelText: '密码'),
-                obscureText: true,
+                decoration: InputDecoration(
+                  labelText: '密码',
+                  suffixIcon: IconButton(
+                    icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  ),
+                ),
+                obscureText: _obscurePassword,
                 validator: (v) => v == null || v.isEmpty ? '密码不能为空' : null,
                 onSaved: (v) => _password = v!,
               ),

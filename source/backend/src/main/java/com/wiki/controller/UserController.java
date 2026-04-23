@@ -58,6 +58,36 @@ public class UserController {
             return ResponseEntity.notFound().build();
         }
         user.setId(id);
+        if (user.getPasswordHash() == null) {
+            user.setPasswordHash(existingUser.getPasswordHash());
+        }
+        if (user.getRecoveryKey() == null) {
+            user.setRecoveryKey(existingUser.getRecoveryKey());
+        }
+        if (user.getIpAddress() == null || user.getIpAddress().trim().isEmpty()) {
+            user.setIpAddress(existingUser.getIpAddress());
+        }
+        if (user.getCreatedAt() == null) {
+            user.setCreatedAt(existingUser.getCreatedAt());
+        }
+        if (user.getLastLoginTime() == null) {
+            user.setLastLoginTime(existingUser.getLastLoginTime());
+        }
+        if (user.getMarkTime() == null) {
+            user.setMarkTime(existingUser.getMarkTime());
+        }
+        if (user.getMarkReason() == null) {
+            user.setMarkReason(existingUser.getMarkReason());
+        }
+        if (user.getPasswordUpdatedAt() == null) {
+            user.setPasswordUpdatedAt(existingUser.getPasswordUpdatedAt());
+        }
+        if (user.getFailedLoginCount() == null) {
+            user.setFailedLoginCount(existingUser.getFailedLoginCount());
+        }
+        if (user.getLockedUntil() == null) {
+            user.setLockedUntil(existingUser.getLockedUntil());
+        }
         try {
             User updatedUser = userService.save(user);
             return ResponseEntity.ok(updatedUser);

@@ -23,6 +23,8 @@ class _RetrievePageState extends State<RetrievePage> {
   String _newRecoveryKey = randomRecoveryKey();
   String _foundUsername = '';
   bool _loading = false;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmNewPassword = true;
 
   @override
   void initState() {
@@ -105,15 +107,29 @@ class _RetrievePageState extends State<RetrievePage> {
                   onSaved: (v) => _recoveryKey = v!,
                 ),
                 TextFormField(
-                  decoration: const InputDecoration(labelText: '新密码'),
-                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: '新密码',
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscureNewPassword ? Icons.visibility : Icons.visibility_off),
+                      onPressed: () => setState(() => _obscureNewPassword = !_obscureNewPassword),
+                    ),
+                  ),
+                  obscureText: _obscureNewPassword,
                   validator: (v) => v != null && v.length >= 8 ? null : '密码至少8位',
                   onChanged: (v) => _newPassword = v,
                   onSaved: (v) => _newPassword = v!,
                 ),
                 TextFormField(
-                  decoration: const InputDecoration(labelText: '确认新密码'),
-                  obscureText: true,
+                  decoration: InputDecoration(
+                    labelText: '确认新密码',
+                    suffixIcon: IconButton(
+                      icon: Icon(_obscureConfirmNewPassword ? Icons.visibility : Icons.visibility_off),
+                      onPressed: () => setState(
+                        () => _obscureConfirmNewPassword = !_obscureConfirmNewPassword,
+                      ),
+                    ),
+                  ),
+                  obscureText: _obscureConfirmNewPassword,
                   validator: (v) => v == _newPassword ? null : '两次密码不一致',
                 ),
                 Row(

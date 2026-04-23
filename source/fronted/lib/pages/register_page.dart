@@ -22,6 +22,7 @@ class _RegisterPageState extends State<RegisterPage> {
   bool _loading = false;
   int _countdown = 0;
   bool _usernameAvailable = false;
+  bool _obscurePassword = true;
 
   @override
   void initState() {
@@ -125,8 +126,14 @@ class _RegisterPageState extends State<RegisterPage> {
               const Text('密码'),
               const SizedBox(height: 8),
               TextFormField(
-                decoration: const InputDecoration(hintText: '请输入密码'),
-                obscureText: true,
+                decoration: InputDecoration(
+                  hintText: '请输入密码',
+                  suffixIcon: IconButton(
+                    icon: Icon(_obscurePassword ? Icons.visibility : Icons.visibility_off),
+                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
+                  ),
+                ),
+                obscureText: _obscurePassword,
                 validator: (v) {
                   final value = v ?? '';
                   if (value.length < 8) return '密码至少8位';
