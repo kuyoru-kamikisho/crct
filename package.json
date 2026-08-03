@@ -1,10 +1,17 @@
 {
   "name": "qqbot-ly",
   "version": "1.0.0",
-  "description": "蓝原bot",
-  "main": "index.js",
+  "description": "蓝原bot - QQ机器人 Demo",
+  "main": "demo/index.js",
   "scripts": {
-    "start": "node src/index.js"
+    "start": "node demo/index.js",
+    "demo": "node demo/index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "ws": "^8.18.3"
   },
   "repository": {
     "type": "git",
@@ -15,5 +22,5 @@
   "bugs": {
     "url": "https://github.com/kuyoru-kamikisho/crct/issues"
   },
-  "homepage": "https://github.com/kuyoru-kamikisho/crct/tree/QQBot-LYt#readme"
+  "homepage": "https://github.com/kuyoru-kamikisho/crct/tree/QQBot-LY#readme"
 }
