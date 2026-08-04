@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "蓝原bot - QQ机器人 Demo",
   "main": "demo/index.js",
+  "type": "module",
   "scripts": {
     "start": "node demo/index.js",
     "demo": "node demo/index.js"
@@ -11,6 +12,7 @@
     "node": ">=18"
   },
   "dependencies": {
+    "@tencent-connect/qqbot-nodejs": "^1.0.4",
     "mathjs": "^15.2.0",
     "ws": "^8.18.3"
   },
