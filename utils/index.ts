@@ -4,6 +4,10 @@ export { EnumText, pickReply } from './enum_text.ts';
 export type { EnumTextKey, ReplyPool } from './enum_text.ts';
 export { matchChat, normalizeChatText, CHAT_RULES } from './chat.ts';
 export type { ChatMatch, ChatNoMatch, ChatRule } from './chat.ts';
+export { loadUser, saveUser, updateUser, defaultUserMemory } from './memory.ts';
+export type { UserMemory, FarmPlot, CheckinState } from './memory.ts';
+export { matchPlay } from './play.ts';
+export type { PlayMatch, PlayNoMatch } from './play.ts';
 
 /** 招行购汇币种：英文代码 → 接口 currency 数值、中文名 */
 export const FX_CURRENCY: Record<string, { code: number; name: string }> = {

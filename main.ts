@@ -1,6 +1,6 @@
 import { QQBot } from "@tencent-connect/qqbot-nodejs";
 import SensitiveWordTool from "sensitive-word-tool";
-import { calculateExpression, calculateFx, matchChat, pickReply } from "./utils/index.ts";
+import { calculateExpression, calculateFx, matchChat, matchPlay, pickReply } from "./utils/index.ts";
 import { EnumText } from "./utils/enum_text.ts";
 
 /** 基于 DFA，启用内置中文默认词库；可用 addWords 追加自定义词 */
@@ -19,6 +19,13 @@ bot.on("message", async (ctx, msg) => {
     // verify=true 表示文本中出现了敏感词
     if (sensitive.verify(msg.content)) {
         await bot.sendText(msg.replyTarget, EnumText.forbidden);
+        return;
+    }
+
+    // 签到 / 钓鱼 / 农场等（简易文件记忆，按用户落盘）
+    const play = matchPlay(msg.senderId, msg.content);
+    if (play.matched) {
+        await bot.sendText(msg.replyTarget, play.reply);
         return;
     }
 
