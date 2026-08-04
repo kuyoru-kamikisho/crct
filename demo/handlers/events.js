@@ -1,9 +1,133 @@
+const { evaluate } = require('mathjs');
 const config = require('../config');
 const api = require('../lib/api');
 const store = require('../lib/store');
 
+/** 招行购汇币种：英文代码 → 接口 currency 数值、中文名 */
+const FX_CURRENCY = {
+  USD: { code: 32, name: '美元' },
+  EUR: { code: 35, name: '欧元' },
+  GBP: { code: 43, name: '英镑' },
+  JPY: { code: 65, name: '日元' },
+  HKD: { code: 21, name: '港币' },
+  CAD: { code: 39, name: '加元' },
+  AUD: { code: 29, name: '澳元' },
+  CHF: { code: 87, name: '瑞士法郎' },
+  SGD: { code: 69, name: '新加坡元' },
+  NZD: { code: 24, name: '新西兰元' },
+};
+
+const FX_PATTERN = /^(USD|EUR|GBP|JPY|HKD|CAD|AUD|CHF|SGD|NZD)\s+(\d+(?:\.\d+)?)$/i;
+
+const SUPERSCRIPT_MAP = {
+  '⁰': '0',
+  '¹': '1',
+  '²': '2',
+  '³': '3',
+  '⁴': '4',
+  '⁵': '5',
+  '⁶': '6',
+  '⁷': '7',
+  '⁸': '8',
+  '⁹': '9',
+};
+
 function normalizeText(content = '') {
   return String(content).replace(/\s+/g, ' ').trim();
+}
+
+/**
+ * 将用户输入的各类运算符号规范化为 mathjs 可解析的表达式
+ */
+function normalizeMathExpression(text) {
+  let expr = String(text).replace(/\s+/g, '');
+  expr = expr.replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹]/g, (ch) => SUPERSCRIPT_MAP[ch]);
+  expr = expr.replace(/[×✕✖･·]/g, '*');
+  expr = expr.replace(/÷/g, '/');
+  expr = expr.replace(/π/gi, 'pi');
+  expr = expr.replace(/√\(/g, 'sqrt(');
+  expr = expr.replace(/√(\d+(?:\.\d+)?)/g, 'sqrt($1)');
+  // 两数之间的 % 视为取模（如 100%5），单独的 50% 仍交给 mathjs 作百分号
+  expr = expr.replace(/(\d+(?:\.\d+)?)%(\d+(?:\.\d+)?)/g, 'mod($1,$2)');
+  return expr;
+}
+
+/** 纯计算表达式：无中英文等非表达式内容 */
+function isMathExpression(text) {
+  if (!text || text.length > 200) return false;
+  // 允许数字、四则运算、根号、幂、百分号、圆周率、科学计数法 e/E、上标数字
+  if (!/^[\d\s+\-*/×✕✖･·÷%^().,√πeE⁰¹²³⁴⁵⁶⁷⁸⁹]+$/i.test(text)) return false;
+  if (!/[\d√π]/i.test(text)) return false;
+  // 排除纯数字回显，需含运算符或 √ / 科学计数
+  if (!/[+\-*/×✕✖･·÷%^√]|[eE][+-]?\d/.test(text)) return false;
+  return true;
+}
+
+function formatCalcResult(result) {
+  if (typeof result === 'number') {
+    if (!Number.isFinite(result)) return String(result);
+    const rounded = Math.round(result * 1e12) / 1e12;
+    return String(rounded);
+  }
+  if (result != null && typeof result.valueOf === 'function') {
+    const v = result.valueOf();
+    if (typeof v === 'number' && Number.isFinite(v)) {
+      return String(Math.round(v * 1e12) / 1e12);
+    }
+  }
+  return String(result);
+}
+
+async function handleCalculator(target, text, msgId) {
+  if (!isMathExpression(text)) return false;
+  try {
+    const expr = normalizeMathExpression(text);
+    const result = evaluate(expr);
+    await replyText(target, formatCalcResult(result), { msg_id: msgId });
+    return true;
+  } catch (err) {
+    console.warn('[calc] 表达式计算失败', text, err.message);
+    return false;
+  }
+}
+
+function formatRmb(amount) {
+  const s = amount.toFixed(4).replace(/\.?0+$/, '');
+  return s || '0';
+}
+
+async function handleFxCalc(target, text, msgId) {
+  const m = text.match(FX_PATTERN);
+  if (!m) return false;
+
+  const currency = m[1].toUpperCase();
+  const amount = Number(m[2]);
+  const meta = FX_CURRENCY[currency];
+  if (!meta || !Number.isFinite(amount) || amount <= 0) return false;
+
+  try {
+    const url =
+      `https://fin.paas.cmbchina.com/fininfo/api/calculator/fx-real-rate` +
+      `?bsflag=buy&chflag=XH&currency=${meta.code}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    if (data.returnCode !== 'SUC0000' || data.body?.rate == null) {
+      throw new Error(data.errorMsg || data.returnCode || '汇率查询失败');
+    }
+    const rate = Number(data.body.rate);
+    // 牌价按「每 100 外币」计价：购汇人民币 = 外币金额 × 汇率 / 100
+    const rmb = (amount * rate) / 100;
+    await replyText(
+      target,
+      `${amount}${meta.name}需要支付${formatRmb(rmb)}元人民币`,
+      { msg_id: msgId },
+    );
+    return true;
+  } catch (err) {
+    console.warn('[fx] 购汇计算失败', text, err.message);
+    await replyText(target, '汇率查询失败，请稍后再试', { msg_id: msgId });
+    return true;
+  }
 }
 
 function isImageMessage(d) {
@@ -80,7 +204,7 @@ function buildMenuKeyboard() {
 }
 
 async function handleHello(target, msgId) {
-  return replyText(target, '你好，我是 QQ 机器人', { msg_id: msgId });
+  return replyText(target, '你好，我是木灵朵', { msg_id: msgId });
 }
 
 async function handleImage(target, msgId) {
@@ -285,11 +409,18 @@ async function onMessage(d, eventId) {
         '你好 / 菜单列表 / 为我发一段语音',
         '撤回上一条消息 / 开始答题',
         '发送图片可触发图片回发',
+        '计算器：直接发送表达式，如 100+20、√4、10^6',
+        '购汇：币种+空格+金额，如 JPY 1000',
       ].join('\n'),
       { msg_id: d.id },
     );
     return;
   }
+
+  // 购汇：JPY 1000
+  if (await handleFxCalc(target, text, d.id)) return;
+  // 计算器：纯数学表达式
+  if (await handleCalculator(target, text, d.id)) return;
 
   // 未匹配时简单回显，方便调试
   if (text.length <= 20) {

@@ -13,9 +13,8 @@ module.exports = {
 
   /**
    * Intent 位：
-   * GROUP_MEMBER (1<<24) | GROUP_AND_C2C_EVENT (1<<25) | INTERACTION (1<<26)
    */
-  intents: (1 << 24) | (1 << 25) | (1 << 26),
+  intents: (1 << 12) | (1 << 25) | (1 << 26) | (1 << 29),
 
   botNickBase: '木灵朵',
   nickRefreshMs: 60 * 1000,
