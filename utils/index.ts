@@ -1,5 +1,10 @@
 import { evaluate } from 'mathjs';
 
+export { EnumText, pickReply } from './enum_text.ts';
+export type { EnumTextKey, ReplyPool } from './enum_text.ts';
+export { matchChat, normalizeChatText, CHAT_RULES } from './chat.ts';
+export type { ChatMatch, ChatNoMatch, ChatRule } from './chat.ts';
+
 /** 招行购汇币种：英文代码 → 接口 currency 数值、中文名 */
 export const FX_CURRENCY: Record<string, { code: number; name: string }> = {
   USD: { code: 32, name: '美元' },
