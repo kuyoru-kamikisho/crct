@@ -2,65 +2,59 @@ import {
   addBagItem,
   emptyPlot,
   localDateKey,
-  takeBagItem,
   updateUser,
   yesterdayKey,
   type FarmPlot,
   type UserMemory,
 } from './memory.ts';
 import { normalizeChatText } from './chat.ts';
+import type { PlayPanel } from './keyboard.ts';
+import {
+  CROP_BY_ID,
+  CROP_LIST,
+  CROPS,
+  FISH_TABLE,
+  ITEM_NAME,
+  PLANT_ALIAS_PATTERN,
+  RARITY_LABEL,
+  RARITY_MARK,
+  formatCropCatalog,
+  formatFishCatalog,
+  type FishDef,
+} from './play_catalog.ts';
 
 /** 钓鱼冷却（秒） */
-const FISH_COOLDOWN_SEC = 45;
+const FISH_COOLDOWN_SEC = 40;
 /** 开荒费用 */
 const EXPAND_COST = 30;
 /** 农田上限 */
-const FARM_MAX_PLOTS = 3;
+const FARM_MAX_PLOTS = 4;
 
-type FishDef = { id: string; name: string; weight: number; price: number; rare?: boolean };
-type CropDef = { id: string; name: string; seedCost: number; growMs: number; harvestId: string; harvestN: number; sell: number };
-
-const FISH_TABLE: readonly FishDef[] = [
-  { id: 'fish_weed', name: '水草', weight: 18, price: 1 },
-  { id: 'fish_boot', name: '破靴子', weight: 8, price: 0 },
-  { id: 'fish_small', name: '小银鱼', weight: 28, price: 3 },
-  { id: 'fish_carp', name: '锦鲤', weight: 20, price: 6 },
-  { id: 'fish_cat', name: '猫鱼', weight: 12, price: 10 },
-  { id: 'fish_wood', name: '木灵鱼', weight: 8, price: 18, rare: true },
-  { id: 'fish_harp', name: '竖琴鲈', weight: 4, price: 35, rare: true },
-  { id: 'fish_legend', name: '星原金鳞', weight: 2, price: 80, rare: true },
-];
-
-const CROPS: Record<string, CropDef> = {
-  小麦: { id: 'wheat', name: '小麦', seedCost: 5, growMs: 2 * 60_000, harvestId: 'crop_wheat', harvestN: 2, sell: 4 },
-  萝卜: { id: 'carrot', name: '萝卜', seedCost: 8, growMs: 3 * 60_000, harvestId: 'crop_carrot', harvestN: 2, sell: 6 },
-  花: { id: 'flower', name: '淡黄小花', seedCost: 12, growMs: 5 * 60_000, harvestId: 'crop_flower', harvestN: 1, sell: 15 },
-  小花: { id: 'flower', name: '淡黄小花', seedCost: 12, growMs: 5 * 60_000, harvestId: 'crop_flower', harvestN: 1, sell: 15 },
-};
-
-const CROP_BY_ID: Record<string, CropDef> = Object.fromEntries(
-  [...new Map(Object.values(CROPS).map((c) => [c.id, c])).entries()],
-);
-
-const ITEM_NAME: Record<string, string> = {
-  fish_weed: '水草',
-  fish_boot: '破靴子',
-  fish_small: '小银鱼',
-  fish_carp: '锦鲤',
-  fish_cat: '猫鱼',
-  fish_wood: '木灵鱼',
-  fish_harp: '竖琴鲈',
-  fish_legend: '星原金鳞',
-  crop_wheat: '小麦',
-  crop_carrot: '萝卜',
-  crop_flower: '淡黄小花',
-  seed_wheat: '小麦种子',
-  seed_carrot: '萝卜种子',
-  seed_flower: '小花种子',
-};
-
-export type PlayMatch = { matched: true; reply: string };
+export type PlayMatch = { matched: true; reply: string; panel: PlayPanel };
 export type PlayNoMatch = { matched: false };
+
+/** 根据指令推断应附带的按钮面板 */
+export function panelForCommand(cmd: string): PlayPanel {
+  const exact = cmd.replace(/\s+/g, '');
+  if (exact === '钓鱼' || exact === '钓' || exact === '甩竿' || exact === '卖鱼' || exact === '鱼图鉴') {
+    return 'fish';
+  }
+  if (
+    exact === '农场' ||
+    exact === '田地' ||
+    exact === '浇水' ||
+    exact === '收获' ||
+    exact === '收菜' ||
+    exact === '开荒' ||
+    exact === '卖菜' ||
+    exact === '作物图鉴' ||
+    exact === '种图鉴' ||
+    PLANT_ALIAS_PATTERN.test(exact)
+  ) {
+    return 'farm';
+  }
+  return 'main';
+}
 
 function fmtRemain(ms: number): string {
   const s = Math.max(1, Math.ceil(ms / 1000));
@@ -68,6 +62,11 @@ function fmtRemain(ms: number): string {
   const m = Math.floor(s / 60);
   const r = s % 60;
   return r ? `${m}分${r}秒` : `${m}分钟`;
+}
+
+function fmtGrowMin(ms: number): string {
+  const v = Math.round((ms / 60_000) * 10) / 10;
+  return Number.isInteger(v) ? String(v) : v.toFixed(1);
 }
 
 function pickFish(): FishDef {
@@ -128,6 +127,23 @@ function doCheckin(data: UserMemory): string {
   ].join('\n');
 }
 
+function fishTip(fish: FishDef): string {
+  switch (fish.rarity) {
+    case 'legendary':
+      return '传说级渔获！竖琴都自己响起来了♪';
+    case 'epic':
+      return '史诗！花蕊闪了一大下～快收进背包！';
+    case 'rare':
+      return '稀有鱼！运气不错呢✨';
+    case 'uncommon':
+      return '少见货色，卖相应灵瓣也不错～';
+    case 'junk':
+      return fish.price <= 0 ? '呃……也算收获？' : '杂物也能换一点点灵瓣啦';
+    default:
+      return '收进背包啦，点「卖鱼」可变灵瓣～';
+  }
+}
+
 function doFish(data: UserMemory): string {
   const now = Date.now();
   if (now < data.fishCooldownUntil) {
@@ -145,15 +161,11 @@ function doFish(data: UserMemory): string {
     if (fish.price > bestPrice) data.fishBest = fish.name;
   }
 
-  const tip = fish.rare
-    ? '稀有！花蕊都亮了一下♪'
-    : fish.price === 0
-      ? '呃……也算收获？'
-      : '收进背包啦，发「卖鱼」可变灵瓣～';
-
+  const mark = RARITY_MARK[fish.rarity];
   return [
-    `甩竿——！钓到了【${fish.name}】${fish.rare ? '✨' : ''}`,
-    tip,
+    `甩竿——！钓到了【${fish.name}】${mark}`,
+    `${RARITY_LABEL[fish.rarity]} · 可卖 ${fish.price} 灵瓣`,
+    fishTip(fish),
     `生涯钓鱼 ${data.fishTotal} 次 · 冷却 ${FISH_COOLDOWN_SEC} 秒`,
   ].join('\n');
 }
@@ -161,16 +173,22 @@ function doFish(data: UserMemory): string {
 function doSellFish(data: UserMemory): string {
   let gain = 0;
   let count = 0;
+  const parts: string[] = [];
   for (const f of FISH_TABLE) {
     const n = data.bag[f.id] ?? 0;
     if (n <= 0) continue;
-    gain += n * f.price;
+    const sub = n * f.price;
+    gain += sub;
     count += n;
+    if (f.rarity === 'rare' || f.rarity === 'epic' || f.rarity === 'legendary') {
+      parts.push(`${f.name}×${n}`);
+    }
     delete data.bag[f.id];
   }
   if (count === 0) return '背包里没有鱼可卖呢～先发「钓鱼」试试♪';
   data.coins += gain;
-  return `卖掉 ${count} 件渔获，获得灵瓣 +${gain}（现有 ${data.coins}）♪`;
+  const rareNote = parts.length ? `\n其中珍品：${parts.join('、')}` : '';
+  return `卖掉 ${count} 件渔获，获得灵瓣 +${gain}（现有 ${data.coins}）♪${rareNote}`;
 }
 
 function doStatus(data: UserMemory): string {
@@ -195,11 +213,15 @@ function doBag(data: UserMemory): string {
 function doFarmView(data: UserMemory): string {
   const now = Date.now();
   const lines = data.farm.map((p, i) => plotStatus(p, i, now));
+  const preview = CROP_LIST.slice(0, 6)
+    .map((c) => `${c.name}${c.seedCost}瓣/${fmtGrowMin(c.growMs)}分`)
+    .join(' ');
   return [
     '【木灵朵的小农场】',
     ...lines,
-    '指令：种植小麦/萝卜/花 · 浇水 · 收获 · 开荒',
-    `可种：小麦(${CROPS['小麦']!.seedCost}瓣/${CROPS['小麦']!.growMs / 60000}分) 萝卜(${CROPS['萝卜']!.seedCost}瓣/${CROPS['萝卜']!.growMs / 60000}分) 花(${CROPS['花']!.seedCost}瓣/${CROPS['花']!.growMs / 60000}分)`,
+    `地块 ${data.farm.length}/${FARM_MAX_PLOTS} · 点「去种植」或发「种植小麦」等`,
+    `常用：${preview} …`,
+    '完整价目发「作物图鉴」♪',
   ].join('\n');
 }
 
@@ -210,7 +232,7 @@ function firstEmptyPlot(data: UserMemory): number {
 function doPlant(data: UserMemory, cropKey: string): string {
   const crop = CROPS[cropKey];
   if (!crop) {
-    return '可以种：小麦、萝卜、花～例如「种植小麦」';
+    return `可以种：${CROP_LIST.map((c) => c.name).join('、')}～例如「种植草莓」\n发「作物图鉴」看详情`;
   }
   const idx = firstEmptyPlot(data);
   if (idx < 0) {
@@ -227,10 +249,11 @@ function doPlant(data: UserMemory, cropKey: string): string {
     readyAt: now + crop.growMs,
     watered: false,
   };
+  const expect = crop.harvestN * crop.sell;
   return [
     `在地${idx + 1}种下了【${crop.name}】♪ 花费灵瓣 ${crop.seedCost}`,
-    `大约 ${fmtRemain(crop.growMs)} 后成熟；发「浇水」可催熟一点哦`,
-    `剩余灵瓣：${data.coins}`,
+    `大约 ${fmtRemain(crop.growMs)} 后成熟（收成约 ${crop.harvestN}×${crop.sell}=${expect} 瓣）`,
+    `发「浇水」可催熟一点 · 剩余灵瓣：${data.coins}`,
   ].join('\n');
 }
 
@@ -241,7 +264,7 @@ function doWater(data: UserMemory): string {
   );
   if (idx < 0) {
     const growing = data.farm.some((p) => p.crop && p.readyAt != null && now < p.readyAt);
-    if (!growing) return '现在没有需要浇水的作物呀～先「种植小麦」之类试试看';
+    if (!growing) return '现在没有需要浇水的作物呀～先「种植土豆」之类试试看';
     return '正在生长的作物都浇过水啦♪';
   }
   const plot = data.farm[idx]!;
@@ -264,7 +287,7 @@ function doHarvest(data: UserMemory): string {
     if (growing?.readyAt) {
       return `还没熟呢，再等 ${fmtRemain(growing.readyAt - now)}～发「农场」可查看进度`;
     }
-    return '没有可收获的作物～先「种植萝卜」之类吧♪';
+    return '没有可收获的作物～先「种植玉米」之类吧♪';
   }
 
   const parts: string[] = [];
@@ -288,7 +311,7 @@ function doHarvest(data: UserMemory): string {
 function doSellCrops(data: UserMemory): string {
   let gain = 0;
   let count = 0;
-  for (const crop of new Map(Object.values(CROPS).map((c) => [c.harvestId, c])).values()) {
+  for (const crop of CROP_LIST) {
     const n = data.bag[crop.harvestId] ?? 0;
     if (n <= 0) continue;
     gain += n * crop.sell;
@@ -314,62 +337,83 @@ function doExpand(data: UserMemory): string {
 
 function playHelp(): string {
   return [
-    '【木灵朵小游戏】',
+    '【木灵朵小游戏】点下方按钮，或发文字指令：',
     '签到 — 每日领灵瓣',
-    '钓鱼 / 卖鱼 — 甩竿与出货',
-    '农场 — 查看田地',
-    '种植小麦·萝卜·花 — 下种',
-    '浇水 / 收获 / 开荒 / 卖菜',
-    '背包 / 状态 — 查看资产',
+    '钓鱼 / 卖鱼 — 甩竿与出货（鱼图鉴）',
+    '农场 — 查看田地；种植×× / 浇水 / 收获',
+    '作物图鉴 — 全部作物价目与耗时',
+    '开荒 / 卖菜 / 背包 / 状态 / 菜单',
   ].join('\n');
 }
 
 /**
  * 匹配签到与文字小游戏（短指令优先）
- * 触发尽量短：签到、钓鱼、种小麦、浇水、收获…
  */
 export function matchPlay(userId: string, raw: string): PlayMatch | PlayNoMatch {
   const text = normalizeChatText(raw);
   if (!text) return { matched: false };
 
-  // 精确或强特征指令
   const exact = text.replace(/\s+/g, '');
 
   type Handler = (data: UserMemory) => string;
   let handler: Handler | null = null;
+  let panel: PlayPanel = 'main';
 
   if (exact.includes('签到')) {
     handler = doCheckin;
+    panel = 'main';
   } else if (exact === '钓鱼' || exact === '钓' || exact === '甩竿') {
     handler = doFish;
+    panel = 'fish';
   } else if (exact === '卖鱼' || exact === '出售渔获') {
     handler = doSellFish;
+    panel = 'fish';
+  } else if (exact === '鱼图鉴' || exact === '钓鱼图鉴') {
+    return {
+      matched: true,
+      reply: `【鱼类图鉴】共 ${FISH_TABLE.length} 种\n${formatFishCatalog()}`,
+      panel: 'fish',
+    };
+  } else if (exact === '作物图鉴' || exact === '种图鉴' || exact === '农场图鉴') {
+    return {
+      matched: true,
+      reply: `【作物图鉴】共 ${CROP_LIST.length} 种\n${formatCropCatalog()}`,
+      panel: 'farm',
+    };
   } else if (exact === '农场' || exact === '田地' || exact === '我的农场') {
     handler = doFarmView;
+    panel = 'farm';
   } else if (exact === '浇水') {
     handler = doWater;
+    panel = 'farm';
   } else if (exact === '收获' || exact === '收菜' || exact === '采收') {
     handler = doHarvest;
+    panel = 'farm';
   } else if (exact === '开荒' || exact === '扩地') {
     handler = doExpand;
+    panel = 'farm';
   } else if (exact === '卖菜' || exact === '卖作物') {
     handler = doSellCrops;
+    panel = 'farm';
   } else if (exact === '背包' || exact === '包裹') {
     handler = doBag;
+    panel = 'main';
   } else if (exact === '状态' || exact === '我的' || exact === '资产') {
     handler = doStatus;
-  } else if (exact === '游戏' || exact === '小游戏' || exact === '玩法') {
-    return { matched: true, reply: playHelp() };
+    panel = 'main';
+  } else if (exact === '游戏' || exact === '小游戏' || exact === '玩法' || exact === '菜单') {
+    return { matched: true, reply: playHelp(), panel: 'main' };
   } else {
-    const plant = exact.match(/^种(?:植)?(小麦|萝卜|花|小花)$/);
+    const plant = exact.match(PLANT_ALIAS_PATTERN);
     if (plant) {
       const key = plant[1]!;
       handler = (data) => doPlant(data, key);
+      panel = 'farm';
     }
   }
 
   if (!handler) return { matched: false };
 
   const reply = updateUser(userId, handler);
-  return { matched: true, reply };
+  return { matched: true, reply, panel };
 }
