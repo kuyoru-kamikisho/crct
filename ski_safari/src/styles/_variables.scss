@@ -1,0 +1,28 @@
+// 冷冽高山夜色 + 冰蓝强调，避免紫系与奶油底
+$bg-deep: #061018;
+$bg-mid: #0c1e30;
+$ice: #7fd4ff;
+$ice-hot: #b8f0ff;
+$snow: #eef6fb;
+$accent: #ff8a4c;
+$accent-soft: #ffb088;
+$danger: #ff5a6a;
+$success: #5ce0a8;
+$gold: #ffd56a;
+$panel: rgba(8, 24, 40, 0.78);
+$glass: rgba(255, 255, 255, 0.08);
+$font-display: "ZCOOL KuaiLe", "Outfit", sans-serif;
+$font-ui: "Outfit", "PingFang SC", "Microsoft YaHei", sans-serif;
+
+:root {
+  --bg-deep: #{$bg-deep};
+  --bg-mid: #{$bg-mid};
+  --ice: #{$ice};
+  --ice-hot: #{$ice-hot};
+  --snow: #{$snow};
+  --accent: #{$accent};
+  --gold: #{$gold};
+  --panel: #{$panel};
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}

@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="theme-color" content="#0a1628" />
+    <title>滑雪大冒险 · Ski Safari</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;700;800&family=ZCOOL+KuaiLe&display=swap" rel="stylesheet" />
+  </head>
+  <body>
+    <div id="app">
+      <div id="snow-bg" aria-hidden="true"></div>
+
+      <!-- 主菜单 -->
+      <section id="screen-menu" class="screen active">
+        <div class="menu-glow"></div>
+        <header class="brand">
+          <p class="brand-eyebrow">WINTER ESCAPE</p>
+          <h1 class="brand-title">滑雪大冒险</h1>
+          <p class="brand-sub">Ski Safari</p>
+        </header>
+        <nav class="menu-actions">
+          <button type="button" class="btn btn-primary" id="btn-play">开始冒险</button>
+          <button type="button" class="btn btn-ghost" id="btn-levels">选择关卡</button>
+          <button type="button" class="btn btn-ghost" id="btn-howto">操作说明</button>
+        </nav>
+        <footer class="menu-tip">← → / 滑动转向 · 空格 / 上滑跳跃 · Z / 下滑下蹲</footer>
+      </section>
+
+      <!-- 难度选择 -->
+      <section id="screen-difficulty" class="screen">
+        <button type="button" class="btn-back" data-back="menu">← 返回</button>
+        <h2 class="screen-title">选择难度</h2>
+        <div class="card-grid" id="difficulty-list"></div>
+      </section>
+
+      <!-- 关卡选择 -->
+      <section id="screen-levels" class="screen">
+        <button type="button" class="btn-back" data-back="menu">← 返回</button>
+        <h2 class="screen-title">选择关卡</h2>
+        <div class="level-grid" id="level-list"></div>
+      </section>
+
+      <!-- 操作说明 -->
+      <section id="screen-howto" class="screen">
+        <button type="button" class="btn-back" data-back="menu">← 返回</button>
+        <h2 class="screen-title">操作说明</h2>
+        <div class="howto-panel">
+          <div class="howto-row"><span class="key">← →</span><span>左右转向 / 触屏左右滑动</span></div>
+          <div class="howto-row"><span class="key">空格 / ↑</span><span>跳跃 / 上滑</span></div>
+          <div class="howto-row"><span class="key">Z / ↓</span><span>下蹲加速 / 下滑</span></div>
+          <div class="howto-row"><span class="key">X</span><span>特技翻转（空中）</span></div>
+          <div class="howto-row"><span class="key">P / 暂停</span><span>暂停游戏</span></div>
+          <ul class="howto-tips">
+            <li>收集金币与宝石提升分数</li>
+            <li>撞击障碍会掉血；护盾可抵挡一次</li>
+            <li>连续特技可打出连击加成</li>
+            <li>不同地形摩擦力与速度不同</li>
+            <li>到达终点旗门即可通关</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- 游戏画面 -->
+      <section id="screen-game" class="screen">
+        <canvas id="game-canvas"></canvas>
+        <div id="hud">
+          <div class="hud-left">
+            <div class="hud-stat">
+              <span class="hud-label">分数</span>
+              <span class="hud-value" id="hud-score">0</span>
+            </div>
+            <div class="hud-stat">
+              <span class="hud-label">距离</span>
+              <span class="hud-value" id="hud-distance">0<span class="unit">m</span></span>
+            </div>
+          </div>
+          <div class="hud-center">
+            <div id="hud-combo" class="combo hidden">连击 ×<span id="combo-count">1</span></div>
+            <div id="hud-trick" class="trick-banner hidden"></div>
+          </div>
+          <div class="hud-right">
+            <div class="hud-lives" id="hud-lives"></div>
+            <div class="hud-power" id="hud-power"></div>
+            <button type="button" class="btn-icon" id="btn-pause" aria-label="暂停">❚❚</button>
+          </div>
+        </div>
+        <div id="level-banner" class="level-banner hidden"></div>
+        <div id="touch-controls" class="touch-controls">
+          <button type="button" class="touch-btn" id="touch-left" aria-label="左">‹</button>
+          <div class="touch-mid">
+            <button type="button" class="touch-btn touch-sm" id="touch-jump" aria-label="跳">↑</button>
+            <button type="button" class="touch-btn touch-sm" id="touch-duck" aria-label="蹲">↓</button>
+            <button type="button" class="touch-btn touch-sm" id="touch-trick" aria-label="特技">★</button>
+          </div>
+          <button type="button" class="touch-btn" id="touch-right" aria-label="右">›</button>
+        </div>
+      </section>
+
+      <!-- 暂停 -->
+      <section id="screen-pause" class="screen overlay">
+        <div class="modal">
+          <h2>已暂停</h2>
+          <button type="button" class="btn btn-primary" id="btn-resume">继续滑雪</button>
+          <button type="button" class="btn btn-ghost" id="btn-restart">重新开始</button>
+          <button type="button" class="btn btn-ghost" id="btn-quit">返回菜单</button>
+        </div>
+      </section>
+
+      <!-- 结算 -->
+      <section id="screen-result" class="screen overlay">
+        <div class="modal result-modal">
+          <h2 id="result-title">通关！</h2>
+          <p id="result-subtitle" class="result-sub"></p>
+          <div class="result-stats">
+            <div><span>分数</span><strong id="result-score">0</strong></div>
+            <div><span>距离</span><strong id="result-distance">0m</strong></div>
+            <div><span>金币</span><strong id="result-coins">0</strong></div>
+            <div><span>连击</span><strong id="result-combo">0</strong></div>
+          </div>
+          <div class="result-stars" id="result-stars"></div>
+          <button type="button" class="btn btn-primary" id="btn-next">下一关</button>
+          <button type="button" class="btn btn-ghost" id="btn-retry">再来一次</button>
+          <button type="button" class="btn btn-ghost" id="btn-menu">返回菜单</button>
+        </div>
+      </section>
+    </div>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
