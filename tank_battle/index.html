@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>坦克大战 · Battle City</title>
+  </head>
+  <body>
+    <div id="app">
+      <header class="game-header">
+        <h1 class="brand">坦克大战</h1>
+        <p class="subtitle">BATTLE CITY</p>
+      </header>
+
+      <main class="game-stage">
+        <aside class="hud" id="hud">
+          <div class="hud-block">
+            <span class="hud-label">得分</span>
+            <span class="hud-value" id="score">0</span>
+          </div>
+          <div class="hud-block">
+            <span class="hud-label">生命</span>
+            <span class="hud-value" id="lives">3</span>
+          </div>
+          <div class="hud-block">
+            <span class="hud-label">敌方</span>
+            <span class="hud-value" id="enemies">0</span>
+          </div>
+          <div class="hud-block">
+            <span class="hud-label">关卡</span>
+            <span class="hud-value" id="level">1</span>
+          </div>
+          <div class="controls-hint">
+            <p>方向键 · 移动</p>
+            <p>空格 · 射击</p>
+            <p>P · 暂停</p>
+            <p>Enter · 开始/重开</p>
+          </div>
+        </aside>
+
+        <div class="canvas-wrap">
+          <canvas id="game" width="624" height="624"></canvas>
+          <div class="overlay" id="overlay">
+            <div class="overlay-panel" id="overlay-panel">
+              <h2 id="overlay-title">坦克大战</h2>
+              <p id="overlay-message">按 Enter 开始游戏</p>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>
