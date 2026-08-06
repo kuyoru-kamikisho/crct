@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'; img-src 'self' data:;" />
+  <title>WebEgg 设置</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-glow" aria-hidden="true"></div>
+
+  <div class="app">
+    <header class="hero">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">
+          <svg viewBox="0 0 48 48" width="48" height="48">
+            <defs>
+              <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#3dd6c6"/>
+                <stop offset="100%" stop-color="#2a9fd8"/>
+              </linearGradient>
+            </defs>
+            <ellipse cx="24" cy="28" rx="14" ry="12" fill="url(#g)" opacity="0.9"/>
+            <path d="M24 8c6 4 8 10 8 16 0 2-.3 4-.8 5.8C28 24 26 18 24 14c-2 4-4 10-7.2 15.8C16.3 28 16 26 16 24c0-6 2-12 8-16z" fill="#e8fff9"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>WebEgg</h1>
+          <p class="tagline">Web 项目程序外壳 · 首次启动配置</p>
+        </div>
+      </div>
+      <div class="version" id="appVersion">v—</div>
+    </header>
+
+    <main class="panel">
+      <form id="settingsForm" autocomplete="off">
+        <section class="section">
+          <h2>项目信息</h2>
+          <p class="section-desc">配置要加载的 Web 项目基本信息</p>
+          <div class="grid two">
+            <label class="field">
+              <span>项目名称</span>
+              <input type="text" name="projectName" placeholder="例如：大厅自助查询机" required />
+            </label>
+            <label class="field">
+              <span>项目 ID</span>
+              <input type="text" name="projectId" placeholder="例如：kiosk-lobby-01" />
+            </label>
+          </div>
+          <label class="field">
+            <span>项目 URL <em>*</em></span>
+            <input type="url" name="projectUrl" placeholder="https://example.com/app 或 file:///..." required />
+          </label>
+        </section>
+
+        <section class="section">
+          <h2>窗口行为</h2>
+          <p class="section-desc">控制软件启动后的窗口表现</p>
+          <div class="toggles">
+            <label class="toggle">
+              <input type="checkbox" name="fullscreen" />
+              <span class="switch"></span>
+              <span class="toggle-text">
+                <strong>启动全屏</strong>
+                <small>每次启动进入全屏模式</small>
+              </span>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" name="alwaysOnTop" />
+              <span class="switch"></span>
+              <span class="toggle-text">
+                <strong>窗口置顶</strong>
+                <small>始终显示在其他窗口之上</small>
+              </span>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" name="showFrame" checked />
+              <span class="switch"></span>
+              <span class="toggle-text">
+                <strong>显示窗口边框</strong>
+                <small>标题栏、最小化/关闭等系统按钮</small>
+              </span>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" name="startMaximized" />
+              <span class="switch"></span>
+              <span class="toggle-text">
+                <strong>启动最大化</strong>
+                <small>非全屏时最大化窗口</small>
+              </span>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" name="kiosk" />
+              <span class="switch"></span>
+              <span class="toggle-text">
+                <strong>Kiosk 模式</strong>
+                <small>自助机锁定，限制退出操作</small>
+              </span>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" name="openDevTools" />
+              <span class="switch"></span>
+              <span class="toggle-text">
+                <strong>启动时打开 DevTools</strong>
+                <small>调试控制台，仅开发环境建议开启</small>
+              </span>
+            </label>
+          </div>
+          <div class="grid two">
+            <label class="field">
+              <span>窗口宽度</span>
+              <input type="number" name="windowWidth" min="640" max="7680" value="1280" />
+            </label>
+            <label class="field">
+              <span>窗口高度</span>
+              <input type="number" name="windowHeight" min="480" max="4320" value="800" />
+            </label>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2>运行与更新</h2>
+          <p class="section-desc">日志、多开与自动更新相关设置</p>
+          <label class="field">
+            <span>日志保存路径</span>
+            <div class="with-action">
+              <input type="text" name="logPath" placeholder="./logs/" />
+              <button type="button" class="btn ghost" id="pickLogDir">浏览</button>
+            </div>
+          </label>
+          <label class="field">
+            <span>自动更新地址</span>
+            <input type="url" name="updateUrl" placeholder="http://localhost:8080/update/" />
+          </label>
+          <div class="toggles">
+            <label class="toggle">
+              <input type="checkbox" name="allowMultiInstance" />
+              <span class="switch"></span>
+              <span class="toggle-text">
+                <strong>允许多开</strong>
+                <small>关闭时再次启动会激活已有实例</small>
+              </span>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" name="confirmOnClose" />
+              <span class="switch"></span>
+              <span class="toggle-text">
+                <strong>关闭前确认</strong>
+                <small>防止误关大屏/自助机程序</small>
+              </span>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" name="hardwareAcceleration" checked />
+              <span class="switch"></span>
+              <span class="toggle-text">
+                <strong>硬件加速</strong>
+                <small>关闭可规避部分显卡兼容问题</small>
+              </span>
+            </label>
+            <label class="toggle">
+              <input type="checkbox" name="ignoreCertificateErrors" />
+              <span class="switch"></span>
+              <span class="toggle-text">
+                <strong>忽略证书错误</strong>
+                <small>内网自签 HTTPS 时可用</small>
+              </span>
+            </label>
+          </div>
+        </section>
+
+        <section class="section">
+          <h2>附加信息</h2>
+          <p class="section-desc">供 Web 项目读取的自定义内容（可为 JSON）</p>
+          <label class="field">
+            <span>附加信息 (extraInfo)</span>
+            <textarea name="extraInfo" rows="6" placeholder='例如：&#10;{&#10;  "storeId": "A01",&#10;  "theme": "dark"&#10;}'></textarea>
+          </label>
+          <label class="field">
+            <span>自定义 User-Agent（可选）</span>
+            <input type="text" name="userAgent" placeholder="留空则使用默认" />
+          </label>
+          <label class="field">
+            <span>代理规则（可选）</span>
+            <input type="text" name="proxyRules" placeholder="例如：http://127.0.0.1:7890" />
+          </label>
+        </section>
+
+        <footer class="actions">
+          <div class="hint" id="configPathHint"></div>
+          <button type="submit" class="btn primary" id="saveBtn">
+            <span>保存并启动</span>
+          </button>
+        </footer>
+      </form>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" hidden></div>
+  <script src="app.js"></script>
+</body>
+</html>

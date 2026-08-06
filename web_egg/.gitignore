@@ -1,0 +1,15 @@
+node_modules/
+dist/
+logs/
+updates/
+config.json
+*.log
+.DS_Store
+Thumbs.db
+*.downloading
+out/
+release/
+.vscode/
+.idea/
+*.exe
+!build/**

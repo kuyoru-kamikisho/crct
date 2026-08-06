@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>WebEgg API 演示页</title>
+  <style>
+    :root {
+      --bg: #0d151c;
+      --panel: #152230;
+      --line: #2a4050;
+      --text: #e8f1f5;
+      --muted: #8fa6b3;
+      --accent: #3dd6c6;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: "Segoe UI", "Microsoft YaHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      padding: 24px;
+    }
+    h1 { margin: 0 0 8px; }
+    .sub { color: var(--muted); margin-bottom: 24px; }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    button {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--accent); color: var(--accent); }
+    pre {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 14px;
+      overflow: auto;
+      min-height: 160px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .warn {
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: rgba(255, 180, 60, 0.12);
+      border: 1px solid rgba(255, 180, 60, 0.35);
+      margin-bottom: 18px;
+    }
+  </style>
+</head>
+<body>
+  <h1>WebEgg API 演示</h1>
+  <p class="sub">在 WebEgg 外壳中打开本页，即可测试 <code>window.webEgg</code> 通信接口。</p>
+  <div class="warn" id="bridgeHint">检测中…</div>
+
+  <div class="grid" id="actions"></div>
+  <h3>输出</h3>
+  <pre id="out">等待操作…</pre>
+
+  <script>
+    const out = document.getElementById('out');
+    const hint = document.getElementById('bridgeHint');
+    const api = window.webEgg || window.WebEgg;
+
+    function log(data) {
+      out.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+    }
+
+    if (!api) {
+      hint.textContent = '未检测到 window.webEgg。请通过 WebEgg 软件加载本页面（不要用普通浏览器直接打开）。';
+    } else {
+      hint.textContent = '已连接 WebEgg 桥接 API。';
+    }
+
+    const buttons = [
+      ['获取配置', () => api.getConfig()],
+      ['获取附加信息', () => api.getExtraInfo()],
+      ['获取设备信息', () => api.getDeviceInfo()],
+      ['获取版本', () => api.getAppVersion()],
+      ['写一条日志', () => api.writeLog('demo page log @ ' + new Date().toISOString())],
+      ['最小化', () => api.minimize()],
+      ['最大化切换', () => api.maximize()],
+      ['全屏', () => api.fullscreen(true)],
+      ['退出全屏', () => api.fullscreen(false)],
+      ['置顶', () => api.setAlwaysOnTop(true)],
+      ['取消置顶', () => api.setAlwaysOnTop(false)],
+      ['打开 DevTools', () => api.openDevTools()],
+      ['关闭 DevTools', () => api.closeDevTools()],
+      ['检查更新', () => api.checkUpdate()],
+      ['系统通知', () => api.notify('WebEgg', '来自演示页的通知')],
+      ['刷新页面', () => api.reload()],
+      ['最小化后隐藏', () => api.hide()],
+      ['关闭软件', () => api.close()]
+    ];
+
+    const box = document.getElementById('actions');
+    buttons.forEach(([label, fn]) => {
+      const btn = document.createElement('button');
+      btn.textContent = label;
+      btn.onclick = async () => {
+        if (!api) return log('无桥接 API');
+        try {
+          const result = await fn();
+          log(result === undefined ? 'ok' : result);
+        } catch (e) {
+          log(String(e));
+        }
+      };
+      box.appendChild(btn);
+    });
+  </script>
+</body>
+</html>

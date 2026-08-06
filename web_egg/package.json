@@ -1,0 +1,64 @@
+{
+  "name": "web-egg",
+  "version": "1.0.0",
+  "description": "轻量级 Web 项目程序外壳，适用于大屏、自助机等场景",
+  "main": "electron/main.js",
+  "author": "Web Egg",
+  "license": "MIT",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "pack": "electron-builder --dir",
+    "dist": "electron-builder --win",
+    "dist:nsis": "electron-builder --win nsis"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^34.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.webegg.app",
+    "productName": "WebEgg",
+    "copyright": "Copyright © Web Egg",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**/*",
+      "renderer/**/*",
+      "scripts/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "scripts/updater-helper.js",
+        "to": "updater-helper.js"
+      }
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "icon": "build/icon.ico",
+      "artifactName": "${productName}-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "WebEgg",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico",
+      "runAfterFinish": true,
+      "deleteAppDataOnUninstall": false
+    },
+    "publish": null
+  }
+}

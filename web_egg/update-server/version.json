@@ -1,0 +1,5 @@
+{
+  "version": "1.0.1",
+  "download_url": "http://localhost:8080/update/WebEgg-Setup-1.0.1.exe",
+  "update_log": "示例更新日志\n- 修复若干稳定性问题\n- 优化启动速度"
+}
