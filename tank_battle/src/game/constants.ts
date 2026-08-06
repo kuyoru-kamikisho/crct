@@ -11,9 +11,10 @@ export const MAP_HEIGHT = MAP_ROWS * TILE_SIZE
 export const TANK_SIZE = TILE_SIZE * 2
 export const BULLET_SIZE = 6
 
-export const PLAYER_SPEED = 1.6
-export const ENEMY_SPEED = 1.1
-export const BULLET_SPEED = 4.2
+/** 速度取 TILE_SIZE 约数，配合格子吸附，走廊通行更稳 */
+export const PLAYER_SPEED = 2
+export const ENEMY_SPEED = 1.5
+export const BULLET_SPEED = 4
 
 export const PLAYER_LIVES = 3
 export const PLAYER_FIRE_COOLDOWN = 320

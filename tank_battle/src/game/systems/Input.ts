@@ -9,9 +9,22 @@ export class Input {
     window.addEventListener('keyup', this.onKeyUp)
   }
 
+  private static readonly PREVENT = new Set([
+    'ArrowUp',
+    'ArrowDown',
+    'ArrowLeft',
+    'ArrowRight',
+    'KeyW',
+    'KeyA',
+    'KeyS',
+    'KeyD',
+    'Space',
+    'KeyJ',
+  ])
+
   private onKeyDown = (e: KeyboardEvent) => {
     const key = e.code
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(key)) {
+    if (Input.PREVENT.has(key)) {
       e.preventDefault()
     }
     if (!this.keys.has(key)) {
@@ -38,15 +51,15 @@ export class Input {
   }
 
   getMoveDirection(): Direction | null {
-    if (this.isDown('ArrowUp')) return 'up'
-    if (this.isDown('ArrowDown')) return 'down'
-    if (this.isDown('ArrowLeft')) return 'left'
-    if (this.isDown('ArrowRight')) return 'right'
+    if (this.isDown('ArrowUp') || this.isDown('KeyW')) return 'up'
+    if (this.isDown('ArrowDown') || this.isDown('KeyS')) return 'down'
+    if (this.isDown('ArrowLeft') || this.isDown('KeyA')) return 'left'
+    if (this.isDown('ArrowRight') || this.isDown('KeyD')) return 'right'
     return null
   }
 
   isFire(): boolean {
-    return this.isDown('Space')
+    return this.isDown('Space') || this.isDown('KeyJ')
   }
 
   destroy(): void {

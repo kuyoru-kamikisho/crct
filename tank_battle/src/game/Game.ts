@@ -12,6 +12,7 @@ import {
   PLAYER_SPEED,
   SCORE_PER_KILL,
   TANK_SIZE,
+  TILE_SIZE,
 } from './constants'
 import { Bullet, Tank } from './entities/Tank'
 import { GameMap } from './map/Map'
@@ -128,36 +129,78 @@ export class Game {
     this.syncHud()
   }
 
+  /**
+   * 将垂直于移动方向的轴吸附到瓦片网格。
+   * 浮点速度会偏离格子，2 格宽走廊只有对齐后才能通过（经典红白机做法）。
+   */
+  private snapToGrid(tank: Tank, direction: Direction): void {
+    const candidates = (v: number) => {
+      const rounded = Math.round(v / TILE_SIZE) * TILE_SIZE
+      const floored = Math.floor(v / TILE_SIZE) * TILE_SIZE
+      const ceiled = Math.ceil(v / TILE_SIZE) * TILE_SIZE
+      return [...new Set([rounded, floored, ceiled])]
+    }
+
+    const horizontal = direction === 'left' || direction === 'right'
+    const values = candidates(horizontal ? tank.y : tank.x)
+
+    for (const v of values) {
+      const probe = {
+        x: horizontal ? tank.x : v,
+        y: horizontal ? v : tank.y,
+        w: TANK_SIZE,
+        h: TANK_SIZE,
+      }
+      if (!this.map.outOfBounds(probe) && !this.map.collidesSolid(probe)) {
+        if (horizontal) tank.y = v
+        else tank.x = v
+        return
+      }
+    }
+
+    // 无安全候选时仍取最近格，避免持续漂离
+    const nearest = Math.round((horizontal ? tank.y : tank.x) / TILE_SIZE) * TILE_SIZE
+    if (horizontal) tank.y = nearest
+    else tank.x = nearest
+  }
+
+  private isBlockedByTanks(rect: { x: number; y: number; w: number; h: number }, self: Tank): boolean {
+    const others = [
+      ...(this.player && this.player !== self && this.player.alive ? [this.player] : []),
+      ...this.enemies.filter((e) => e.alive && e !== self),
+    ]
+    return others.some((other) => rectsOverlap(rect, other.rect))
+  }
+
   private tryMoveTank(tank: Tank, direction: Direction): boolean {
     tank.direction = direction
-    const next = {
-      x: tank.x,
-      y: tank.y,
-      w: TANK_SIZE,
-      h: TANK_SIZE,
-    }
-    const speed = tank.speed
-    if (direction === 'up') next.y -= speed
-    if (direction === 'down') next.y += speed
-    if (direction === 'left') next.x -= speed
-    if (direction === 'right') next.x += speed
+    this.snapToGrid(tank, direction)
 
-    if (this.map.outOfBounds(next) || this.map.collidesSolid(next)) {
-      return false
+    const apply = (dist: number) => {
+      const next = { x: tank.x, y: tank.y, w: TANK_SIZE, h: TANK_SIZE }
+      if (direction === 'up') next.y -= dist
+      if (direction === 'down') next.y += dist
+      if (direction === 'left') next.x -= dist
+      if (direction === 'right') next.x += dist
+      return next
     }
 
-    // 坦克互撞
-    const others = [
-      ...(this.player && this.player !== tank && this.player.alive ? [this.player] : []),
-      ...this.enemies.filter((e) => e.alive && e !== tank),
-    ]
-    for (const other of others) {
-      if (rectsOverlap(next, other.rect)) return false
+    // 全速移动；撞墙则逐步缩短距离贴齐障碍，避免“差一点点过不去”
+    let dist = tank.speed
+    while (dist > 0.01) {
+      const next = apply(dist)
+      if (
+        !this.map.outOfBounds(next) &&
+        !this.map.collidesSolid(next) &&
+        !this.isBlockedByTanks(next, tank)
+      ) {
+        tank.x = next.x
+        tank.y = next.y
+        return dist >= tank.speed - 0.01
+      }
+      dist = dist <= 1 ? dist / 2 : Math.floor(dist - 0.5)
     }
-
-    tank.x = next.x
-    tank.y = next.y
-    return true
+    return false
   }
 
   private tryFire(tank: Tank): Bullet | null {
