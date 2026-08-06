@@ -23,6 +23,8 @@ migrate_working_dir/
 node_modules/
 dist/
 *.exe
+*.lock
+package-lock.json
 
 # Flutter/Dart/Pub related
 **/doc/api/

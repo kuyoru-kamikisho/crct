@@ -1,0 +1,29 @@
+{
+  "name": "snake",
+  "version": "1.0.0",
+  "description": "贪吃蛇小游戏",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kuyoru-kamikisho/crct.git"
+  },
+  "keywords": [
+    "game",
+    "snake"
+  ],
+  "author": "kuyoru",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kuyoru-kamikisho/crct/issues"
+  },
+  "homepage": "https://github.com/kuyoru-kamikisho/crct#readme",
+  "devDependencies": {
+    "typescript": "^5.9.2",
+    "vite": "^8.2.0"
+  }
+}
