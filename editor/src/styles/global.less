@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root {
+  --bg-app: #1e1e1e;
+  --bg-sidebar: #252526;
+  --bg-toolbar: #2d2d2d;
+  --bg-statusbar: #007acc;
+  --bg-hover: #2a2d2e;
+  --bg-active: #37373d;
+  --bg-input: #3c3c3c;
+  --border: #3e3e42;
+  --text: #cccccc;
+  --text-muted: #858585;
+  --text-bright: #ffffff;
+  --accent: #0e639c;
+  --accent-hover: #1177bb;
+  --danger: #f14c4c;
+  --success: #89d185;
+  --warning: #cca700;
+  --font-ui: 'IBM Plex Sans', 'Segoe UI', sans-serif;
+  --font-mono: 'IBM Plex Mono', Consolas, monospace;
+  --sidebar-width: 260px;
+  --toolbar-height: 40px;
+  --statusbar-height: 24px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: var(--bg-app);
+  color: var(--text);
+  font-family: var(--font-ui);
+  font-size: 13px;
+  -webkit-font-smoothing: antialiased;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #424242;
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4f4f4f;
+}

@@ -1,0 +1,34 @@
+.bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: var(--statusbar-height);
+  padding: 0 12px;
+  background: var(--bg-statusbar);
+  color: var(--text-bright);
+  font-size: 12px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.left,
+.right {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-width: 0;
+}
+
+.message {
+  opacity: 0.9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 420px;
+}
+
+.lang {
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 500;
+}
