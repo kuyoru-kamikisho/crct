@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>黄金矿工 · Gold Miner</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='42' fill='%23e8b84a'/%3E%3Ccircle cx='50' cy='50' r='28' fill='%23c4922a'/%3E%3C/svg%3E" />
+</head>
+<body>
+  <div id="app">
+    <!-- 开场 -->
+    <section id="screen-start" class="screen active">
+      <div class="start-bg" aria-hidden="true"></div>
+      <div class="start-content">
+        <p class="brand">GOLD RUSH</p>
+        <h1 class="title">黄金矿工</h1>
+        <p class="tagline">挥动钩爪，掘金致富。小心石头，别放过钻石。</p>
+        <div class="start-actions">
+          <button type="button" class="btn btn-primary" id="btn-start">开始挖掘</button>
+          <button type="button" class="btn btn-ghost" id="btn-howto">玩法说明</button>
+        </div>
+        <p class="hint-keys">空格 / 点击画面 · 发射钩爪 &nbsp;|&nbsp; D · 使用炸药</p>
+      </div>
+    </section>
+
+    <!-- 玩法说明 -->
+    <section id="screen-howto" class="screen">
+      <div class="panel panel-howto">
+        <h2>玩法说明</h2>
+        <ul class="howto-list">
+          <li><span class="dot gold"></span>钩爪左右摆动，点击或按空格发射</li>
+          <li><span class="dot amber"></span>抓住矿石后自动收回，越重越慢</li>
+          <li><span class="dot teal"></span>每关有目标分数与倒计时，达标进入商店</li>
+          <li><span class="dot rose"></span>黄金值钱，石头笨重；钻石轻且昂贵</li>
+          <li><span class="dot violet"></span>神秘袋子价值随机；炸药可炸掉钩上物品及附近矿石</li>
+          <li><span class="dot copper"></span>商店可买力量药水、炸药、幸运草等强化</li>
+        </ul>
+        <button type="button" class="btn btn-primary" id="btn-howto-back">知道了</button>
+      </div>
+    </section>
+
+    <!-- 关卡开始提示 -->
+    <section id="screen-level" class="screen">
+      <div class="panel panel-level">
+        <p class="level-eyebrow" id="level-eyebrow">第 1 关</p>
+        <h2 id="level-title">深入矿坑</h2>
+        <p class="level-goal">目标：<strong id="level-target">650</strong> 分</p>
+        <p class="level-time">限时 <strong id="level-time">60</strong> 秒</p>
+        <button type="button" class="btn btn-primary" id="btn-level-go">开凿！</button>
+      </div>
+    </section>
+
+    <!-- 主游戏 -->
+    <section id="screen-game" class="screen">
+      <header class="hud">
+        <div class="hud-block">
+          <span class="hud-label">关卡</span>
+          <span class="hud-value" id="hud-level">1</span>
+        </div>
+        <div class="hud-block hud-money">
+          <span class="hud-label">金钱</span>
+          <span class="hud-value" id="hud-money">$0</span>
+        </div>
+        <div class="hud-block hud-target">
+          <span class="hud-label">目标</span>
+          <span class="hud-value" id="hud-target">$650</span>
+        </div>
+        <div class="hud-block hud-timer">
+          <span class="hud-label">时间</span>
+          <span class="hud-value" id="hud-timer">60</span>
+        </div>
+      </header>
+      <div class="canvas-wrap">
+        <canvas id="game-canvas" width="900" height="640"></canvas>
+        <div id="toast" class="toast" hidden></div>
+        <div id="combo-pop" class="combo-pop" hidden></div>
+      </div>
+      <footer class="game-bar">
+        <div class="powerups">
+          <div class="powerup" id="pu-strength" title="力量药水">
+            <span class="pu-icon pu-str"></span>
+            <span class="pu-label">力量</span>
+            <span class="pu-count" id="pu-strength-n">0</span>
+          </div>
+          <div class="powerup clickable" id="pu-dynamite" title="炸药 (D)">
+            <span class="pu-icon pu-dyn"></span>
+            <span class="pu-label">炸药</span>
+            <span class="pu-count" id="pu-dynamite-n">0</span>
+          </div>
+          <div class="powerup" id="pu-lucky" title="幸运草">
+            <span class="pu-icon pu-luck"></span>
+            <span class="pu-label">幸运</span>
+            <span class="pu-count" id="pu-lucky-n">0</span>
+          </div>
+        </div>
+        <button type="button" class="btn btn-small btn-ghost" id="btn-pause">暂停</button>
+      </footer>
+    </section>
+
+    <!-- 暂停 -->
+    <section id="screen-pause" class="screen overlay">
+      <div class="panel">
+        <h2>暂停</h2>
+        <div class="pause-actions">
+          <button type="button" class="btn btn-primary" id="btn-resume">继续</button>
+          <button type="button" class="btn btn-ghost" id="btn-restart">重新开始</button>
+          <button type="button" class="btn btn-ghost" id="btn-quit">返回标题</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 商店 -->
+    <section id="screen-shop" class="screen">
+      <div class="panel panel-shop">
+        <header class="shop-header">
+          <div>
+            <p class="shop-eyebrow">关卡结算</p>
+            <h2>矿工杂货铺</h2>
+          </div>
+          <div class="shop-money">
+            <span>手头现金</span>
+            <strong id="shop-money">$0</strong>
+          </div>
+        </header>
+        <p class="shop-result" id="shop-result">本关收获不错！买点装备再出发吧。</p>
+        <div class="shop-grid" id="shop-grid"></div>
+        <div class="shop-footer">
+          <button type="button" class="btn btn-primary" id="btn-next-level">下一关</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 失败 / 通关 -->
+    <section id="screen-end" class="screen">
+      <div class="panel panel-end">
+        <p class="end-eyebrow" id="end-eyebrow">挖掘结束</p>
+        <h2 id="end-title">差一点就达标了</h2>
+        <p class="end-score">总资产 <strong id="end-money">$0</strong></p>
+        <p class="end-msg" id="end-msg">再试一次，黄金就在前方。</p>
+        <div class="end-actions">
+          <button type="button" class="btn btn-primary" id="btn-again">再来一局</button>
+          <button type="button" class="btn btn-ghost" id="btn-end-home">返回标题</button>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script src="game.js"></script>
+</body>
+</html>
