@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cursor Atelier · 鼠标特效工坊</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div class="brand">Cursor Atelier</div>
+      <p class="tagline">
+        把鼠标变成舞台道具。每个指针都是独立 JS 模块，点一下切换、动一下互动、停一会儿还会自己收场。
+      </p>
+      <div class="meta-row">
+        <span class="chip"><strong id="cursor-count">0</strong> 款指针</span>
+        <span class="chip">移动 · 悬停 · 点击 都有反馈</span>
+        <span class="chip">单文件引入即可启用</span>
+      </div>
+    </header>
+
+    <div class="workspace">
+      <section class="panel">
+        <div class="panel-head">
+          <div>
+            <h2>指针款式</h2>
+            <p>按风格筛选，点击即可切换</p>
+          </div>
+        </div>
+        <div class="filters" id="filters"></div>
+        <div class="cursor-grid" id="cursor-grid"></div>
+      </section>
+
+      <section class="panel playground">
+        <div class="panel-head" style="padding:0">
+          <div>
+            <h2>试炼场</h2>
+            <p>在此区域移动、点击，观察跟随与爆发效果</p>
+          </div>
+        </div>
+        <div class="stage" id="stage">
+          <div>
+            <p class="stage-title" id="stage-title">选择一款指针开始</p>
+            <p class="stage-hint" id="stage-hint">建议在空白区域来回滑动，停顿片刻再点击，体验「动起来 / 停下来 / 点一下」三套互动。</p>
+          </div>
+        </div>
+        <div class="status-bar">
+          <div class="status-pill" id="status-pill">
+            <span class="status-dot"></span>
+            <span id="status-text">未启用</span>
+          </div>
+          <div class="actions">
+            <button class="btn" type="button" id="btn-retrigger">重触发当前效果</button>
+            <button class="btn danger" type="button" id="btn-disable">关闭指针</button>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <section class="panel tips">
+      <h3>接入任意前端项目</h3>
+      <ul>
+        <li>每个样式都是独立文件，例如只引入 <code>js/cursors/snowflake.js</code> 就能用雪花指针。</li>
+        <li>统一 API：<code>enable()</code> / <code>disable()</code> / <code>toggle()</code> / <code>isEnabled()</code> / <code>destroy()</code>。</li>
+        <li>可在路由切换、主题变更、活动页开关等时机自行调用 API。</li>
+        <li>本页仅作预览与联调；正式站点按需引入对应单个文件即可。</li>
+      </ul>
+    </section>
+  </div>
+
+  <!-- 全部指针模块（可按需删减） -->
+  <script src="js/cursors/snowflake.js"></script>
+  <script src="js/cursors/crosshair.js"></script>
+  <script src="js/cursors/bubble.js"></script>
+  <script src="js/cursors/hollow-square.js"></script>
+  <script src="js/cursors/triangle.js"></script>
+  <script src="js/cursors/flower.js"></script>
+  <script src="js/cursors/neon-trail.js"></script>
+  <script src="js/cursors/hologram.js"></script>
+  <script src="js/cursors/magic-spark.js"></script>
+  <script src="js/cursors/pixel.js"></script>
+  <script src="js/cursors/heart.js"></script>
+  <script src="js/cursors/paw.js"></script>
+  <script src="js/cursors/blood.js"></script>
+  <script src="js/cursors/ghost.js"></script>
+  <script src="js/cursors/eye.js"></script>
+  <script src="js/cursors/fire.js"></script>
+  <script src="js/cursors/lightning.js"></script>
+  <script src="js/cursors/butterfly.js"></script>
+  <script src="js/cursors/comet.js"></script>
+  <script src="js/cursors/glitch.js"></script>
+  <script src="js/cursors/galaxy.js"></script>
+  <script src="js/cursors/ink.js"></script>
+  <script src="js/cursors/smoke.js"></script>
+  <script src="js/cursors/rainbow-star.js"></script>
+  <script src="js/cursors/gear.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
