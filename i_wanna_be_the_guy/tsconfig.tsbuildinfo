@@ -1,0 +1,1 @@
+{"root":["./src/app.tsx","./src/main.tsx","./src/game/game.ts","./src/game/config.ts","./src/game/engine/collision.ts","./src/game/engine/input.ts","./src/game/entities/player.ts","./src/game/levels/index.ts","./src/game/levels/parse.ts","./src/game/levels/types.ts","./src/game/render/renderer.ts"],"errors":true,"version":"5.9.3"}
