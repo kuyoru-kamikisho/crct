@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>草甸狂想 · Whac-A-Mole</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="sky" aria-hidden="true">
+    <div class="sun"></div>
+    <div class="cloud cloud-a"></div>
+    <div class="cloud cloud-b"></div>
+    <div class="cloud cloud-c"></div>
+    <div class="hill hill-back"></div>
+    <div class="hill hill-mid"></div>
+    <div class="hill hill-front"></div>
+  </div>
+
+  <div id="fx-layer" class="fx-layer" aria-hidden="true"></div>
+  <div id="hammer" class="hammer" aria-hidden="true">
+    <div class="hammer-head"></div>
+    <div class="hammer-handle"></div>
+  </div>
+
+  <main class="app">
+    <!-- 开始屏 -->
+    <section class="screen screen-start" id="screen-start">
+      <header class="start-hero">
+        <p class="brand">MEADOW SMASH</p>
+        <h1 class="brand-title">草甸狂想</h1>
+        <p class="tagline">锤锤锤！抓住每一只冒头的地鼠</p>
+      </header>
+
+      <div class="diff-picker" role="group" aria-label="选择难度">
+        <button class="diff-card" type="button" data-diff="easy">
+          <span class="diff-badge">轻松</span>
+          <strong>新手牧场</strong>
+          <span class="diff-meta">3×3 · 慢速 · 60秒 · 6命</span>
+        </button>
+        <button class="diff-card active" type="button" data-diff="medium">
+          <span class="diff-badge">标准</span>
+          <strong>草甸挑战</strong>
+          <span class="diff-meta">3×3 · 中速 · 60秒 · 5命</span>
+        </button>
+        <button class="diff-card" type="button" data-diff="hard">
+          <span class="diff-badge">困难</span>
+          <strong>疾风土丘</strong>
+          <span class="diff-meta">3×4 · 快速 · 45秒 · 4命</span>
+        </button>
+        <button class="diff-card" type="button" data-diff="crazy">
+          <span class="diff-badge">狂想</span>
+          <strong>地鼠风暴</strong>
+          <span class="diff-meta">4×4 · 多鼠 · 45秒 · 5命</span>
+        </button>
+      </div>
+
+      <div class="start-actions">
+        <button class="primary-btn" id="btn-start" type="button">开始游戏</button>
+        <button class="ghost-btn" id="btn-howto" type="button">怎么玩</button>
+      </div>
+
+      <div class="records-bar" id="records-bar" aria-label="最高分"></div>
+    </section>
+
+    <!-- 游戏屏 -->
+    <section class="screen screen-play" id="screen-play" hidden>
+      <div class="hud">
+        <div class="hud-item">
+          <span class="hud-label">得分</span>
+          <strong class="hud-value" id="score">0</strong>
+        </div>
+        <div class="hud-item hud-center">
+          <span class="hud-label" id="diff-label">草甸挑战</span>
+          <strong class="hud-value hud-time" id="timer">60</strong>
+        </div>
+        <div class="hud-item">
+          <span class="hud-label">连击</span>
+          <strong class="hud-value" id="combo">0</strong>
+        </div>
+      </div>
+
+      <div class="hud-sub">
+        <div class="lives" id="lives" aria-label="生命"></div>
+        <div class="hud-tools">
+          <button class="icon-btn" id="btn-pause" type="button" title="暂停" aria-label="暂停">Ⅱ</button>
+          <button class="icon-btn" id="btn-sound" type="button" title="音效" aria-pressed="true" aria-label="音效">♪</button>
+        </div>
+      </div>
+
+      <div class="field-wrap">
+        <div class="field" id="field" role="application" aria-label="地鼠洞"></div>
+      </div>
+
+      <p class="play-hint">点击地鼠得分 · 金色地鼠高分 · 炸弹地鼠扣分</p>
+    </section>
+
+    <!-- 暂停 / 结束 / 说明 叠加层 -->
+    <div class="overlay" id="overlay" hidden>
+      <div class="overlay-card" role="dialog" aria-modal="true" aria-labelledby="overlay-title">
+        <p class="overlay-eyebrow" id="overlay-eyebrow">GAME OVER</p>
+        <h2 class="overlay-title" id="overlay-title">时间到</h2>
+        <p class="overlay-desc" id="overlay-desc"></p>
+        <div class="overlay-stats" id="overlay-stats"></div>
+        <div class="overlay-actions" id="overlay-actions"></div>
+      </div>
+    </div>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
