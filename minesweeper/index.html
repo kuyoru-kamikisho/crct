@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>深渊扫雷 · Abyss Mines</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="bg-layer" aria-hidden="true">
+    <div class="bg-grid"></div>
+    <div class="bg-glow bg-glow-a"></div>
+    <div class="bg-glow bg-glow-b"></div>
+  </div>
+
+  <div id="fx-layer" class="fx-layer" aria-hidden="true"></div>
+
+  <main class="app">
+    <header class="hero">
+      <p class="brand">ABYSS MINES</p>
+      <h1 class="title">深渊扫雷</h1>
+      <p class="tagline">每一次点击都是未知的深渊 — 随机雷区，无限挑战</p>
+    </header>
+
+    <section class="control-panel" aria-label="游戏控制">
+      <div class="difficulty-group" role="tablist" aria-label="难度">
+        <button class="diff-btn active" data-diff="easy" type="button">初级</button>
+        <button class="diff-btn" data-diff="medium" type="button">中级</button>
+        <button class="diff-btn" data-diff="hard" type="button">高级</button>
+        <button class="diff-btn" data-diff="custom" type="button">自定义</button>
+      </div>
+
+      <div class="custom-panel" id="custom-panel" hidden>
+        <label>宽 <input id="custom-w" type="number" min="5" max="30" value="16" /></label>
+        <label>高 <input id="custom-h" type="number" min="5" max="24" value="16" /></label>
+        <label>雷 <input id="custom-m" type="number" min="1" max="200" value="40" /></label>
+      </div>
+
+      <div class="hud">
+        <div class="hud-card" title="剩余地雷">
+          <span class="hud-label">MINES</span>
+          <span class="hud-value" id="mine-count">010</span>
+        </div>
+        <button class="face-btn" id="face-btn" type="button" title="重新开始" aria-label="重新开始">
+          <span class="face" id="face">◎</span>
+        </button>
+        <div class="hud-card" title="用时">
+          <span class="hud-label">TIME</span>
+          <span class="hud-value" id="timer">000</span>
+        </div>
+      </div>
+
+      <div class="action-row">
+        <button class="tool-btn" id="flag-mode-btn" type="button" aria-pressed="false" title="标记模式（触屏友好）">
+          <span class="tool-icon">⚑</span> 标记
+        </button>
+        <button class="tool-btn" id="hint-btn" type="button" title="消耗一次提示">
+          <span class="tool-icon">◈</span> 提示 <span class="hint-left" id="hint-left">3</span>
+        </button>
+        <button class="tool-btn" id="sound-btn" type="button" aria-pressed="true" title="音效开关">
+          <span class="tool-icon" id="sound-icon">♪</span> 音效
+        </button>
+      </div>
+    </section>
+
+    <section class="board-wrap">
+      <div class="board-frame">
+        <div id="board" class="board" role="grid" aria-label="雷区"></div>
+        <div class="overlay" id="overlay" hidden>
+          <div class="overlay-card">
+            <p class="overlay-eyebrow" id="overlay-eyebrow">MISSION COMPLETE</p>
+            <h2 class="overlay-title" id="overlay-title">你赢了</h2>
+            <p class="overlay-desc" id="overlay-desc"></p>
+            <div class="overlay-stats">
+              <div><span>用时</span><strong id="stat-time">0s</strong></div>
+              <div><span>点击</span><strong id="stat-clicks">0</strong></div>
+              <div><span>效率</span><strong id="stat-eff">—</strong></div>
+            </div>
+            <button class="primary-btn" id="play-again" type="button">再来一局</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="side-panel">
+      <div class="stat-block">
+        <h3>本局</h3>
+        <ul>
+          <li><span>连击</span><strong id="combo">0</strong></li>
+          <li><span>得分</span><strong id="score">0</strong></li>
+          <li><span>开格</span><strong id="opened">0</strong></li>
+        </ul>
+      </div>
+      <div class="stat-block">
+        <h3>纪录</h3>
+        <ul id="records-list">
+          <li><span>初级</span><strong>—</strong></li>
+          <li><span>中级</span><strong>—</strong></li>
+          <li><span>高级</span><strong>—</strong></li>
+        </ul>
+      </div>
+      <div class="tips">
+        <h3>操作</h3>
+        <p>左键开格 · 右键插旗 · 双击数字可快速排雷 · 首点必安全</p>
+      </div>
+    </aside>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
