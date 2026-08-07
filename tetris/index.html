@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>TETRA — 俄罗斯方块</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="atmosphere" aria-hidden="true">
+    <div class="orb orb-a"></div>
+    <div class="orb orb-b"></div>
+    <div class="grid-fade"></div>
+  </div>
+
+  <div class="app">
+    <header class="brand">
+      <h1 class="logo">TETRA</h1>
+      <p class="tagline">下落 · 旋转 · 消行</p>
+    </header>
+
+    <main class="stage">
+      <aside class="panel panel-left">
+        <section class="stat-block">
+          <span class="stat-label">HOLD</span>
+          <canvas id="hold" width="96" height="96" aria-label="暂存方块"></canvas>
+          <p class="hint-mini">C / Shift</p>
+        </section>
+        <section class="stat-block scores">
+          <div class="stat">
+            <span class="stat-label">分数</span>
+            <span id="score" class="stat-value">0</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">等级</span>
+            <span id="level" class="stat-value">1</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">消行</span>
+            <span id="lines" class="stat-value">0</span>
+          </div>
+        </section>
+      </aside>
+
+      <section class="board-wrap">
+        <canvas id="board" width="300" height="600" aria-label="游戏主画面"></canvas>
+        <div id="overlay" class="overlay">
+          <div class="overlay-card" id="overlay-content">
+            <p class="overlay-eyebrow" id="overlay-eyebrow">准备就绪</p>
+            <h2 class="overlay-title" id="overlay-title">开始游戏</h2>
+            <p class="overlay-text" id="overlay-text">方向键移动 · 上键旋转 · 空格硬降</p>
+            <button type="button" class="btn primary" id="btn-start">开始</button>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel panel-right">
+        <section class="stat-block">
+          <span class="stat-label">NEXT</span>
+          <canvas id="next" width="96" height="288" aria-label="下一个方块"></canvas>
+        </section>
+        <section class="keys">
+          <span class="stat-label">操作</span>
+          <ul class="key-list">
+            <li><kbd>←→</kbd> 移动</li>
+            <li><kbd>↑</kbd> 旋转</li>
+            <li><kbd>↓</kbd> 软降</li>
+            <li><kbd>Space</kbd> 硬降</li>
+            <li><kbd>P</kbd> 暂停</li>
+          </ul>
+        </section>
+      </aside>
+    </main>
+
+    <nav class="touch-controls" aria-label="触摸控制">
+      <button type="button" class="touch-btn" data-action="hold" aria-label="暂存">⇄</button>
+      <button type="button" class="touch-btn" data-action="left" aria-label="左移">←</button>
+      <button type="button" class="touch-btn" data-action="rotate" aria-label="旋转">↻</button>
+      <button type="button" class="touch-btn" data-action="right" aria-label="右移">→</button>
+      <button type="button" class="touch-btn accent" data-action="drop" aria-label="硬降">↓↓</button>
+    </nav>
+
+    <footer class="footer">
+      <button type="button" class="btn ghost" id="btn-mute" aria-pressed="false">音效开</button>
+      <button type="button" class="btn ghost" id="btn-pause">暂停</button>
+    </footer>
+  </div>
+
+  <script src="game.js"></script>
+</body>
+</html>
