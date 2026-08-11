@@ -1,0 +1,28 @@
+// 设计令牌 —— 星原夜空调色（青绿星辉，避开常见 AI 紫白套路）
+$font-size-base: 14px;
+$font-family-base: 'Noto Sans SC', 'Source Han Sans SC', 'PingFang SC',
+  'Hiragino Sans GB', 'Microsoft YaHei UI', 'Microsoft YaHei', sans-serif;
+
+$header-h: 56px;
+$sidebar-w: 240px;
+$footer-h: auto;
+$radius-sm: 6px;
+$radius-md: 10px;
+$radius-lg: 16px;
+
+$z-header: 100;
+$z-sidebar: 90;
+$z-float: 110;
+$z-cursor: 2147483646;
+
+// 默认主题色（可被 data-theme 覆盖）
+$color-bg: #071018;
+$color-bg-elevated: #0c1a24;
+$color-surface: rgba(14, 36, 52, 0.72);
+$color-border: rgba(110, 190, 210, 0.18);
+$color-text: #d8ebe8;
+$color-text-muted: #8aa8a8;
+$color-accent: #3ecfcf;
+$color-accent-soft: #7ed4c0;
+$color-star: #e8c97a;
+$color-danger: #e87a7a;

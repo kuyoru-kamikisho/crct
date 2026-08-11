@@ -1,0 +1,74 @@
+/* 主题 CSS 变量 —— 由 settings store 切换 data-theme / --cursor-color */
+
+:root,
+[data-theme='azure'] {
+  --c-bg: #071018;
+  --c-bg-elevated: #0c1a24;
+  --c-surface: rgba(14, 36, 52, 0.78);
+  --c-surface-solid: #0e2434;
+  --c-border: rgba(110, 190, 210, 0.2);
+  --c-text: #d8ebe8;
+  --c-text-muted: #8aa8a8;
+  --c-accent: #3ecfcf;
+  --c-accent-soft: #7ed4c0;
+  --c-star: #e8c97a;
+  --c-danger: #e87a7a;
+  --c-header: rgba(7, 16, 24, 0.88);
+  --c-sidebar: rgba(8, 18, 28, 0.92);
+  --cursor-color: #7ed4c0;
+  --shadow-glow: 0 0 24px rgba(62, 207, 207, 0.12);
+}
+
+[data-theme='dusk'] {
+  --c-bg: #120e16;
+  --c-bg-elevated: #1c1524;
+  --c-surface: rgba(36, 24, 42, 0.78);
+  --c-surface-solid: #24182a;
+  --c-border: rgba(210, 150, 170, 0.22);
+  --c-text: #f0e4ea;
+  --c-text-muted: #b098a8;
+  --c-accent: #e89ab0;
+  --c-accent-soft: #f0c0cc;
+  --c-star: #f0d090;
+  --c-danger: #f09090;
+  --c-header: rgba(18, 14, 22, 0.9);
+  --c-sidebar: rgba(22, 16, 28, 0.94);
+  --cursor-color: #e89ab0;
+  --shadow-glow: 0 0 24px rgba(232, 154, 176, 0.14);
+}
+
+[data-theme='aurora'] {
+  --c-bg: #061410;
+  --c-bg-elevated: #0a1e18;
+  --c-surface: rgba(12, 40, 32, 0.78);
+  --c-surface-solid: #0c2820;
+  --c-border: rgba(120, 210, 160, 0.22);
+  --c-text: #dcf0e6;
+  --c-text-muted: #88b0a0;
+  --c-accent: #4cdb8a;
+  --c-accent-soft: #9ae8b8;
+  --c-star: #d4e878;
+  --c-danger: #e88878;
+  --c-header: rgba(6, 20, 16, 0.9);
+  --c-sidebar: rgba(8, 24, 20, 0.94);
+  --cursor-color: #4cdb8a;
+  --shadow-glow: 0 0 24px rgba(76, 219, 138, 0.14);
+}
+
+[data-theme='stardust'] {
+  --c-bg: #0a0e18;
+  --c-bg-elevated: #12182a;
+  --c-surface: rgba(22, 28, 48, 0.78);
+  --c-surface-solid: #161c30;
+  --c-border: rgba(160, 180, 230, 0.22);
+  --c-text: #e4e8f8;
+  --c-text-muted: #98a4c0;
+  --c-accent: #8aa4f0;
+  --c-accent-soft: #b8c8f8;
+  --c-star: #f0d878;
+  --c-danger: #f090a0;
+  --c-header: rgba(10, 14, 24, 0.9);
+  --c-sidebar: rgba(14, 18, 32, 0.94);
+  --cursor-color: #8aa4f0;
+  --shadow-glow: 0 0 24px rgba(138, 164, 240, 0.14);
+}

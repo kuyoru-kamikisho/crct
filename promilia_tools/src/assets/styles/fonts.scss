@@ -1,0 +1,40 @@
+/**
+ * 正文字体：Noto Sans SC / 思源黑体（SIL Open Font License 1.1，可免费商用）
+ *
+ * 为保障首屏与离线体积，默认走系统中文字体回退栈。
+ * 如需完整自托管字形，将 woff2 放到 /public/fonts/ 并取消下方 @font-face 注释。
+ *
+ * 推荐文件名：
+ * - NotoSansSC-Regular.woff2
+ * - NotoSansSC-Medium.woff2
+ * - NotoSansSC-Bold.woff2
+ */
+
+/*
+@font-face {
+  font-family: 'Noto Sans SC';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/NotoSansSC-Regular.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Noto Sans SC';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/NotoSansSC-Medium.woff2') format('woff2');
+}
+@font-face {
+  font-family: 'Noto Sans SC';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/NotoSansSC-Bold.woff2') format('woff2');
+}
+*/
+
+:root {
+  --font-sans: 'Noto Sans SC', 'Source Han Sans SC', 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei UI', 'Microsoft YaHei', sans-serif;
+}

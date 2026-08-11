@@ -1,13 +1,37 @@
 <!DOCTYPE html>
-<html lang="">
+<html lang="zh-CN">
   <head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vite App</title>
+    <meta charset="UTF-8" />
+    <link rel="icon" href="/favicon.ico" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="蓝色星原：旅谣（Azur Promilia）非官方 Wiki 工具 — 图鉴、攻略、小游戏"
+    />
+    <title>蓝色星原：旅谣 Wiki</title>
+    <!-- 首屏关键 CSS 变量，避免闪白 -->
+    <style>
+      html,
+      body {
+        margin: 0;
+        background: #071018;
+        color: #d8ebe8;
+      }
+      #boot {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        font-size: 14px;
+        letter-spacing: 0.08em;
+        color: #8aa8a8;
+      }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div id="boot">正在进入普罗米利亚…</div>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

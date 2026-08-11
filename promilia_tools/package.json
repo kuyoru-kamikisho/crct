@@ -1,6 +1,6 @@
 {
-  "name": "pm-tool",
-  "version": "0.0.0",
+  "name": "azur-promilia-wiki",
+  "version": "0.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -11,15 +11,18 @@
   "dependencies": {
     "pinia": "^3.0.4",
     "vue": "^3.5.32",
+    "vue-i18n": "^9.14.5",
     "vue-router": "^5.0.4"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.6",
     "@vitejs/plugin-vue-jsx": "^5.1.5",
+    "sass": "^1.102.0",
     "vite": "^8.0.8",
     "vite-plugin-vue-devtools": "^8.1.1"
   },
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
-  }
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
