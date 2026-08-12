@@ -227,6 +227,15 @@
       glow: '#d4a574',
       api: 'MouseCursorGear',
       hint: '双齿轮咬合旋转，移动迸出火星。'
+    },
+    {
+      id: 'blue-archive',
+      name: '碧蓝档案',
+      genre: '游戏',
+      emoji: '◆',
+      glow: '#2dafef',
+      api: 'MouseCursorBlueArchive',
+      hint: '同款触摸反馈：青色扩散圆盘、旋转弧环、三角碎片与拖尾光轨。'
     }
   ];
 

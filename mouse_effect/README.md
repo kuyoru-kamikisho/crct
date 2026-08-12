@@ -73,7 +73,7 @@ MouseCursorSnowflake.burst(x, y); // 手动触发小范围炸开
 
 同一时间建议只启用一个指针模块。
 
-## 指针一览（25 款）
+## 指针一览（26 款）
 
 | 模块 | 全局名 | 风格 | 互动亮点 |
 |------|--------|------|----------|
@@ -102,6 +102,7 @@ MouseCursorSnowflake.burst(x, y); // 手动触发小范围炸开
 | `smoke.js` | `MouseCursorSmoke` | 氛围 | 烟尘缭绕 |
 | `rainbow-star.js` | `MouseCursorRainbowStar` | 可爱 | 彩虹星环绕 |
 | `gear.js` | `MouseCursorGear` | 蒸汽朋克 | 双齿轮咬合 |
+| `blue-archive.js` | `MouseCursorBlueArchive` | 游戏 | 碧蓝档案触摸指针：扩散圆盘、旋转弧环、碎片与拖尾 |
 
 ## 设计约定
 
