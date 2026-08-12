@@ -136,7 +136,7 @@ function loop(now) {
     const base = 14 + clickPulse * 12
     // 外层空心 + 中层实心 + 内层空心，形成空实交错
     drawTriangle(tx, ty, base + 20, spin, 0.35, false)
-    drawTriangle(tx, ty, base + 10, -spin * 1.15, 0.55, true)
+    drawTriangle(tx, ty, base + 10, -spin * 1.15, 0.55, false)
     drawTriangle(mx, my, base, spin * 0.7, 1, false)
 
     // 顶点星点
@@ -185,7 +185,7 @@ function onPointerDown(e) {
       size: 7 + i * 3,
       rot: spin + i * 0.4,
       life: 1,
-      filled: i % 2 === 0,
+      filled: false,
     })
   }
   ripples.push({ x: mx, y: my, size: 6, life: 1 })
