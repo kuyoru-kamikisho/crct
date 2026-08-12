@@ -40,6 +40,7 @@ const filtered = computed(() => {
         <h2>{{ c.name }}</h2>
         <p class="en">{{ c.nameEn }}</p>
         <div class="tags">
+          <span class="tag muted">{{ c.faction }}</span>
           <span v-for="el in c.elements" :key="el" class="tag">{{ el }}</span>
           <span class="tag muted">{{ c.profession }}</span>
         </div>
