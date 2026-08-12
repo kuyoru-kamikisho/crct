@@ -164,7 +164,7 @@ function onMove(e) {
       size: 9,
       rot: spin,
       life: 1,
-      filled: trails.length % 2 === 0,
+      filled: false,
     })
     if (trails.length > opts.maxTrails) trails.shift()
   }
