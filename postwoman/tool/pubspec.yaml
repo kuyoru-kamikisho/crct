@@ -1,0 +1,7 @@
+name: postwoman_pack
+publish_to: "none"
+environment:
+  sdk: ^3.8.1
+
+dependencies:
+  archive: ^3.6.1

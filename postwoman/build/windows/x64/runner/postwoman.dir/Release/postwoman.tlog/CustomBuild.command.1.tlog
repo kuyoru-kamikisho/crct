@@ -1,0 +1,10 @@
+^D:\CODE\CRCT\POSTWOMAN\WINDOWS\RUNNER\CMAKELISTS.TXT
+setlocal
+E:\visualstudio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe -SD:/code/crct/postwoman/windows -BD:/code/crct/postwoman/build/windows/x64 --check-stamp-file D:/code/crct/postwoman/build/windows/x64/runner/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd

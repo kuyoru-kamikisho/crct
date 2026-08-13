@@ -1,0 +1,28 @@
+^D:\CODE\CRCT\POSTWOMAN\BUILD\WINDOWS\X64\CMAKEFILES\458A72BEDA70EE042D42F3008D2E5DD6\FLUTTER_WINDOWS.DLL.RULE
+setlocal
+E:\visualstudio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe -E env FLUTTER_ROOT=E:\flutter PROJECT_DIR=D:\code\crct\postwoman FLUTTER_ROOT=E:\flutter FLUTTER_EPHEMERAL_DIR=D:\code\crct\postwoman\windows\flutter\ephemeral PROJECT_DIR=D:\code\crct\postwoman FLUTTER_TARGET=lib\main.dart DART_DEFINES=RkxVVFRFUl9WRVJTSU9OPTMuMzIuMg==,RkxVVFRFUl9DSEFOTkVMPXN0YWJsZQ==,RkxVVFRFUl9HSVRfVVJMPWh0dHBzOi8vZ2l0aHViLmNvbS9mbHV0dGVyL2ZsdXR0ZXIuZ2l0,RkxVVFRFUl9GUkFNRVdPUktfUkVWSVNJT049OGRlZmFhNzFhNw==,RkxVVFRFUl9FTkdJTkVfUkVWSVNJT049MTA5MTUwODkzOQ==,RkxVVFRFUl9EQVJUX1ZFUlNJT049My44LjE= DART_OBFUSCATION=false TRACK_WIDGET_CREATION=true TREE_SHAKE_ICONS=true PACKAGE_CONFIG=D:\code\crct\postwoman\.dart_tool\package_config.json E:/flutter/packages/flutter_tools/bin/tool_backend.bat windows-x64 Release
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^D:\CODE\CRCT\POSTWOMAN\BUILD\WINDOWS\X64\CMAKEFILES\10AADA5A1B52A1A18DE2207E1551E576\FLUTTER_ASSEMBLE.RULE
+setlocal
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
+^D:\CODE\CRCT\POSTWOMAN\WINDOWS\FLUTTER\CMAKELISTS.TXT
+setlocal
+E:\visualstudio\Common7\IDE\CommonExtensions\Microsoft\CMake\CMake\bin\cmake.exe -SD:/code/crct/postwoman/windows -BD:/code/crct/postwoman/build/windows/x64 --check-stamp-file D:/code/crct/postwoman/build/windows/x64/flutter/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal & call :cmErrorLevel %errorlevel% & goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd
