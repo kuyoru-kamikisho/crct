@@ -3,6 +3,9 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { getCharacterById } from '@/data/characters'
+import SvgIcon from '@jamescoyle/vue-icon';
+import { mdiClockOutline, mdiLightningBolt } from '@mdi/js';
+import SkillDesc from '@/components/common/SkillDesc.vue'
 
 const route = useRoute()
 const { t } = useI18n()
@@ -21,12 +24,30 @@ const character = computed(() => getCharacterById(route.params.id))
         <p class="intro">{{ character.intro }}</p>
       </div>
       <dl class="meta">
-        <div><dt>{{ t('common.element') }}</dt><dd>{{ character.elements.join('、') }}</dd></div>
-        <div><dt>{{ t('common.profession') }}</dt><dd>{{ character.profession }}</dd></div>
-        <div><dt>{{ t('common.faction') }}</dt><dd>{{ character.faction }}</dd></div>
-        <div><dt>{{ t('common.race') }}</dt><dd>{{ character.race }}</dd></div>
-        <div><dt>{{ t('common.birthday') }}</dt><dd>{{ character.birthday }}</dd></div>
-        <div><dt>{{ t('common.obtain') }}</dt><dd>{{ character.obtain }}</dd></div>
+        <div>
+          <dt>{{ t('common.element') }}</dt>
+          <dd>{{ character.elements.join('、') }}</dd>
+        </div>
+        <div>
+          <dt>{{ t('common.profession') }}</dt>
+          <dd>{{ character.profession }}</dd>
+        </div>
+        <div>
+          <dt>{{ t('common.faction') }}</dt>
+          <dd>{{ character.faction }}</dd>
+        </div>
+        <div>
+          <dt>{{ t('common.race') }}</dt>
+          <dd>{{ character.race }}</dd>
+        </div>
+        <div>
+          <dt>{{ t('common.birthday') }}</dt>
+          <dd>{{ character.birthday }}</dd>
+        </div>
+        <div>
+          <dt>{{ t('common.obtain') }}</dt>
+          <dd>{{ character.obtain }}</dd>
+        </div>
       </dl>
     </header>
 
@@ -36,7 +57,17 @@ const character = computed(() => getCharacterById(route.params.id))
         <li v-for="(sk, i) in character.skills" :key="i">
           <strong>{{ sk.name }}</strong>
           <span class="type">{{ sk.type }}</span>
-          <p>{{ sk.desc }}</p>
+          <div v-if="sk.cooldown" class="skill-energy">
+            <svg-icon type="mdi" size="14" :path="mdiClockOutline"></svg-icon>
+            <span>{{ sk.cooldown }}</span>
+          </div>
+          <div v-if="sk.consumption" class="skill-energy">
+            <svg-icon type="mdi" size="14" :path="mdiLightningBolt"></svg-icon>
+            <span>{{ sk.consumption }}</span>
+          </div>
+          <SkillDesc>{{ sk.desc }}</SkillDesc>
+          <br>
+          <i v-if="sk.skillSerect">{{ sk.skillSerect }}</i>
         </li>
       </ul>
     </section>
@@ -163,15 +194,30 @@ section {
     font-size: 12px;
     color: var(--c-star);
   }
-
-  p {
-    margin: 6px 0 0;
-  }
 }
 
 .missing {
   text-align: center;
   padding: 60px 20px;
   color: var(--c-text-muted);
+}
+
+.skill-energy {
+  gap: 4px;
+  opacity: 0.6;
+  font-size: 13px;
+  display: inline-block;
+  vertical-align: middle;
+  margin-left: 12px;
+
+  span {
+    display: inline-block;
+    margin-left: 4px;
+    vertical-align: text-bottom;
+  }
+
+  svg {
+    fill: currentColor;
+  }
 }
 </style>

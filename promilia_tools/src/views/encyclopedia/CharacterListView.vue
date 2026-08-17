@@ -25,6 +25,14 @@ const characterSummary = computed(() => {
   const fourStar = characters.filter((c) => c.rarity === 4).length
   return replaceRp(t('character.summary'), total, fiveStar, fourStar)
 })
+
+function cardStyle(character) {
+  return {
+    backgroundImage: `url(/imgs/characters/${character.id}.png)`,
+    backgroundSize: 'cover',
+    backgroundRepeat: 'no-repeat',
+  }
+}
 </script>
 
 <template>
@@ -39,12 +47,8 @@ const characterSummary = computed(() => {
     </header>
 
     <div class="grid">
-      <router-link
-        v-for="c in filtered"
-        :key="c.id"
-        :to="`/encyclopedia/characters/${c.id}`"
-        class="card"
-      >
+      <router-link v-for="c in filtered" :key="c.id" :to="`/encyclopedia/characters/${c.id}`" class="card">
+        <div class="background" :style="cardStyle(c)"></div>
         <div class="rarity">★ {{ c.rarity }}</div>
         <h2>{{ c.name }}</h2>
         <p class="en">{{ c.nameEn }}</p>
@@ -98,6 +102,7 @@ const characterSummary = computed(() => {
 
 .card {
   position: relative;
+  overflow: hidden;
   padding: 18px 16px 16px;
   border-radius: $radius-md;
   border: 1px solid var(--c-border);
@@ -113,6 +118,21 @@ const characterSummary = computed(() => {
     border-color: var(--c-accent);
     box-shadow: var(--shadow-glow);
     color: var(--c-text);
+  }
+
+  * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .background {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    opacity: 0.4;
+    z-index: 0;
   }
 }
 

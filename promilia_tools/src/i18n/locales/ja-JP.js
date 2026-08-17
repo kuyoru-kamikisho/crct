@@ -111,6 +111,8 @@ export default {
     title: 'キャラ図鑑',
     summary: '全 $rp キャラクター、うち星 5 キャラクターが $rp 体、星 4 キャラクターが $rp 体',
     npcHint: '一部の NPC もこの分類に含まれます。',
+    skillCooldown: 'スキルクールダウン',
+    skillConsumption: 'スキル消費',
   },
   qibo: {
     title: '奇波図鑑',
