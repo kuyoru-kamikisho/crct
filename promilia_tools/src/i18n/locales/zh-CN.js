@@ -87,6 +87,8 @@ export default {
     viewDetail: '查看详情',
     all: '全部',
     filter: '筛选',
+    weapon: '武器',
+    clearFilter: '清空筛选',
   },
   footer: {
     links: '相关链接',
@@ -113,6 +115,7 @@ export default {
     npcHint: '个别 NPC 也会收录于此分类。',
     skillCooldown: '技能冷却时间',
     skillConsumption: '技能消耗',
+    filterRarity: '$rp星',
   },
   qibo: {
     title: '奇波图鉴',

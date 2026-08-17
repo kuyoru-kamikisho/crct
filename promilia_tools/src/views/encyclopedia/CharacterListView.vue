@@ -1,22 +1,36 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { characters } from '@/data/characters'
+import SvgIcon from '@jamescoyle/vue-icon'
+import { mdiFilter, mdiFilterOutline } from '@mdi/js'
+import {
+  characters,
+  countActiveCharacterFilters,
+  createEmptyCharacterFilters,
+  matchCharacterFilters,
+} from '@/data/characters'
+import CharacterFilter from '@/components/encyclopedia/CharacterFilter.vue'
 import { replaceRp } from '@/utils/replaceRp'
 
 const { t } = useI18n()
 const q = ref('')
+const filterOpen = ref(false)
+const filters = ref(createEmptyCharacterFilters())
+
+const activeFilterCount = computed(() => countActiveCharacterFilters(filters.value))
 
 const filtered = computed(() => {
   const s = q.value.trim().toLowerCase()
-  if (!s) return characters
-  return characters.filter(
-    (c) =>
+  return characters.filter((c) => {
+    if (!matchCharacterFilters(c, filters.value)) return false
+    if (!s) return true
+    return (
       c.name.toLowerCase().includes(s) ||
       c.nameEn.toLowerCase().includes(s) ||
       c.elements.some((e) => e.includes(s)) ||
-      c.profession.includes(s),
-  )
+      c.profession.includes(s)
+    )
+  })
 })
 
 const characterSummary = computed(() => {
@@ -43,8 +57,29 @@ function cardStyle(character) {
         <p>{{ characterSummary }}</p>
         <p>{{ t('character.npcHint') }}</p>
       </div>
-      <input v-model="q" type="search" class="search" :placeholder="t('common.search')" />
+      <div class="page-tools">
+        <button
+          type="button"
+          class="filter-toggle"
+          :class="{ on: filterOpen, active: activeFilterCount }"
+          :aria-label="t('common.filter')"
+          :aria-expanded="filterOpen"
+          @click="filterOpen = !filterOpen"
+        >
+          <svg-icon
+            type="mdi"
+            :size="18"
+            :path="filterOpen || activeFilterCount ? mdiFilter : mdiFilterOutline"
+          />
+          <span v-if="activeFilterCount" class="filter-badge">{{ activeFilterCount }}</span>
+        </button>
+        <input v-model="q" type="search" class="search" :placeholder="t('common.search')" />
+      </div>
     </header>
+
+    <Transition name="filter-drop">
+      <CharacterFilter v-if="filterOpen" v-model="filters" />
+    </Transition>
 
     <div class="grid">
       <router-link v-for="c in filtered" :key="c.id" :to="`/encyclopedia/characters/${c.id}`" class="card">
@@ -85,6 +120,63 @@ function cardStyle(character) {
   }
 }
 
+.page-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.filter-toggle {
+  position: relative;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  border-radius: $radius-sm;
+  border: 1px solid var(--c-border);
+  background: var(--c-surface);
+  color: var(--c-text-muted);
+  cursor: pointer;
+  transition:
+    color 0.18s,
+    border-color 0.18s,
+    background 0.18s,
+    box-shadow 0.18s;
+
+  :deep(svg) {
+    fill: currentColor;
+  }
+
+  &:hover,
+  &.on {
+    color: var(--c-accent-soft);
+    border-color: color-mix(in srgb, var(--c-accent) 55%, var(--c-border));
+    background: color-mix(in srgb, var(--c-accent) 12%, var(--c-surface));
+  }
+
+  &.active {
+    color: var(--c-accent);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--c-accent) 18%, transparent);
+  }
+}
+
+.filter-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: var(--c-accent);
+  color: var(--c-bg);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 16px;
+  text-align: center;
+}
+
 .search {
   min-width: 220px;
   height: 36px;
@@ -92,6 +184,19 @@ function cardStyle(character) {
   border-radius: $radius-sm;
   border: 1px solid var(--c-border);
   background: var(--c-surface);
+}
+
+.filter-drop-enter-active,
+.filter-drop-leave-active {
+  transition:
+    opacity 0.24s ease,
+    transform 0.24s ease;
+}
+
+.filter-drop-enter-from,
+.filter-drop-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
 }
 
 .grid {

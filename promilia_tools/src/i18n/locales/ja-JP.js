@@ -87,6 +87,8 @@ export default {
     viewDetail: '詳細',
     all: 'すべて',
     filter: '絞り込み',
+    weapon: '武器',
+    clearFilter: '条件をクリア',
   },
   footer: {
     links: 'リンク',
@@ -113,6 +115,7 @@ export default {
     npcHint: '一部の NPC もこの分類に含まれます。',
     skillCooldown: 'スキルクールダウン',
     skillConsumption: 'スキル消費',
+    filterRarity: '星$rp',
   },
   qibo: {
     title: '奇波図鑑',

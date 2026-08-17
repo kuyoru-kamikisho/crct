@@ -87,6 +87,8 @@ export default {
     viewDetail: 'Details',
     all: 'All',
     filter: 'Filter',
+    weapon: 'Weapon',
+    clearFilter: 'Clear filters',
   },
   footer: {
     links: 'Links',
@@ -113,6 +115,7 @@ export default {
     npcHint: 'Some NPCs are also listed here.',
     skillCooldown: 'Skill Cooldown',
     skillConsumption: 'Skill Cost',
+    filterRarity: '$rp-Star',
   },
   qibo: {
     title: 'Qibo Codex',

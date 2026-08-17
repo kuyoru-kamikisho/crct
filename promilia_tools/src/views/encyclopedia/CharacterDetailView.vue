@@ -10,10 +10,14 @@ import SkillDesc from '@/components/common/SkillDesc.vue'
 const route = useRoute()
 const { t } = useI18n()
 const character = computed(() => getCharacterById(route.params.id))
+const pageBackground = computed(() => ({
+  backgroundImage: `url(/imgs/characters/${character.value.id}.png)`
+}))
 </script>
 
 <template>
   <div v-if="character" class="detail">
+    <div class="background" :style="pageBackground"></div>
     <router-link class="back" to="/encyclopedia/characters">← {{ t('nav.characters') }}</router-link>
 
     <header class="hero">
@@ -94,6 +98,41 @@ const character = computed(() => getCharacterById(route.params.id))
 </template>
 
 <style scoped lang="scss">
+.detail {
+  position: relative;
+
+  * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .background {
+    pointer-events: none;
+    position: fixed;
+    width: 100%;
+    height: 100%;
+    left: 0;
+    top: 0;
+    z-index: 0;
+    opacity: .3;
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center center;
+    transition: all .2s ease-in-out;
+    animation: bgFadeIn 1s ease-in-out both;
+  }
+}
+
+@keyframes bgFadeIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0.3;
+  }
+}
+
 .back {
   display: inline-block;
   margin-bottom: 16px;
@@ -162,7 +201,7 @@ section {
   padding: 18px;
   border-radius: $radius-md;
   border: 1px solid var(--c-border);
-  background: rgba(14, 36, 52, 0.35);
+  background: rgba(11, 28, 41, 0.35);
 
   h2 {
     margin: 0 0 10px;
