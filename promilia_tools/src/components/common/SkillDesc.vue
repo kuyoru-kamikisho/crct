@@ -143,7 +143,7 @@ function segments() {
 
 .bracket {
   font-weight: 600;
-  color: #c084fc;
+  color: #b4b5c1;
   text-shadow: 0 0 8px rgba(192, 132, 252, 0.35);
 }
 </style>
