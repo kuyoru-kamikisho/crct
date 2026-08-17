@@ -109,6 +109,7 @@ export default {
   },
   character: {
     title: 'Character Codex',
+    summary: 'There are $rp characters in total, including $rp 5‑star characters and $rp 4‑star characters.',
     npcHint: 'Some NPCs are also listed here.',
   },
   qibo: {

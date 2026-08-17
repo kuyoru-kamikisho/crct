@@ -109,6 +109,7 @@ export default {
   },
   character: {
     title: '角色图鉴',
+    summary: '当前共 $rp 个角色，其中五星角色 $rp 个，四星角色 $rp 个',
     npcHint: '个别 NPC 也会收录于此分类。',
   },
   qibo: {

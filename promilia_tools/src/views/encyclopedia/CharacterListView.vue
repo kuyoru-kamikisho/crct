@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { characters } from '@/data/characters'
+import { replaceRp } from '@/utils/replaceRp'
 
 const { t } = useI18n()
 const q = ref('')
@@ -17,6 +18,13 @@ const filtered = computed(() => {
       c.profession.includes(s),
   )
 })
+
+const characterSummary = computed(() => {
+  const total = characters.length
+  const fiveStar = characters.filter((c) => c.rarity === 5).length
+  const fourStar = characters.filter((c) => c.rarity === 4).length
+  return replaceRp(t('character.summary'), total, fiveStar, fourStar)
+})
 </script>
 
 <template>
@@ -24,6 +32,7 @@ const filtered = computed(() => {
     <header class="page-head">
       <div>
         <h1>{{ t('character.title') }}</h1>
+        <p>{{ characterSummary }}</p>
         <p>{{ t('character.npcHint') }}</p>
       </div>
       <input v-model="q" type="search" class="search" :placeholder="t('common.search')" />
