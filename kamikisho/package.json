@@ -1,0 +1,31 @@
+{
+  "name": "index",
+  "version": "4.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "vite build",
+    "dev": "vite",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "animate.css": "3.5.1",
+    "axios": "^0.27.2",
+    "vite": "^5.4.3",
+    "vue": "^2",
+    "vuetify": "^2.7.2",
+    "vuex": "3.4.0"
+  },
+  "devDependencies": {
+    "@mdi/font": "^7.4.47",
+    "@types/node": "^22.10.2",
+    "@vitejs/plugin-legacy": "^6.0.0",
+    "@vitejs/plugin-vue2": "^2.3.3",
+    "deepmerge": "^4.3.1",
+    "less": "^4.0.0",
+    "sass": "^1.83.0",
+    "terser": "^5.37.0",
+    "vue-tsc": "^2.1.10"
+  },
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
+}
