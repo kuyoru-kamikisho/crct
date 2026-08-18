@@ -100,6 +100,10 @@ function cardStyle(character) {
 </template>
 
 <style scoped lang="scss">
+.page {
+  min-width: 0;
+}
+
 .page-head {
   display: flex;
   justify-content: space-between;
@@ -110,7 +114,7 @@ function cardStyle(character) {
 
   h1 {
     margin: 0 0 4px;
-    font-size: 22px;
+    font-size: clamp(18px, 5vw, 22px);
   }
 
   p {
@@ -118,12 +122,22 @@ function cardStyle(character) {
     color: var(--c-text-muted);
     font-size: 13px;
   }
+
+  @media (max-width: 719px) {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 .page-tools {
   display: flex;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+
+  @media (max-width: 719px) {
+    width: 100%;
+  }
 }
 
 .filter-toggle {
@@ -178,7 +192,9 @@ function cardStyle(character) {
 }
 
 .search {
-  min-width: 220px;
+  flex: 1;
+  min-width: 0;
+  width: min(220px, 100%);
   height: 36px;
   padding: 0 12px;
   border-radius: $radius-sm;
@@ -201,12 +217,13 @@ function cardStyle(character) {
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 168px), 1fr));
   gap: 12px;
 }
 
 .card {
   position: relative;
+  min-width: 0;
   overflow: hidden;
   padding: 18px 16px 16px;
   border-radius: $radius-md;
@@ -218,11 +235,13 @@ function cardStyle(character) {
     border-color 0.18s,
     box-shadow 0.18s;
 
-  &:hover {
-    transform: translateY(-3px);
-    border-color: var(--c-accent);
-    box-shadow: var(--shadow-glow);
-    color: var(--c-text);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      transform: translateY(-3px);
+      border-color: var(--c-accent);
+      box-shadow: var(--shadow-glow);
+      color: var(--c-text);
+    }
   }
 
   * {

@@ -119,6 +119,11 @@ function rarityLabel(value) {
   border: 1px solid var(--c-border);
   background: var(--c-surface);
   box-shadow: var(--shadow-glow);
+  min-width: 0;
+
+  @media (max-width: 479px) {
+    padding: 12px 12px 8px;
+  }
 }
 
 .filter-head {

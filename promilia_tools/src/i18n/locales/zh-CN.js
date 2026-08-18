@@ -41,6 +41,8 @@ export default {
     randomColor: '随机颜色',
     toggleCursor: '自定义指针',
     collapseNav: '折叠导航',
+    openNav: '打开导航',
+    closeNav: '关闭导航',
   },
   themes: {
     azure: '星原青',

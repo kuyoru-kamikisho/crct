@@ -18,7 +18,14 @@ const settings = useSettingsStore()
 </template>
 
 <style scoped lang="scss">
+.theme-switcher {
+  display: block;
+  min-width: 0;
+}
+
 .theme-switcher select {
+  width: 100%;
+  max-width: 11.5em;
   height: 34px;
   padding: 0 8px;
   border-radius: $radius-sm;

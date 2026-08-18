@@ -27,18 +27,17 @@ const { t } = useI18n()
 
 <style scoped lang="scss">
 .app-footer {
-  margin-left: $sidebar-w;
+  margin-left: var(--sidebar-offset, 0px);
   border-top: 1px solid var(--c-border);
   background: rgba(5, 12, 18, 0.7);
-  padding: 28px 24px;
+  padding: 28px max(24px, env(safe-area-inset-right, 0px))
+    calc(28px + env(safe-area-inset-bottom, 0px)) max(24px, env(safe-area-inset-left, 0px));
   transition: margin-left 0.25s ease;
+  min-width: 0;
 
-  :global(.app-shell.is-collapsed) & {
-    margin-left: 64px;
-  }
-
-  @media (max-width: 900px) {
-    margin-left: 0 !important;
+  @media (max-width: 1023px) {
+    padding: 22px max(16px, env(safe-area-inset-right, 0px))
+      calc(22px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
   }
 }
 

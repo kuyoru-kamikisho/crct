@@ -53,12 +53,12 @@ const contributors = [
 <style scoped lang="scss">
 h1 {
   margin: 0 0 20px;
-  font-size: 22px;
+  font-size: clamp(18px, 5vw, 22px);
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
   gap: 14px;
 }
 
@@ -80,6 +80,7 @@ h1 {
     color: var(--c-text-muted);
     font-size: 13px;
     line-height: 1.7;
+    overflow-wrap: break-word;
   }
 }
 

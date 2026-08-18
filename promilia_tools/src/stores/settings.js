@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { storageGet, storageSet } from '@/utils/storage'
+import { MQ_NARROW } from '@/utils/breakpoints'
 
 const THEMES = ['azure', 'dusk', 'aurora', 'stardust']
 
@@ -44,6 +45,8 @@ export const useSettingsStore = defineStore('settings', {
     cursorEnabled: storageGet('cursorEnabled', true),
     cursorColor: storageGet('cursorColor', '#7ed4c0'),
     sidebarCollapsed: storageGet('sidebarCollapsed', false),
+    isNarrow: typeof window !== 'undefined' && window.matchMedia(MQ_NARROW).matches,
+    mobileNavOpen: false,
   }),
   getters: {
     themes: () => THEMES,
@@ -77,12 +80,29 @@ export const useSettingsStore = defineStore('settings', {
       this.setTheme(THEMES[(i + 1) % THEMES.length])
     },
     toggleSidebar() {
+      const narrow =
+        this.isNarrow ||
+        (typeof window !== 'undefined' && window.matchMedia(MQ_NARROW).matches)
+      if (narrow) {
+        this.isNarrow = true
+        this.mobileNavOpen = !this.mobileNavOpen
+        return
+      }
       this.sidebarCollapsed = !this.sidebarCollapsed
       storageSet('sidebarCollapsed', this.sidebarCollapsed)
     },
     setSidebarCollapsed(v) {
       this.sidebarCollapsed = !!v
       storageSet('sidebarCollapsed', this.sidebarCollapsed)
+    },
+    closeMobileNav() {
+      this.mobileNavOpen = false
+    },
+    setNarrow(narrow) {
+      const next = !!narrow
+      if (this.isNarrow === next) return
+      this.isNarrow = next
+      this.mobileNavOpen = false
     },
     applyDom() {
       document.documentElement.setAttribute('data-theme', this.theme)

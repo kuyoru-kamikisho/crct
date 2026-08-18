@@ -19,7 +19,7 @@ const { t } = useI18n()
 
   h1 {
     margin: 0;
-    font-size: 64px;
+    font-size: clamp(40px, 18vw, 64px);
     color: var(--c-accent);
   }
 

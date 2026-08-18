@@ -41,6 +41,8 @@ export default {
     randomColor: 'ランダム色',
     toggleCursor: 'カスタムカーソル',
     collapseNav: 'ナビ切替',
+    openNav: 'ナビを開く',
+    closeNav: 'ナビを閉じる',
   },
   themes: {
     azure: '星原青',

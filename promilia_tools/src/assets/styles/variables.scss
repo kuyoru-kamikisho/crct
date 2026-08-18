@@ -5,13 +5,19 @@ $font-family-base: 'Noto Sans SC', 'Source Han Sans SC', 'PingFang SC',
 
 $header-h: 56px;
 $sidebar-w: 240px;
+$sidebar-collapsed-w: 64px;
 $footer-h: auto;
 $radius-sm: 6px;
 $radius-md: 10px;
 $radius-lg: 16px;
 
+$bp-sm: 480px;
+$bp-md: 720px;
+$bp-lg: 1024px;
+
 $z-header: 100;
 $z-sidebar: 90;
+$z-backdrop: 80;
 $z-float: 110;
 $z-cursor: 2147483646;
 

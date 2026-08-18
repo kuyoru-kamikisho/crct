@@ -60,11 +60,16 @@ const entries = [
 <style scoped lang="scss">
 .home {
   max-width: 1080px;
+  min-width: 0;
 }
 
 .hero {
   padding: 28px 0 12px;
   animation: rise 0.55s ease both;
+
+  @media (max-width: 719px) {
+    padding: 12px 0 8px;
+  }
 }
 
 .eyebrow {
@@ -77,9 +82,10 @@ const entries = [
 
 h1 {
   margin: 0 0 12px;
-  font-size: clamp(28px, 5vw, 42px);
+  font-size: clamp(22px, 7vw, 42px);
   font-weight: 700;
   letter-spacing: 0.04em;
+  line-height: 1.25;
   background: linear-gradient(120deg, var(--c-text), var(--c-accent-soft) 55%, var(--c-star));
   -webkit-background-clip: text;
   background-clip: text;
@@ -122,8 +128,8 @@ h2 {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 
-  @media (max-width: 600px) {
-    grid-template-columns: 1fr;
+  @media (max-width: 479px) {
+    gap: 8px;
   }
 }
 
@@ -133,10 +139,15 @@ h2 {
   border: 1px solid var(--c-border);
   background: var(--c-surface);
   text-align: center;
+  min-width: 0;
+
+  @media (max-width: 479px) {
+    padding: 12px 8px;
+  }
 
   strong {
     display: block;
-    font-size: 26px;
+    font-size: clamp(18px, 5vw, 26px);
     color: var(--c-accent);
   }
 
@@ -148,7 +159,7 @@ h2 {
 
 .module-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr));
   gap: 12px;
 }
 
@@ -159,6 +170,7 @@ h2 {
   border: 1px solid var(--c-border);
   background: linear-gradient(160deg, rgba(14, 36, 52, 0.55), rgba(14, 36, 52, 0.2));
   color: var(--c-text);
+  min-width: 0;
   transition:
     border-color 0.2s,
     transform 0.2s,
@@ -175,11 +187,13 @@ h2 {
     color: var(--c-text-muted);
   }
 
-  &:hover {
-    border-color: var(--c-accent);
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-glow);
-    color: var(--c-text);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      border-color: var(--c-accent);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-glow);
+      color: var(--c-text);
+    }
   }
 }
 

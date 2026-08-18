@@ -49,6 +49,10 @@ const filtered = computed(() => {
 </template>
 
 <style scoped lang="scss">
+.page {
+  min-width: 0;
+}
+
 .page-head {
   display: flex;
   justify-content: space-between;
@@ -59,26 +63,38 @@ const filtered = computed(() => {
 
   h1 {
     margin: 0;
-    font-size: 22px;
+    font-size: clamp(18px, 5vw, 22px);
+  }
+
+  @media (max-width: 719px) {
+    flex-direction: column;
+    align-items: stretch;
   }
 }
 
 .search {
-  min-width: 220px;
+  flex: 1;
+  min-width: 0;
+  width: min(220px, 100%);
   height: 36px;
   padding: 0 12px;
   border-radius: $radius-sm;
   border: 1px solid var(--c-border);
   background: var(--c-surface);
+
+  @media (max-width: 719px) {
+    width: 100%;
+  }
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr));
   gap: 12px;
 }
 
 .card {
+  min-width: 0;
   padding: 16px;
   border-radius: $radius-md;
   border: 1px solid var(--c-border);
@@ -97,6 +113,7 @@ h2 {
 
 .tags {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   margin-bottom: 10px;
 }

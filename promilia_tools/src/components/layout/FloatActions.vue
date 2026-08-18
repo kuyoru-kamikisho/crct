@@ -22,8 +22,8 @@ function refresh() {
 <style scoped lang="scss">
 .float-actions {
   position: fixed;
-  right: 18px;
-  bottom: 24px;
+  right: max(12px, env(safe-area-inset-right, 0px));
+  bottom: max(16px, calc(12px + env(safe-area-inset-bottom, 0px)));
   z-index: $z-float;
   display: flex;
   flex-direction: column;

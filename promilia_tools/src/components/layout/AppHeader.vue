@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useSettingsStore } from '@/stores/settings'
 import { SUPPORTED_LOCALES, setAppLocale } from '@/i18n'
@@ -9,6 +9,17 @@ import ThemeSwitcher from '@/components/common/ThemeSwitcher.vue'
 const { t } = useI18n()
 const settings = useSettingsStore()
 const showCursorPanel = ref(false)
+
+const navExpanded = computed(() =>
+  settings.isNarrow ? settings.mobileNavOpen : !settings.sidebarCollapsed,
+)
+
+const navLabel = computed(() => {
+  if (settings.isNarrow) {
+    return settings.mobileNavOpen ? t('header.closeNav') : t('header.openNav')
+  }
+  return t('header.collapseNav')
+})
 
 async function onLocale(code) {
   await setAppLocale(code)
@@ -21,9 +32,12 @@ async function onLocale(code) {
     <div class="header-left">
       <button
         type="button"
-        class="icon-btn"
-        :title="t('header.collapseNav')"
-        :aria-label="t('header.collapseNav')"
+        class="icon-btn menu-btn"
+        :class="{ open: navExpanded }"
+        :title="navLabel"
+        :aria-label="navLabel"
+        :aria-expanded="navExpanded"
+        aria-controls="app-sidebar"
         @click="settings.toggleSidebar()"
       >
         <span class="bars" aria-hidden="true" />
@@ -45,14 +59,20 @@ async function onLocale(code) {
     </nav>
 
     <div class="header-actions">
-      <LangSwitcher :locales="SUPPORTED_LOCALES" :model-value="settings.locale" @update:model-value="onLocale" />
-      <ThemeSwitcher />
+      <LangSwitcher
+        class="chrome-switcher"
+        :locales="SUPPORTED_LOCALES"
+        :model-value="settings.locale"
+        @update:model-value="onLocale"
+      />
+      <ThemeSwitcher class="chrome-switcher" />
       <div class="cursor-wrap">
         <button
           type="button"
           class="icon-btn"
           :class="{ active: settings.cursorEnabled }"
           :title="t('header.toggleCursor')"
+          :aria-expanded="showCursorPanel"
           @click="showCursorPanel = !showCursorPanel"
         >
           ✦
@@ -98,14 +118,19 @@ async function onLocale(code) {
   position: sticky;
   top: 0;
   z-index: $z-header;
-  height: $header-h;
+  height: calc(#{$header-h} + env(safe-area-inset-top, 0px));
+  padding: env(safe-area-inset-top, 0px) max(12px, env(safe-area-inset-right, 0px)) 0
+    max(12px, env(safe-area-inset-left, 0px));
   display: flex;
   align-items: center;
-  gap: 16px;
-  padding: 0 16px;
+  gap: 12px;
   background: var(--c-header);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--c-border);
+
+  @media (max-width: 1023px) {
+    gap: 8px;
+  }
 }
 
 .header-left {
@@ -113,6 +138,10 @@ async function onLocale(code) {
   align-items: center;
   gap: 10px;
   min-width: 0;
+
+  @media (max-width: 1199px) {
+    flex: 1;
+  }
 }
 
 .brand {
@@ -156,6 +185,16 @@ async function onLocale(code) {
     font-size: 11px;
     color: var(--c-text-muted);
   }
+
+  @media (max-width: 719px) {
+    small {
+      display: none;
+    }
+  }
+
+  @media (max-width: 379px) {
+    display: none;
+  }
 }
 
 .header-nav {
@@ -163,12 +202,14 @@ async function onLocale(code) {
   gap: 14px;
   margin-left: auto;
   margin-right: 8px;
+  flex-shrink: 0;
 
   a {
     color: var(--c-text-muted);
     font-size: 13px;
     padding: 4px 0;
     border-bottom: 2px solid transparent;
+    white-space: nowrap;
 
     &.router-link-active,
     &:hover {
@@ -177,7 +218,7 @@ async function onLocale(code) {
     }
   }
 
-  @media (max-width: 1100px) {
+  @media (max-width: 1199px) {
     display: none;
   }
 }
@@ -186,11 +227,24 @@ async function onLocale(code) {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-shrink: 0;
+
+  @media (max-width: 1199px) {
+    margin-left: auto;
+  }
+
+  @media (max-width: 1023px) {
+    gap: 6px;
+
+    .chrome-switcher {
+      display: none;
+    }
+  }
 }
 
 .icon-btn {
-  width: 34px;
-  height: 34px;
+  width: 36px;
+  height: 36px;
   border: 1px solid var(--c-border);
   border-radius: $radius-sm;
   background: var(--c-surface);
@@ -203,7 +257,8 @@ async function onLocale(code) {
     background 0.2s;
 
   &:hover,
-  &.active {
+  &.active,
+  &.open {
     border-color: var(--c-accent);
     background: rgba(62, 207, 207, 0.1);
   }
@@ -212,9 +267,39 @@ async function onLocale(code) {
 .bars {
   width: 14px;
   height: 10px;
+  position: relative;
   border-top: 2px solid currentColor;
   border-bottom: 2px solid currentColor;
   background: linear-gradient(currentColor, currentColor) center / 100% 2px no-repeat;
+  transition:
+    transform 0.2s,
+    border-color 0.2s,
+    background 0.2s;
+
+  .menu-btn.open & {
+    height: 0;
+    border-color: transparent;
+    background: none;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: -1px;
+      width: 14px;
+      height: 2px;
+      background: currentColor;
+    }
+
+    &::before {
+      transform: rotate(45deg);
+    }
+
+    &::after {
+      transform: rotate(-45deg);
+    }
+  }
 }
 
 .cursor-wrap {
@@ -225,12 +310,13 @@ async function onLocale(code) {
   position: absolute;
   right: 0;
   top: calc(100% + 8px);
-  width: 220px;
+  width: min(220px, calc(100vw - 24px));
   padding: 12px;
   border-radius: $radius-md;
   background: var(--c-bg-elevated);
   border: 1px solid var(--c-border);
   box-shadow: var(--shadow-glow);
+  z-index: 2;
 }
 
 .row {

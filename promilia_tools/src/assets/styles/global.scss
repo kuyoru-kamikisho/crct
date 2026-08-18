@@ -10,6 +10,7 @@ html {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   scroll-behavior: smooth;
+  overflow-wrap: break-word;
 }
 
 html,
@@ -17,6 +18,7 @@ body,
 #app {
   margin: 0;
   min-height: 100%;
+  min-width: 0;
 }
 
 body {
@@ -26,6 +28,10 @@ body {
   color: var(--c-text);
   background: var(--c-bg);
   overflow-x: hidden;
+
+  &.nav-locked {
+    overflow: hidden;
+  }
 }
 
 /* 星原氛围背景：低成本 CSS，无重型 canvas */
@@ -92,9 +98,29 @@ textarea {
   color: inherit;
 }
 
-img {
+img,
+video,
+canvas {
   max-width: 100%;
+  height: auto;
+}
+
+img {
   display: block;
+}
+
+@media (max-width: 1023px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
 }
 
 ::-webkit-scrollbar {

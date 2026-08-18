@@ -23,6 +23,11 @@ defineProps({
   border: 1px solid var(--c-border);
   background: var(--c-surface);
   text-align: center;
+  min-width: 0;
+
+  @media (max-width: 719px) {
+    padding: 24px 16px;
+  }
 }
 
 .glow {

@@ -41,6 +41,8 @@ export default {
     randomColor: 'Random Color',
     toggleCursor: 'Custom Cursor',
     collapseNav: 'Toggle Nav',
+    openNav: 'Open navigation',
+    closeNav: 'Close navigation',
   },
   themes: {
     azure: 'Azure',

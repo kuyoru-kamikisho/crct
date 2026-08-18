@@ -19,7 +19,14 @@ const emit = defineEmits(['update:modelValue'])
 </template>
 
 <style scoped lang="scss">
+.lang-switcher {
+  display: block;
+  min-width: 0;
+}
+
 .lang-switcher select {
+  width: 100%;
+  max-width: 11.5em;
   height: 34px;
   padding: 0 8px;
   border-radius: $radius-sm;

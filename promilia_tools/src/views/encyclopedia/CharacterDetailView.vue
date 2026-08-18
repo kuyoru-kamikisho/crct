@@ -120,6 +120,11 @@ const pageBackground = computed(() => ({
     background-position: center center;
     transition: all .2s ease-in-out;
     animation: bgFadeIn 1s ease-in-out both;
+
+    @media (max-width: 719px) {
+      background-size: cover;
+      background-position: top center;
+    }
   }
 }
 
@@ -142,16 +147,18 @@ const pageBackground = computed(() => ({
 
 .hero {
   display: grid;
-  grid-template-columns: 1.4fr 1fr;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
   gap: 20px;
   padding: 22px;
   border-radius: $radius-lg;
   border: 1px solid var(--c-border);
   background: var(--c-surface);
   margin-bottom: 24px;
+  min-width: 0;
 
   @media (max-width: 800px) {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
+    padding: 16px;
   }
 }
 
@@ -162,7 +169,7 @@ const pageBackground = computed(() => ({
 
 h1 {
   margin: 4px 0;
-  font-size: 28px;
+  font-size: clamp(22px, 6vw, 28px);
 }
 
 .en {
@@ -183,7 +190,7 @@ h1 {
 
   div {
     display: grid;
-    grid-template-columns: 72px 1fr;
+    grid-template-columns: minmax(4.5em, 72px) minmax(0, 1fr);
     gap: 8px;
   }
 
@@ -226,6 +233,7 @@ section {
     padding: 12px;
     border-radius: $radius-sm;
     background: rgba(0, 0, 0, 0.2);
+    min-width: 0;
   }
 
   .type {
@@ -245,9 +253,11 @@ section {
   gap: 4px;
   opacity: 0.6;
   font-size: 13px;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
   vertical-align: middle;
   margin-left: 12px;
+  margin-top: 4px;
 
   span {
     display: inline-block;
