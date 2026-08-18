@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import SvgIcon from '@jamescoyle/vue-icon'
 import { useSettingsStore } from '@/stores/settings'
 import { navSections } from '@/data/navigation'
 import { SUPPORTED_LOCALES, setAppLocale } from '@/i18n'
@@ -34,6 +35,10 @@ function isActive(path) {
   return route.path === path || route.path.startsWith(path + '/')
 }
 
+function isSectionActive(sec) {
+  return sec.children.some((c) => isActive(c.path))
+}
+
 async function onLocale(code) {
   await setAppLocale(code)
   settings.setLocale(code)
@@ -49,15 +54,26 @@ async function onLocale(code) {
   >
     <div class="sidebar-inner">
       <section v-for="sec in navSections" :key="sec.id" class="nav-section">
-        <button type="button" class="section-title" @click="toggle(sec.id)">
-          <span class="dot" :data-icon="sec.icon" />
+        <button
+          type="button"
+          class="section-title"
+          :class="{ active: isSectionActive(sec) }"
+          :title="t(sec.labelKey)"
+          @click="toggle(sec.id)"
+        >
+          <svg-icon class="nav-icon" type="mdi" :size="20" :path="sec.icon" aria-hidden="true" />
           <span class="label">{{ t(sec.labelKey) }}</span>
           <span class="chev" :class="{ open: openIds.includes(sec.id) }">›</span>
         </button>
         <ul v-show="openIds.includes(sec.id)" class="nav-list">
           <li v-for="item in sec.children" :key="item.id">
-            <router-link :to="item.path" :class="{ active: isActive(item.path) }">
-              {{ t(item.labelKey) }}
+            <router-link
+              :to="item.path"
+              :class="{ active: isActive(item.path) }"
+              :title="t(item.labelKey)"
+            >
+              <svg-icon class="item-icon" type="mdi" :size="16" :path="item.icon" aria-hidden="true" />
+              <span>{{ t(item.labelKey) }}</span>
             </router-link>
           </li>
         </ul>
@@ -102,12 +118,16 @@ async function onLocale(code) {
       .label,
       .chev,
       .sidebar-tools {
-        opacity: 0;
-        pointer-events: none;
+        display: none;
       }
 
       .nav-list {
         display: none;
+      }
+
+      .sidebar-inner {
+        padding-left: 8px;
+        padding-right: 8px;
       }
 
       .section-title {
@@ -198,18 +218,25 @@ async function onLocale(code) {
   cursor: pointer;
   text-align: left;
 
-  &:hover {
+  &:hover,
+  &.active {
     background: rgba(62, 207, 207, 0.08);
+  }
+
+  &.active .nav-icon {
+    color: var(--c-accent);
   }
 }
 
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--c-accent);
-  box-shadow: 0 0 8px var(--c-accent);
+.nav-icon,
+.item-icon {
+  display: inline-flex;
   flex-shrink: 0;
+  color: var(--c-accent);
+}
+
+.item-icon {
+  color: var(--c-text-muted);
 }
 
 .label {
@@ -231,10 +258,12 @@ async function onLocale(code) {
 .nav-list {
   list-style: none;
   margin: 0;
-  padding: 0 0 6px 18px;
+  padding: 0 0 6px 10px;
 
   a {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     padding: 8px 10px;
     border-radius: $radius-sm;
     color: var(--c-text-muted);
@@ -244,6 +273,10 @@ async function onLocale(code) {
     &.active {
       color: var(--c-accent-soft);
       background: rgba(62, 207, 207, 0.1);
+
+      .item-icon {
+        color: var(--c-accent-soft);
+      }
     }
   }
 }
