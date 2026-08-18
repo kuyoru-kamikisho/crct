@@ -43,6 +43,18 @@ export default {
     collapseNav: '折叠导航',
     openNav: '打开导航',
     closeNav: '关闭导航',
+    searchPlaceholder: '搜索角色、技能、奇波…',
+    searchHint: '输入关键词搜索全站文本',
+    searchNoResult: '没有找到「$rp」相关内容',
+    openSearch: '打开搜索',
+    clearSearch: '清除搜索',
+    closeSearch: '关闭搜索',
+  },
+  search: {
+    character: '角色',
+    skill: '技能',
+    qibo: '奇波',
+    page: '页面',
   },
   themes: {
     azure: '星原青',

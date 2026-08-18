@@ -43,6 +43,18 @@ export default {
     collapseNav: 'ナビ切替',
     openNav: 'ナビを開く',
     closeNav: 'ナビを閉じる',
+    searchPlaceholder: 'キャラ・スキル・奇波を検索…',
+    searchHint: 'キーワードでサイト内を検索',
+    searchNoResult: '「$rp」に一致する結果はありません',
+    openSearch: '検索を開く',
+    clearSearch: '検索をクリア',
+    closeSearch: '検索を閉じる',
+  },
+  search: {
+    character: 'キャラ',
+    skill: 'スキル',
+    qibo: '奇波',
+    page: 'ページ',
   },
   themes: {
     azure: '星原青',

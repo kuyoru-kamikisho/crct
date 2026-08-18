@@ -5,6 +5,7 @@ import { useSettingsStore } from '@/stores/settings'
 import { SUPPORTED_LOCALES, setAppLocale } from '@/i18n'
 import LangSwitcher from '@/components/common/LangSwitcher.vue'
 import ThemeSwitcher from '@/components/common/ThemeSwitcher.vue'
+import SiteSearch from '@/components/layout/SiteSearch.vue'
 
 const { t } = useI18n()
 const settings = useSettingsStore()
@@ -57,6 +58,10 @@ async function onLocale(code) {
       <router-link to="/tools/gacha">{{ t('nav.gacha') }}</router-link>
       <router-link to="/contribute">{{ t('nav.contribute') }}</router-link>
     </nav>
+
+    <div class="header-search">
+      <SiteSearch />
+    </div>
 
     <div class="header-actions">
       <LangSwitcher
@@ -223,6 +228,24 @@ async function onLocale(code) {
   }
 }
 
+.header-search {
+  flex: 1 1 200px;
+  max-width: 400px;
+  min-width: 0;
+
+  @media (max-width: 1199px) {
+    margin-left: auto;
+    max-width: 280px;
+  }
+
+  @media (max-width: 1023px) {
+    flex: 0 0 auto;
+    max-width: none;
+    margin-left: 0;
+    width: auto;
+  }
+}
+
 .header-actions {
   display: flex;
   align-items: center;
@@ -230,7 +253,7 @@ async function onLocale(code) {
   flex-shrink: 0;
 
   @media (max-width: 1199px) {
-    margin-left: auto;
+    margin-left: 0;
   }
 
   @media (max-width: 1023px) {

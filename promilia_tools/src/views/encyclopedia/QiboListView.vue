@@ -1,10 +1,19 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { qibos } from '@/data/qibos'
 
 const { t } = useI18n()
-const q = ref('')
+const route = useRoute()
+const q = ref(typeof route.query.q === 'string' ? route.query.q : '')
+
+watch(
+  () => route.query.q,
+  (value) => {
+    if (typeof value === 'string') q.value = value
+  },
+)
 
 const filtered = computed(() => {
   const s = q.value.trim().toLowerCase()

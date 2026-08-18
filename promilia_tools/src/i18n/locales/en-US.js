@@ -43,6 +43,18 @@ export default {
     collapseNav: 'Toggle Nav',
     openNav: 'Open navigation',
     closeNav: 'Close navigation',
+    searchPlaceholder: 'Search characters, skills, Qibo…',
+    searchHint: 'Type to search site content',
+    searchNoResult: 'No results for “$rp”',
+    openSearch: 'Open search',
+    clearSearch: 'Clear search',
+    closeSearch: 'Close search',
+  },
+  search: {
+    character: 'Character',
+    skill: 'Skill',
+    qibo: 'Qibo',
+    page: 'Page',
   },
   themes: {
     azure: 'Azure',

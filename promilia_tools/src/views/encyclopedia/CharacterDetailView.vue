@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, nextTick, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { getCharacterById } from '@/data/characters'
@@ -10,9 +10,28 @@ import SkillDesc from '@/components/common/SkillDesc.vue'
 const route = useRoute()
 const { t } = useI18n()
 const character = computed(() => getCharacterById(route.params.id))
-const pageBackground = computed(() => ({
-  backgroundImage: `url(/imgs/characters/${character.value.id}.png)`
-}))
+const pageBackground = computed(() =>
+  character.value
+    ? { backgroundImage: `url(/imgs/characters/${character.value.id}.png)` }
+    : {},
+)
+const focusedSkillName = computed(() => {
+  const value = route.query.skill
+  return typeof value === 'string' ? value : Array.isArray(value) ? value[0] : ''
+})
+
+function scrollToFocusedSkill() {
+  if (!character.value || !focusedSkillName.value) return
+  nextTick(() => {
+    requestAnimationFrame(() => {
+      const index = character.value.skills?.findIndex((sk) => sk.name === focusedSkillName.value)
+      if (index == null || index < 0) return
+      document.getElementById(`skill-${index}`)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
+  })
+}
+
+watch(() => [route.params.id, focusedSkillName.value], scrollToFocusedSkill, { immediate: true })
 </script>
 
 <template>
@@ -58,7 +77,12 @@ const pageBackground = computed(() => ({
     <section v-if="character.skills?.length">
       <h2>{{ t('common.skills') }}</h2>
       <ul class="skills">
-        <li v-for="(sk, i) in character.skills" :key="i">
+        <li
+          v-for="(sk, i) in character.skills"
+          :id="`skill-${i}`"
+          :key="i"
+          :class="{ 'is-focus': focusedSkillName === sk.name }"
+        >
           <strong>{{ sk.name }}</strong>
           <span class="type">{{ sk.type }}</span>
           <div v-if="sk.cooldown" class="skill-energy">
@@ -234,6 +258,14 @@ section {
     border-radius: $radius-sm;
     background: rgba(0, 0, 0, 0.2);
     min-width: 0;
+    scroll-margin-top: calc(#{$header-h} + env(safe-area-inset-top, 0px) + 12px);
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
+    border: 1px solid transparent;
+
+    &.is-focus {
+      border-color: var(--c-accent);
+      box-shadow: 0 0 0 1px rgba(62, 207, 207, 0.35);
+    }
   }
 
   .type {
