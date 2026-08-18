@@ -52,7 +52,7 @@ async function onLocale(code) {
       </router-link>
     </div>
 
-    <nav class="header-nav" aria-label="shortcut">
+    <nav class="header-nav" :aria-label="t('header.quickNav')">
       <router-link to="/encyclopedia/characters">{{ t('nav.characters') }}</router-link>
       <router-link to="/encyclopedia/qibo">{{ t('nav.qibo') }}</router-link>
       <router-link to="/tools/gacha">{{ t('nav.gacha') }}</router-link>

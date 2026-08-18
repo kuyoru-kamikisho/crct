@@ -1,8 +1,10 @@
 <script setup>
 import { computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 import { useSettingsStore } from '@/stores/settings'
 import { setAppLocale } from '@/i18n'
+import { useSeo } from '@/composables/useSeo'
 import { MQ_NARROW } from '@/utils/breakpoints'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
@@ -11,6 +13,8 @@ import FloatActions from '@/components/layout/FloatActions.vue'
 
 const settings = useSettingsStore()
 const route = useRoute()
+const { t } = useI18n()
+useSeo()
 
 let cursorApi = null
 let narrowQuery = null
@@ -102,6 +106,7 @@ watch(
 
 <template>
   <div class="app-shell" :class="shellClass">
+    <a class="skip-link" href="#main-content">{{ t('header.skipToContent') }}</a>
     <AppHeader />
     <div
       class="nav-backdrop"
@@ -125,9 +130,26 @@ watch(
 </template>
 
 <style scoped lang="scss">
+.skip-link {
+  position: absolute;
+  left: -999px;
+  top: 8px;
+  z-index: calc(#{$z-float} + 20);
+  padding: 8px 12px;
+  border-radius: $radius-sm;
+  background: var(--c-accent);
+  color: #071018;
+  font-size: 13px;
+
+  &:focus {
+    left: 8px;
+  }
+}
+
 .app-shell {
   --sidebar-offset: #{$sidebar-w};
   --header-offset: calc(#{$header-h} + env(safe-area-inset-top, 0px));
+  position: relative;
   min-height: 100vh;
   min-height: 100dvh;
   display: flex;

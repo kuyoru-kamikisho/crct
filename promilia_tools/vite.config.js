@@ -2,9 +2,10 @@ import { fileURLToPath, URL } from 'node:url'
 import { defineConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import vueJsx from '@vitejs/plugin-vue-jsx'
+import { seoPrerenderPlugin } from './scripts/vite-plugin-seo.js'
 
 export default defineConfig({
-  plugins: [vue(), vueJsx()],
+  plugins: [vue(), vueJsx(), seoPrerenderPlugin()],
   server: {
     port: 5177,
   },

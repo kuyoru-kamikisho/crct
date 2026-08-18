@@ -1,5 +1,6 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiFilter, mdiFilterOutline } from '@mdi/js'
@@ -10,12 +11,38 @@ import {
   matchCharacterFilters,
 } from '@/data/characters'
 import CharacterFilter from '@/components/encyclopedia/CharacterFilter.vue'
+import AppBreadcrumb from '@/components/common/AppBreadcrumb.vue'
 import { replaceRp } from '@/utils/replaceRp'
 
 const { t } = useI18n()
-const q = ref('')
+const route = useRoute()
+const router = useRouter()
+const q = ref(typeof route.query.q === 'string' ? route.query.q : '')
 const filterOpen = ref(false)
 const filters = ref(createEmptyCharacterFilters())
+
+const crumbs = computed(() => [
+  { to: '/', label: t('nav.home') },
+  { label: t('nav.characters') },
+])
+
+watch(
+  () => route.query.q,
+  (value) => {
+    if (typeof value === 'string' && value !== q.value) q.value = value
+    if (value == null && q.value) q.value = ''
+  },
+)
+
+watch(q, (value) => {
+  const next = value.trim()
+  const current = typeof route.query.q === 'string' ? route.query.q : ''
+  if (next === current || (!next && !current)) return
+  const query = { ...route.query }
+  if (next) query.q = next
+  else delete query.q
+  router.replace({ query })
+})
 
 const activeFilterCount = computed(() => countActiveCharacterFilters(filters.value))
 
@@ -40,17 +67,18 @@ const characterSummary = computed(() => {
   return replaceRp(t('character.summary'), total, fiveStar, fourStar)
 })
 
-function cardStyle(character) {
-  return {
-    backgroundImage: `url(/imgs/characters/${character.id}.png)`,
-    backgroundSize: 'cover',
-    backgroundRepeat: 'no-repeat',
-  }
+function portraitAlt(character) {
+  return replaceRp(t('seo.portraitAlt'), character.name, character.nameEn)
+}
+
+function onPortraitError(event) {
+  event.target.style.display = 'none'
 }
 </script>
 
 <template>
   <div class="page">
+    <AppBreadcrumb :items="crumbs" :label="t('header.breadcrumb')" />
     <header class="page-head">
       <div>
         <h1>{{ t('character.title') }}</h1>
@@ -83,7 +111,16 @@ function cardStyle(character) {
 
     <div class="grid">
       <router-link v-for="c in filtered" :key="c.id" :to="`/encyclopedia/characters/${c.id}`" class="card">
-        <div class="background" :style="cardStyle(c)"></div>
+        <img
+          class="background"
+          :src="`/imgs/characters/${c.id}.png`"
+          :alt="portraitAlt(c)"
+          width="400"
+          height="520"
+          loading="lazy"
+          decoding="async"
+          @error="onPortraitError"
+        />
         <div class="rarity">★ {{ c.rarity }}</div>
         <h2>{{ c.name }}</h2>
         <p class="en">{{ c.nameEn }}</p>
@@ -255,8 +292,10 @@ function cardStyle(character) {
     height: 100%;
     left: 0;
     top: 0;
+    object-fit: cover;
     opacity: 0.4;
     z-index: 0;
+    pointer-events: none;
   }
 }
 

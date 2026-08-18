@@ -6,14 +6,19 @@ import { getCharacterById } from '@/data/characters'
 import SvgIcon from '@jamescoyle/vue-icon';
 import { mdiClockOutline, mdiLightningBolt } from '@mdi/js';
 import SkillDesc from '@/components/common/SkillDesc.vue'
+import AppBreadcrumb from '@/components/common/AppBreadcrumb.vue'
+import { replaceRp } from '@/utils/replaceRp'
 
 const route = useRoute()
 const { t } = useI18n()
 const character = computed(() => getCharacterById(route.params.id))
-const pageBackground = computed(() =>
-  character.value
-    ? { backgroundImage: `url(/imgs/characters/${character.value.id}.png)` }
-    : {},
+const crumbs = computed(() => [
+  { to: '/', label: t('nav.home') },
+  { to: '/encyclopedia/characters', label: t('nav.characters') },
+  { label: character.value?.name || t('common.empty') },
+])
+const portraitAlt = computed(() =>
+  character.value ? replaceRp(t('seo.portraitAlt'), character.value.name, character.value.nameEn) : '',
 )
 const focusedSkillName = computed(() => {
   const value = route.query.skill
@@ -32,17 +37,29 @@ function scrollToFocusedSkill() {
 }
 
 watch(() => [route.params.id, focusedSkillName.value], scrollToFocusedSkill, { immediate: true })
+
+function onPortraitError(event) {
+  event.target.style.display = 'none'
+}
 </script>
 
 <template>
-  <div v-if="character" class="detail">
-    <div class="background" :style="pageBackground"></div>
-    <router-link class="back" to="/encyclopedia/characters">← {{ t('nav.characters') }}</router-link>
+  <article v-if="character" class="detail" aria-labelledby="character-heading">
+    <img
+      class="background"
+      :src="`/imgs/characters/${character.id}.png`"
+      :alt="portraitAlt"
+      width="960"
+      height="960"
+      decoding="async"
+      @error="onPortraitError"
+    />
+    <AppBreadcrumb :items="crumbs" :label="t('header.breadcrumb')" />
 
     <header class="hero">
       <div>
         <p class="rarity">★ {{ character.rarity }}</p>
-        <h1>{{ character.name }}</h1>
+        <h1 id="character-heading">{{ character.name }}</h1>
         <p class="en">{{ character.nameEn }}</p>
         <p class="intro">{{ character.intro }}</p>
       </div>
@@ -114,7 +131,7 @@ watch(() => [route.params.id, focusedSkillName.value], scrollToFocusedSkill, { i
       <h2>{{ t('common.review') }}</h2>
       <p>{{ character.review || t('common.placeholder') }}</p>
     </section>
-  </div>
+  </article>
   <div v-else class="missing">
     <p>{{ t('common.empty') }}</p>
     <router-link to="/encyclopedia/characters">{{ t('nav.characters') }}</router-link>
@@ -139,15 +156,14 @@ watch(() => [route.params.id, focusedSkillName.value], scrollToFocusedSkill, { i
     top: 0;
     z-index: 0;
     opacity: .3;
-    background-size: contain;
-    background-repeat: no-repeat;
-    background-position: center center;
+    object-fit: contain;
+    object-position: center center;
     transition: all .2s ease-in-out;
     animation: bgFadeIn 1s ease-in-out both;
 
     @media (max-width: 719px) {
-      background-size: cover;
-      background-position: top center;
+      object-fit: cover;
+      object-position: top center;
     }
   }
 }

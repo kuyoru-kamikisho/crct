@@ -1,0 +1,14 @@
+{
+  "id": "/",
+  "name": "蓝色星原：旅谣 Wiki",
+  "short_name": "旅谣Wiki",
+  "description": "《蓝色星原：旅谣》（Azur Promilia）非官方 Wiki：角色图鉴、奇波图鉴与攻略工具。",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#071018",
+  "theme_color": "#071018",
+  "categories": ["wiki", "games", "reference"]
+}

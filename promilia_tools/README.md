@@ -26,7 +26,27 @@ npm run build
 npm run preview
 ```
 
-构建产物为静态文件，可用任意静态服务器或 GitHub Pages 托管（hash 路由）。
+构建产物为静态文件，可用任意静态服务器或 GitHub Pages 托管。
+
+为了让搜索引擎收录干净的 URL（而不是 `#/path`），站点使用 **History 路由**。静态托管需要 SPA fallback：
+
+- GitHub Pages：构建会生成 `404.html`，未知路径会回退到前端路由
+- Nginx：`try_files $uri $uri.html $uri/ /index.html;`
+- 旧的 hash 链接（`/#/encyclopedia/characters`）进入站点后会自动改写为 history 路径
+
+## SEO
+
+构建时会为首页、角色图鉴、每个角色详情、奇波图鉴、贡献页等生成独立 HTML（含 title、description、canonical、Open Graph、JSON-LD 与 noscript 正文），并写出 `sitemap.xml`、`robots.txt`。
+
+请在 `.env.production` 或 `.env` 中设置线上地址，以便 sitemap / Open Graph 使用绝对 URL：
+
+```sh
+VITE_SITE_URL=https://your-domain.example
+```
+
+也可修改 `src/seo/site.js` 中的 `CONFIGURED_SITE_URL`。若部署在 GitHub Pages 子路径，请同时设置 Vite `base`，例如 `base: '/repo/'`。
+
+建设中的占位栏目会预渲染但标记 `noindex`，避免薄内容进入索引。
 
 ## 正文字体
 
@@ -36,11 +56,12 @@ npm run preview
 ## 目录要点
 
 ```
-src/
-  components/   # 布局与通用组件
-  cursor/       # 自定义鼠标指针
-  data/         # 图鉴等静态数据
-  i18n/         # 多语言
-  stores/       # Pinia（设置与本地缓存）
-  views/        # 页面（路由懒加载）
+  src/
+    components/   # 布局与通用组件
+    cursor/       # 自定义鼠标指针
+    data/         # 图鉴等静态数据
+    i18n/         # 多语言
+    seo/          # 站点 SEO 配置与 meta 生成
+    stores/       # Pinia（设置与本地缓存）
+    views/        # 页面（路由懒加载）
 ```

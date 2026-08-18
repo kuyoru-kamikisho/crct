@@ -2,13 +2,55 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="/favicon.ico" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="renderer" content="webkit" />
+    <meta name="force-rendering" content="webkit" />
+    <meta name="applicable-device" content="pc,mobile" />
+    <meta name="MobileOptimized" content="width" />
+    <meta name="HandheldFriendly" content="true" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="theme-color" content="#071018" />
+    <meta name="color-scheme" content="dark light" />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <meta name="googlebot" content="index,follow,max-image-preview:large" />
+    <meta name="baiduspider" content="index,follow" />
+    <meta name="author" content="蓝色星原：旅谣 Wiki 社区" />
+    <meta
+      name="keywords"
+      content="蓝色星原,蓝色星原旅谣,Azur Promilia,旅谣Wiki,角色图鉴,奇波图鉴,蛮啾网络,星临者"
+    />
     <meta
       name="description"
-      content="蓝色星原：旅谣（Azur Promilia）非官方 Wiki 工具 — 图鉴、攻略、小游戏"
+      content="《蓝色星原：旅谣》（Azur Promilia）非官方 Wiki，提供角色技能与星赐资料、奇波图鉴、攻略与社区工具。内容基于公开测试情报整理。"
     />
-    <title>蓝色星原：旅谣 Wiki</title>
+    <title>蓝色星原：旅谣 Wiki｜角色图鉴、奇波图鉴与攻略工具</title>
+    <link rel="icon" href="/favicon.ico" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta property="og:site_name" content="蓝色星原：旅谣 Wiki" />
+    <meta property="og:locale" content="zh_CN" />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="蓝色星原：旅谣 Wiki｜角色图鉴、奇波图鉴与攻略工具" />
+    <meta
+      property="og:description"
+      content="《蓝色星原：旅谣》（Azur Promilia）非官方 Wiki，提供角色技能与星赐资料、奇波图鉴、攻略与社区工具。"
+    />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="蓝色星原：旅谣 Wiki｜角色图鉴、奇波图鉴与攻略工具" />
+    <meta
+      name="twitter:description"
+      content="《蓝色星原：旅谣》（Azur Promilia）非官方 Wiki：角色图鉴、奇波图鉴与攻略工具。"
+    />
+    <script type="application/ld+json" id="seo-jsonld">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "蓝色星原：旅谣 Wiki",
+        "alternateName": ["Azur Promilia Wiki", "蓝色星原Wiki", "旅谣Wiki"],
+        "inLanguage": ["zh-CN", "en", "ja"],
+        "description": "《蓝色星原：旅谣》（Azur Promilia）非官方 Wiki，提供角色技能与星赐资料、奇波图鉴、攻略与社区工具。"
+      }
+    </script>
     <!-- 首屏关键 CSS 变量，避免闪白 -->
     <style>
       html,
@@ -26,12 +68,27 @@
         letter-spacing: 0.08em;
         color: #8aa8a8;
       }
+      .skip-link {
+        position: absolute;
+        left: -999px;
+        top: 0;
+      }
     </style>
   </head>
   <body>
     <div id="app">
       <div id="boot">正在进入普罗米利亚…</div>
     </div>
+    <noscript id="seo-noscript">
+      <h1>蓝色星原：旅谣 Wiki</h1>
+      <p>《蓝色星原：旅谣》（Azur Promilia）非官方 Wiki，提供角色图鉴、奇波图鉴与攻略工具。</p>
+      <nav>
+        <a href="./">首页</a>
+        <a href="./encyclopedia/characters">角色图鉴</a>
+        <a href="./encyclopedia/qibo">奇波图鉴</a>
+        <a href="./contribute">欢迎参与</a>
+      </nav>
+    </noscript>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

@@ -27,7 +27,7 @@ const entries = [
       <p class="notice">{{ t('home.notice') }}</p>
     </section>
 
-    <section class="stats" aria-label="stats">
+    <section class="stats" :aria-label="t('home.quickStats')">
       <h2>{{ t('home.quickStats') }}</h2>
       <div class="stat-grid">
         <div class="stat">
@@ -54,8 +54,26 @@ const entries = [
         </router-link>
       </div>
     </section>
+
+    <section class="catalog" aria-labelledby="catalog-title">
+      <h2 id="catalog-title">{{ t('home.catalog') }}</h2>
+      <p class="catalog-lead">{{ t('home.catalogLead') }}</p>
+      <h3>{{ t('nav.characters') }}</h3>
+      <ul class="name-list">
+        <li v-for="c in characters" :key="c.id">
+          <router-link :to="`/encyclopedia/characters/${c.id}`">{{ c.name }}</router-link>
+        </li>
+      </ul>
+      <h3>{{ t('nav.qibo') }}</h3>
+      <ul class="name-list">
+        <li v-for="item in qibos" :key="item.id">
+          <router-link to="/encyclopedia/qibo">{{ item.name }}</router-link>
+        </li>
+      </ul>
+    </section>
   </div>
 </template>
+
 
 <style scoped lang="scss">
 .home {
@@ -112,7 +130,8 @@ h1 {
 }
 
 .stats,
-.modules {
+.modules,
+.catalog {
   margin-top: 32px;
   animation: rise 0.55s ease 0.08s both;
 }
@@ -205,6 +224,36 @@ h2 {
   to {
     opacity: 1;
     transform: none;
+  }
+}
+
+.catalog-lead {
+  margin: 0 0 12px;
+  color: var(--c-text-muted);
+  font-size: 13px;
+}
+
+.catalog h3 {
+  margin: 16px 0 8px;
+  font-size: 14px;
+  color: var(--c-accent-soft);
+}
+
+.name-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  a {
+    color: var(--c-text);
+    font-size: 13px;
+
+    &:hover {
+      color: var(--c-accent);
+    }
   }
 }
 </style>

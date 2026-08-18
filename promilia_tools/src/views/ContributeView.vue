@@ -1,15 +1,23 @@
 <script setup>
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
+import AppBreadcrumb from '@/components/common/AppBreadcrumb.vue'
 
 const { t } = useI18n()
 
 const contributors = [
   { name: 'Community', role: 'Init' },
 ]
+
+const crumbs = computed(() => [
+  { to: '/', label: t('nav.home') },
+  { label: t('nav.contribute') },
+])
 </script>
 
 <template>
   <div class="contribute">
+    <AppBreadcrumb :items="crumbs" :label="t('header.breadcrumb')" />
     <h1>{{ t('contribute.title') }}</h1>
 
     <div class="grid">

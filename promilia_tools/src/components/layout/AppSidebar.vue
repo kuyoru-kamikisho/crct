@@ -52,7 +52,7 @@ async function onLocale(code) {
     :class="{ collapsed: settings.sidebarCollapsed, open: settings.mobileNavOpen }"
     :aria-hidden="settings.isNarrow && !settings.mobileNavOpen"
   >
-    <div class="sidebar-inner">
+    <nav class="sidebar-inner" :aria-label="t('header.sectionNav')">
       <section v-for="sec in navSections" :key="sec.id" class="nav-section">
         <button
           type="button"
@@ -78,7 +78,7 @@ async function onLocale(code) {
           </li>
         </ul>
       </section>
-    </div>
+    </nav>
 
     <div class="sidebar-tools">
       <p class="tools-label">{{ t('header.language') }} / {{ t('header.theme') }}</p>

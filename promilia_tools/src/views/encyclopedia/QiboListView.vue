@@ -3,10 +3,15 @@ import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { qibos } from '@/data/qibos'
+import AppBreadcrumb from '@/components/common/AppBreadcrumb.vue'
 
 const { t } = useI18n()
 const route = useRoute()
 const q = ref(typeof route.query.q === 'string' ? route.query.q : '')
+const crumbs = computed(() => [
+  { to: '/', label: t('nav.home') },
+  { label: t('nav.qibo') },
+])
 
 watch(
   () => route.query.q,
@@ -29,6 +34,7 @@ const filtered = computed(() => {
 
 <template>
   <div class="page">
+    <AppBreadcrumb :items="crumbs" :label="t('header.breadcrumb')" />
     <header class="page-head">
       <h1>{{ t('qibo.title') }}</h1>
       <input v-model="q" type="search" class="search" :placeholder="t('common.search')" />

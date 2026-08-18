@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import ModulePlaceholder from '@/components/common/ModulePlaceholder.vue'
+import AppBreadcrumb from '@/components/common/AppBreadcrumb.vue'
 import { navSections } from '@/data/navigation'
 
 const route = useRoute()
@@ -16,12 +17,20 @@ const title = computed(() => {
   }
   return t('nav.encyclopedia')
 })
+
+const crumbs = computed(() => [
+  { to: '/', label: t('nav.home') },
+  { label: title.value },
+])
 </script>
 
 <template>
-  <ModulePlaceholder :title="title" :description="t('common.placeholder')">
-    <p class="hint">{{ t('common.comingSoon') }}</p>
-  </ModulePlaceholder>
+  <div>
+    <AppBreadcrumb :items="crumbs" :label="t('header.breadcrumb')" />
+    <ModulePlaceholder :title="title" :description="t('common.placeholder')">
+      <p class="hint">{{ t('common.comingSoon') }}</p>
+    </ModulePlaceholder>
+  </div>
 </template>
 
 <style scoped lang="scss">
