@@ -44,6 +44,12 @@ const routes = [
     meta: { titleKey: 'nav.qibo' },
   },
   {
+    path: '/encyclopedia/qibo/:id',
+    name: 'qibo-detail',
+    component: () => import('@/views/encyclopedia/QiboDetailView.vue'),
+    meta: { titleKey: 'nav.qibo' },
+  },
+  {
     path: '/encyclopedia/:type',
     name: 'encyclopedia-placeholder',
     component: () => import('@/views/PlaceholderView.vue'),

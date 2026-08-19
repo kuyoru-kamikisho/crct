@@ -57,3 +57,7 @@ export function assetUrl(path, siteUrl = getSiteUrl()) {
 export function characterImagePath(id) {
   return `/imgs/characters/${id}.png`
 }
+
+export function qiboImagePath(id) {
+  return `/imgs/qibos/${id}.png`
+}

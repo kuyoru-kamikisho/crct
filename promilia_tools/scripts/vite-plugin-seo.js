@@ -266,6 +266,17 @@ export function seoPrerenderPlugin() {
           noindex: false,
         })
       }
+      for (const qibo of qibos) {
+        jobs.push({
+          path: `/encyclopedia/qibo/${qibo.id}`,
+          name: 'qibo-detail',
+          qibo,
+          changefreq: 'weekly',
+          priority: '0.8',
+          lastmod: today,
+          noindex: false,
+        })
+      }
       for (const path of PLACEHOLDER_PATHS) {
         jobs.push({
           path,
@@ -284,6 +295,7 @@ export function seoPrerenderPlugin() {
           siteUrl,
           messages: zhCN,
           character: job.character || null,
+          qibo: job.qibo || null,
           characters,
           qibos,
           noindex: job.noindex,

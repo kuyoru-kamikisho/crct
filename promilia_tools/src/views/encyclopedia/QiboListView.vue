@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { qibos } from '@/data/qibos'
@@ -47,6 +47,41 @@ const filtered = computed(() => {
 function onPixelError(event) {
   event.target.style.display = 'none'
 }
+
+let revealRaf = 0
+let revealPointer = null
+
+function applyCardReveal() {
+  revealRaf = 0
+  const pointer = revealPointer
+  if (!pointer) return
+  const cards = pointer.grid.querySelectorAll('.card')
+  for (const card of cards) {
+    const rect = card.getBoundingClientRect()
+    card.style.setProperty('--mx', `${pointer.x - rect.left}px`)
+    card.style.setProperty('--my', `${pointer.y - rect.top}px`)
+  }
+}
+
+function onGridPointerMove(event) {
+  if (event.pointerType === 'touch') return
+  revealPointer = { x: event.clientX, y: event.clientY, grid: event.currentTarget }
+  if (!revealRaf) revealRaf = requestAnimationFrame(applyCardReveal)
+}
+
+function onGridPointerLeave() {
+  revealPointer = null
+  if (!revealRaf) return
+  cancelAnimationFrame(revealRaf)
+  revealRaf = 0
+}
+
+onUnmounted(() => {
+  revealPointer = null
+  if (!revealRaf) return
+  cancelAnimationFrame(revealRaf)
+  revealRaf = 0
+})
 </script>
 
 <template>
@@ -57,8 +92,13 @@ function onPixelError(event) {
       <input v-model="q" type="search" class="search" :placeholder="t('common.search')" />
     </header>
 
-    <div class="grid">
-      <article v-for="item in filtered" :key="item.id" class="card">
+    <div class="grid" @pointermove="onGridPointerMove" @pointerleave="onGridPointerLeave">
+      <router-link
+        v-for="item in filtered"
+        :key="item.id"
+        :to="{ name: 'qibo-detail', params: { id: item.id } }"
+        class="card"
+      >
         <div class="kibo-pixel">
           <img v-if="item.image" class="pixel" :src="item.image" :alt="item.name" width="96" height="96" loading="lazy"
             decoding="async" @error="onPixelError" />
@@ -93,7 +133,7 @@ function onPixelError(event) {
           </div>
         </dl>
         <p>{{ item.intro }}</p>
-      </article>
+      </router-link>
     </div>
 
     <p v-if="!filtered.length" class="empty">{{ t('common.empty') }}</p>
@@ -147,17 +187,76 @@ function onPixelError(event) {
 }
 
 .card {
+  --mx: 50%;
+  --my: 50%;
+  isolation: isolate;
   min-width: 0;
   padding: 16px;
   position: relative;
   border-radius: $radius-md;
   border: 1px solid var(--c-border);
   background: var(--c-surface);
+  color: var(--c-text);
+  text-decoration: none;
+
+  &::before,
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.22s ease;
+  }
+
+  /* 悬浮卡片内部的淡白雾 */
+  &::before {
+    z-index: 1;
+    background: radial-gradient(
+      190px circle at var(--mx) var(--my),
+      rgba(255, 255, 255, 0.16),
+      rgba(255, 255, 255, 0.05) 32%,
+      transparent 64%
+    );
+  }
+
+  /* 灯光边框：邻近卡片也会被照到 */
+  &::after {
+    z-index: 2;
+    padding: 1px;
+    background: radial-gradient(
+      150px circle at var(--mx) var(--my),
+      color-mix(in srgb, #fff 90%, var(--c-accent)),
+      color-mix(in srgb, #fff 28%, var(--c-accent)) 28%,
+      transparent 64%
+    );
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+  }
 
   &:hover {
+    color: var(--c-text);
+
     .pixel {
       animation: pixelAnimation 1s steps(8) infinite;
     }
+  }
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .grid:hover .card::after {
+    opacity: 1;
+  }
+
+  .card:hover::before {
+    opacity: 1;
   }
 }
 

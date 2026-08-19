@@ -8,6 +8,7 @@ import {
   SITE_NAME_EN,
   assetUrl,
   characterImagePath,
+  qiboImagePath,
   pageUrl,
 } from './site.js'
 
@@ -109,6 +110,7 @@ export function buildSeo({
   messages = zhCN,
   character = null,
   characters = [],
+  qibo = null,
   qibos = [],
   noindex = false,
 } = {}) {
@@ -147,7 +149,12 @@ export function buildSeo({
       )
       .join('')}</ul>
 <h2>${escapeHtml(m.nav.qibo)}</h2>
-<ul>${qibos.map((q) => `<li>${escapeHtml(q.name)}</li>`).join('')}</ul>`
+<ul>${qibos
+      .map(
+        (q) =>
+          `<li><a href="${navHref(`/encyclopedia/qibo/${q.id}`)}">${escapeHtml(q.name)}</a></li>`,
+      )
+      .join('')}</ul>`
   } else if (routeName === 'characters' || path === '/encyclopedia/characters') {
     title = m.seo.charactersTitle
     description = m.seo.charactersDescription
@@ -229,9 +236,63 @@ ${skills}
 <ul>${qibos
       .map(
         (q) =>
-          `<li>${escapeHtml(q.name)} ${escapeHtml((q.elements || []).join('/'))} ${escapeHtml(q.intro || '')}</li>`,
+          `<li><a href="${navHref(`/encyclopedia/qibo/${q.id}`)}">${escapeHtml(q.name)}</a> ${escapeHtml((q.elements || []).join('/'))} ${escapeHtml(q.intro || '')}</li>`,
       )
       .join('')}</ul>`
+  } else if (routeName === 'qibo-detail' || /^\/encyclopedia\/qibo\/[^/]+$/.test(path)) {
+    if (!qibo) {
+      title = m.seo.notFoundTitle
+      description = m.common.empty
+      robots = 'noindex,follow'
+      noscriptBody = `<h1>404</h1><p>${escapeHtml(m.common.empty)}</p>`
+    } else {
+      const elements = (qibo.elements || []).join('、')
+      title = replaceRp(m.seo.qiboDetailTitle, qibo.name, qibo.no)
+      description = clip(
+        `${replaceRp(
+          m.seo.qiboDetailDescription,
+          qibo.name,
+          elements,
+          qibo.race,
+          qibo.stage,
+        )}${qibo.intro || ''}`,
+        140,
+      )
+      keywords = uniqueJoin([
+        replaceRp(m.seo.qiboDetailKeywords, qibo.name, qibo.name),
+        elements,
+        qibo.race,
+        qibo.stage,
+        qibo.battleTag,
+        ...(qibo.skills || []).map((sk) => sk.name),
+        ...(qibo.properties || []).map((prop) => prop.name),
+        GAME_NAME,
+      ])
+      ogType = 'article'
+      ogImage = assetUrl(qibo.image || qiboImagePath(qibo.id), siteUrl)
+      ogImageAlt = replaceRp(m.seo.qiboImageAlt, qibo.name, qibo.no)
+      crumbs.push({ name: m.nav.qibo, path: '/encyclopedia/qibo' })
+      crumbs.push({
+        name: qibo.name,
+        path: `/encyclopedia/qibo/${qibo.id}`,
+      })
+      const skills = (qibo.skills || [])
+        .map((sk) => `<h3>${escapeHtml(sk.name)}</h3><p>${escapeHtml(sk.desc || '')}</p>`)
+        .join('')
+      const properties = (qibo.properties || [])
+        .map((prop) => `<h3>${escapeHtml(prop.name)}</h3><p>${escapeHtml(prop.desc || '')}</p>`)
+        .join('')
+      noscriptBody = `<article>
+<h1>${escapeHtml(qibo.name)}</h1>
+<p>NO.${escapeHtml(String(qibo.no ?? ''))} ${escapeHtml(elements)} ${escapeHtml(qibo.race || '')} ${escapeHtml(qibo.stage || '')}</p>
+<p>${escapeHtml(qibo.intro || '')}</p>
+<img src="${navHref(qibo.image || qiboImagePath(qibo.id))}" alt="${escapeHtml(ogImageAlt)}" />
+<h2>${escapeHtml(m.common.skills)}</h2>
+${skills}
+<h2>${escapeHtml(m.qibo.properties)}</h2>
+${properties}
+</article>`
+    }
   } else if (routeName === 'contribute' || path === '/contribute') {
     title = m.seo.contributeTitle
     description = m.seo.contributeDescription
@@ -273,7 +334,11 @@ ${skills}
         inLanguage: 'zh-CN',
         isPartOf: { '@id': websiteNode(siteUrl, m)['@id'] },
         primaryImageOfPage: ogImage || undefined,
-        mainEntity: character ? { '@id': `${canonical}#character` } : undefined,
+        mainEntity: character
+          ? { '@id': `${canonical}#character` }
+          : qibo
+            ? { '@id': `${canonical}#qibo` }
+            : undefined,
       },
       breadcrumbList(crumbs, siteUrl),
       ...(character
@@ -287,6 +352,19 @@ ${skills}
               image: ogImage || undefined,
               affiliation: character.faction,
               jobTitle: character.profession,
+            },
+          ]
+        : []),
+      ...(qibo
+        ? [
+            {
+              '@type': 'Thing',
+              '@id': `${canonical}#qibo`,
+              name: qibo.name,
+              alternateName: qibo.wikiSlug,
+              description: clip(qibo.intro, 200),
+              image: ogImage || undefined,
+              identifier: qibo.no != null ? `NO.${qibo.no}` : undefined,
             },
           ]
         : []),

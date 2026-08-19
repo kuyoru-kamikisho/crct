@@ -123,14 +123,33 @@ export function buildSearchDocuments(locales = [zhCN]) {
   }
 
   for (const qibo of qibos) {
+    const { skills = [], ...meta } = qibo
     docs.push({
       id: `qibo:${qibo.id}`,
       kind: 'qibo',
       title: qibo.name,
       aliases: uniqueJoin([qibo.id, qibo.no != null ? `NO.${qibo.no}` : '', String(qibo.no ?? '')]),
       subtitle: [qibo.no != null ? `NO.${qibo.no}` : '', ...(qibo.elements ?? [])].filter(Boolean).join(' · '),
-      text: uniqueJoin(collectStrings(qibo)),
-      to: { name: 'qibo', query: { q: qibo.name } },
+      text: uniqueJoin(collectStrings(meta)),
+      to: { name: 'qibo-detail', params: { id: qibo.id } },
+    })
+
+    skills.forEach((sk, index) => {
+      if (!sk?.name) return
+      docs.push({
+        id: `qibo-skill:${qibo.id}:${index}`,
+        kind: 'skill',
+        title: sk.name,
+        aliases: '',
+        subtitle: qibo.name,
+        owner: qibo.name,
+        text: uniqueJoin(collectStrings({ name: sk.name, desc: sk.desc, levels: sk.levels })),
+        to: {
+          name: 'qibo-detail',
+          params: { id: qibo.id },
+          query: { skill: sk.name },
+        },
+      })
     })
   }
 

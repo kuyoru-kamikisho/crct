@@ -2,7 +2,7 @@ import { watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { characters, getCharacterById } from '@/data/characters'
-import { qibos } from '@/data/qibos'
+import { qibos, getQiboById } from '@/data/qibos'
 import { buildSeo } from '@/seo/meta'
 import { DEFAULT_LOCALE, SITE_NAME, THEME_COLOR, getSiteUrl } from '@/seo/site'
 
@@ -94,6 +94,7 @@ export function useSeo() {
       const pack = messages.value?.[locale.value] || messages.value?.[DEFAULT_LOCALE]
       const character =
         route.name === 'character-detail' ? getCharacterById(route.params.id) : null
+      const qibo = route.name === 'qibo-detail' ? getQiboById(route.params.id) : null
       const payload = buildSeo({
         path: route.path,
         routeName: route.name,
@@ -101,8 +102,12 @@ export function useSeo() {
         messages: pack,
         character,
         characters,
+        qibo,
         qibos,
-        noindex: Boolean(route.meta?.noindex) || (route.name === 'character-detail' && !character),
+        noindex:
+          Boolean(route.meta?.noindex) ||
+          (route.name === 'character-detail' && !character) ||
+          (route.name === 'qibo-detail' && !qibo),
       })
       applySeo(payload, getSiteUrl())
     },

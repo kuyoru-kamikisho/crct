@@ -67,7 +67,7 @@ const entries = [
       <h3>{{ t('nav.qibo') }}</h3>
       <ul class="name-list">
         <li v-for="item in qibos" :key="item.id">
-          <router-link to="/encyclopedia/qibo">{{ item.name }}</router-link>
+          <router-link :to="{ name: 'qibo-detail', params: { id: item.id } }">{{ item.name }}</router-link>
         </li>
       </ul>
     </section>
