@@ -36,6 +36,9 @@ export default defineConfig({
           if (id.includes('node_modules/vue-i18n')) {
             return 'i18n'
           }
+          if (id.includes('/src/data/qibos')) {
+            return 'qibos'
+          }
         },
       },
     },

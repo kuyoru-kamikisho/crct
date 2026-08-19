@@ -1,80 +1,563 @@
-写一个nodejs网页数据爬取脚本，从biwiki中爬取奇波数据
-第一个页面：https://wiki.biligame.com/ap/%E5%A5%87%E6%B3%A2%E4%B8%80%E8%A7%88
+/**
+ * 从 BWiki《奇波一览》爬取奇波数据，写入 src/data/qibos/{id}.js，
+ * 并下载详情页 `.kibo-pixelimg.tab-pane.kibo-tab-normall.active` 中的像素图。
+ *
+ * 可重复执行：wiki 新增条目会补文件，已有条目按详情页覆盖更新；
+ * 像素图仅在本地缺失或源地址变化时重新下载。
+ *
+ * 用法：
+ *   node scripts/kib-spider.js
+ *   node scripts/kib-spider.js --limit 5
+ *   node scripts/kib-spider.js --only 小芽狐
+ *   node scripts/kib-spider.js --force-images
+ *   node scripts/kib-spider.js --prune
+ */
 
-通过 const qibos = document.querySelectorAll('.divsort.ap-kibo-child') 可以获取到页面上所有奇波dom
-其中 qibos[0] 是下面这样的内容：
-```html
-<div class="divsort ap-kibo-child" data-e1="木" data-e2="" data-param0="0" data-param1="木" data-param2="空" data-param3="异生类·兽形族" data-param4="成长期" data-param5="小" data-param6="无" data-param7="否"><img alt="Tex icon pet 500259.png" src="https://patchwiki.biligame.com/images/ap/thumb/6/69/6dvjdrabx5wb204v8zi2geaf3mrcs60.png/100px-Tex_icon_pet_500259.png" decoding="async" loading="lazy" width="100" height="100" class="kibo-img" srcset="https://patchwiki.biligame.com/images/ap/thumb/6/69/6dvjdrabx5wb204v8zi2geaf3mrcs60.png/150px-Tex_icon_pet_500259.png 1.5x, https://patchwiki.biligame.com/images/ap/thumb/6/69/6dvjdrabx5wb204v8zi2geaf3mrcs60.png/200px-Tex_icon_pet_500259.png 2x" data-file-width="336" data-file-height="336"><span class="kibo-name">蓬尾狐</span><span class="kibo-number">NO.2</span><a href="/ap/蓬尾狐"></a></div>
-```
-通过上面的内容可以获取到奇波的名称、详情页链接`/ap/蓬尾狐`、元素、类型等信息
+import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { existsSync } from 'node:fs'
+import { dirname, join } from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import * as cheerio from 'cheerio'
+import { pinyin } from 'pinyin-pro'
 
-随后，根据详情页链接进入详情页，抓取必要的信息。
-详情dom：
-```html
-<div class="kibo-box ap-w100">
-<div id="bread"><a href="/ap/%E9%A6%96%E9%A1%B5" title="首页">首页</a>/<a href="/ap/%E5%A5%87%E6%B3%A2%E4%B8%80%E8%A7%88" title="奇波一览">奇波一览</a>/<a class="mw-selflink selflink">小芽狐</a></div>
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const ROOT = join(__dirname, '..')
+const DATA_DIR = join(ROOT, 'src/data/qibos')
+const IMAGE_DIR = join(ROOT, 'public/imgs/qibos')
+const IMAGE_PUBLIC_PATH = '/imgs/qibos'
 
+const LIST_URL = 'https://wiki.biligame.com/ap/%E5%A5%87%E6%B3%A2%E4%B8%80%E8%A7%88'
+const ORIGIN = 'https://wiki.biligame.com'
+const PIXEL_SELECTOR = 'img.kibo-pixelimg.tab-pane.kibo-tab-normall.active'
 
-<h2 style="color:#fff;margin:0;"><span id=".E4.BF.A1.E6.81.AF"></span><span class="mw-headline" id="信息">信息</span></h2>
-<div class="kibo-box-nav">
-<ul class="nav ap-nav sp-nav">
-<li data-toggle="tab" data-target=".kibo-tab-normall" class="active">普通</li></ul><ul class="nav ap-nav shine-nav" style="display: none;">
-<style type="text/css"> </style><li class="kibo-shine-button" onclick="$(this).toggleClass('active'); $('.kibo-card,.kibo-pixel-box').toggleClass('kibo-shine')">闪光</li><style>></style>
-</ul>
-</div>
-<div class="kibo-card-box">
-<div class="kibo-card">
-<div class="tab-content"><img alt="Tex pet kibo card background 500258.png" src="https://patchwiki.biligame.com/images/ap/c/c7/tw1tt3gouzm3f3whfxg9vj591nys20h.png" decoding="async" loading="lazy" width="492" height="592" class="kibo-back-img tab-pane kibo-tab-normall active" data-file-width="492" data-file-height="592">
-</div>
-<div class="kibo-frame"><img alt="Tex pet card element 4.png" src="https://patchwiki.biligame.com/images/ap/3/3f/lqcmmii3jmqfd362ru1ugz1s8tau992.png" decoding="async" loading="lazy" width="312" height="524" class="kibo-eleback-img" data-file-width="312" data-file-height="524"><img alt="Tex pet card shining.png" src="https://patchwiki.biligame.com/images/ap/d/d1/0tjt19n6ls4sgtwpia7d9f5d268ddg9.png" decoding="async" loading="lazy" width="312" height="524" class="kibo-eleback-img kibo-back-shine-img" data-file-width="312" data-file-height="524">
-</div>
-<div class="kibo-fore tab-content"><img alt="Tex pet kibo card foreground 500258.png" src="https://patchwiki.biligame.com/images/ap/b/bd/iyx8sbxlvjkg2ifexj72hae2q4yz9su.png" decoding="async" loading="lazy" width="916" height="752" class="kibo-fore-img tab-pane kibo-tab-normall active" data-file-width="916" data-file-height="752"><img alt="Tex pet kibo card kibo 500258.png" src="https://patchwiki.biligame.com/images/ap/8/8a/qwrkzao5mnl8649wcssw5haedo8aa34.png" decoding="async" loading="lazy" width="916" height="752" class="kibo-card-img tab-pane kibo-tab-normall active" data-file-width="916" data-file-height="752"></div>
-<div class="kibo-frame"><span><img alt="Tex pet card element tap 4.png" src="https://patchwiki.biligame.com/images/ap/a/af/4vmbb7rpm90xeb8zki7u9noe1u6wulo.png" decoding="async" loading="lazy" width="56" height="56" class="kibo-eletap-img" data-file-width="56" data-file-height="56"></span><span><img alt="Tex battle icon mu.png" src="https://patchwiki.biligame.com/images/ap/0/02/f14n5fx0lk9sxowt3v07bbumcp61nu2.png" decoding="async" loading="lazy" width="50" height="50" class="kibo-ele-img" data-file-width="50" data-file-height="50"></span>
-</div>
-<div class="kibo-shine-star"><img alt="Tex pet card shining glow1.png" src="https://patchwiki.biligame.com/images/ap/9/91/n9mzx7mrfmbax2gm5naar9fhy8gjjs1.png" decoding="async" loading="lazy" width="149" height="153" data-file-width="149" data-file-height="153"><img alt="Tex pet card shining glow2.png" src="https://patchwiki.biligame.com/images/ap/1/1a/6f07y8axq4z6u5swf9ip48tfrjv7wjt.png" decoding="async" loading="lazy" width="93" height="74" data-file-width="93" data-file-height="74"><img alt="Tex pet card shining glow3.png" src="https://patchwiki.biligame.com/images/ap/f/f4/ky0ehj0h9ll3yjy9gb75ww00de3oq3o.png" decoding="async" loading="lazy" width="57" height="54" data-file-width="57" data-file-height="54"></div>
-</div>
-</div>
-<div class="kibo-info-box">
-<div class="kibo-info" style="display: flex;align-items: center;position: relative;"><span class="kibo-element-box"><img alt="Tex icon petelem wood.png" src="https://patchwiki.biligame.com/images/ap/8/8d/t1nq0pkgu0cy1eix96gbjmpf0wgd6r9.png" decoding="async" loading="lazy" width="50" height="50" class="kibo-element-img" data-file-width="50" data-file-height="50"></span><span class="kibo-battle-tag-box"><img alt="Tex battle tag kibo 8.png" src="https://patchwiki.biligame.com/images/ap/2/2a/kb5do3sz4vd71u8bstmcn96cso23sq6.png" decoding="async" loading="lazy" width="30" height="30" class="kibo-battle-img" data-file-width="30" data-file-height="30">侵扰</span><span class="kibo-number-box tab-content"><span style="font-size: 0.75em;">NO.</span><span class="kibo-bnumber">1</span><span class="tab-pane kibo-tab-normall"></span></span><div class="kibo-pixel-box"><img alt="Tex bg pixelbase t1.png" src="https://patchwiki.biligame.com/images/ap/5/53/d1bd1tofm8lj52xz64vsfgldaks8s3o.png" decoding="async" loading="lazy" width="96" height="64" class="kibo-pixelbase" data-file-width="96" data-file-height="64"><div class="animation kibo-pixel tab-content"><img alt="Tex icon pet 500258 sprite.png" src="https://patchwiki.biligame.com/images/ap/9/97/fncrqhuvwbwnnv9135l2t0y8hkuaij8.png" decoding="async" loading="lazy" width="768" height="96" class="kibo-pixelimg tab-pane kibo-tab-normall active" data-file-width="768" data-file-height="96"></div></div>
-</div>
-<div class="kibo-info tab-content"><div class="tab-pane kibo-tab-normall kibo-name active">小芽狐</div>
-</div>
-<div class="kibo-dec">小芽狐活泼好动，跳跃力强，能轻松跳到比它高两三倍的地方，平时走路也总是蹦蹦跳跳的，十分灵动。<br>由于过于好动，小芽狐也常常出现翻车的情况——跳进一个坑里卡住出不来了。</div>
-<div class="kibo-label-box">
-<div class="kibo-label">元素：<span class="kibo-element">木</span></div>
-<div class="kibo-label">标签：<span class="kibo-battle-tag">侵扰</span></div>
-<div class="kibo-label">种族：<span class="kibo-race">异生类·兽形族</span></div>
-<div class="kibo-label">身高：<span class="kibo-size">65cm</span></div>
-<div class="kibo-label">阶段：<span class="kibo-pet-stage">幼年期</span></div>
-<div class="kibo-label">体型：<span class="kibo-size-type">小</span></div>
-</div>
-</div>
-</div>
-```
-技能信息dom：
-```html
-<div class="kibo-skill-box">
-<h2><span id=".E6.8A.80.E8.83.BD"></span><span class="mw-headline" id="技能">技能</span></h2>
-<div class="kibo-skill">
-<div class="apskill skill-box" data-max-level="5">
-<div class="skill-gif"><div class="ap-lowload" data-filename="小芽狐-芽之息" data-src="" title="小芽狐-芽之息"><div style="display:none;"></div><div class="ap-lowload-text">技能预览gif占位</div></div></div>
-<div class="kibo-skill-img" style="background-color: #5dca95"><img alt="Tex icon petskill 500260 01.png" src="https://patchwiki.biligame.com/images/ap/e/e5/rvwln4tk8c54w06xfubkovev3nmcrj4.png" decoding="async" loading="lazy" width="132" height="132" data-file-width="132" data-file-height="132"></div>
-<div class="skill-content"><div class="skill-info"><span class="skill-name">芽之息</span><div class="apskill-level-dropdown"><div class="apskill-dropdown-list"><span data-level="1">Lv.1</span><span data-level="2">Lv.2</span><span data-level="3">Lv.3</span><span data-level="4">Lv.4</span><span data-level="5">Lv.5</span></div><span class="apskill-dropdown-toggle skill-level">Lv.<span>5</span></span></div></div><div class="apskill-level-selector"><div class="apskill-slider"><div class="apskill-slider-track"></div><div class="apskill-slider-fill"></div><div class="apskill-slider-thumb"></div></div></div><div class="apskill-desc skill-desc">唤出木能光束，对目标敌人区域造成三次164.3%攻击力的<span style="color:#3ea070;">木属性伤害</span>。<br>为队伍添加1枚木属性调谐印记。</div><div class="apskill-data" style="display:none;"><div data-level="1">唤出木能光束，对目标敌人区域造成三次63.2%攻击力的<span style="color:#3ea070;">木属性伤害</span>。<br>为队伍添加1枚木属性调谐印记。</div><div data-level="2">唤出木能光束，对目标敌人区域造成三次88.5%攻击力的<span style="color:#3ea070;">木属性伤害</span>。<br>为队伍添加1枚木属性调谐印记。</div><div data-level="3">唤出木能光束，对目标敌人区域造成三次113.8%攻击力的<span style="color:#3ea070;">木属性伤害</span>。<br>为队伍添加1枚木属性调谐印记。</div><div data-level="4">唤出木能光束，对目标敌人区域造成三次139%攻击力的<span style="color:#3ea070;">木属性伤害</span>。<br>为队伍添加1枚木属性调谐印记。</div><div data-level="5">唤出木能光束，对目标敌人区域造成三次164.3%攻击力的<span style="color:#3ea070;">木属性伤害</span>。<br>为队伍添加1枚木属性调谐印记。</div></div>
-</div>
-</div><div class="apskill skill-box" data-max-level="5">
-<div class="skill-gif"><div class="ap-lowload" data-filename="小芽狐-灵木弹" data-src="" title="小芽狐-灵木弹"><div style="display:none;"></div><div class="ap-lowload-text">技能预览gif占位</div></div></div>
-<div class="kibo-skill-img" style="background-color: #5dca95"><img alt="Tex icon petskill 505001.png" src="https://patchwiki.biligame.com/images/ap/5/54/ffz2624bypkr4hcii09dpj763zu0xgd.png" decoding="async" loading="lazy" width="132" height="132" data-file-width="132" data-file-height="132"></div>
-<div class="skill-content"><div class="skill-info"><span class="skill-name">灵木弹</span><div class="apskill-level-dropdown"><div class="apskill-dropdown-list"><span data-level="1">Lv.1</span><span data-level="2">Lv.2</span><span data-level="3">Lv.3</span><span data-level="4">Lv.4</span><span data-level="5">Lv.5</span></div><span class="apskill-dropdown-toggle skill-level">Lv.<span>5</span></span></div></div><div class="apskill-level-selector"><div class="apskill-slider"><div class="apskill-slider-track"></div><div class="apskill-slider-fill"></div><div class="apskill-slider-thumb"></div></div></div><div class="apskill-desc skill-desc">向目标发射3枚灵木弹，对命中的敌人造成23.8%攻击力的<span style="color:#3ea070;">木属性伤害</span>。</div><div class="apskill-data" style="display:none;"><div data-level="1">向目标发射3枚灵木弹，对命中的敌人造成9.1%攻击力的<span style="color:#3ea070;">木属性伤害</span>。</div><div data-level="2">向目标发射3枚灵木弹，对命中的敌人造成12.8%攻击力的<span style="color:#3ea070;">木属性伤害</span>。</div><div data-level="3">向目标发射3枚灵木弹，对命中的敌人造成16.5%攻击力的<span style="color:#3ea070;">木属性伤害</span>。</div><div data-level="4">向目标发射3枚灵木弹，对命中的敌人造成20.1%攻击力的<span style="color:#3ea070;">木属性伤害</span>。</div><div data-level="5">向目标发射3枚灵木弹，对命中的敌人造成23.8%攻击力的<span style="color:#3ea070;">木属性伤害</span>。</div></div>
-</div>
-</div>
-<div class="apskill skill-box" data-max-level="5">
-<div class="skill-gif"><div class="ap-lowload" data-filename="小芽狐-小芽狐-合击" data-src="" title="小芽狐-小芽狐-合击"><div style="display:none;"></div><div class="ap-lowload-text">技能预览gif占位</div></div></div>
-<div class="kibo-skill-img" style="background-color: #5dca95"><img alt="Tex icon skill petbreakatk.png" src="https://patchwiki.biligame.com/images/ap/d/d9/97c5ew674wup2el7tvra1aat2siev0g.png" decoding="async" loading="lazy" width="132" height="132" data-file-width="132" data-file-height="132"></div>
-<div class="skill-content"><div class="skill-info"><span class="skill-name">小芽狐-合击</span><div class="apskill-level-dropdown"><div class="apskill-dropdown-list"><span data-level="1">Lv.1</span><span data-level="2">Lv.2</span><span data-level="3">Lv.3</span><span data-level="4">Lv.4</span><span data-level="5">Lv.5</span></div><span class="apskill-dropdown-toggle skill-level">Lv.<span>5</span></span></div></div><div class="apskill-level-selector"><div class="apskill-slider"><div class="apskill-slider-track"></div><div class="apskill-slider-fill"></div><div class="apskill-slider-thumb"></div></div></div><div class="apskill-desc skill-desc">向目标发起攻击，造成652.9%攻击力的<span style="color:#3ea070;">木属性伤害</span>，对架势槽造成大量伤害。</div><div class="apskill-data" style="display:none;"><div data-level="1">向目标发起攻击，造成251.1%攻击力的<span style="color:#3ea070;">木属性伤害</span>，对架势槽造成大量伤害。</div><div data-level="2">向目标发起攻击，造成351.6%攻击力的<span style="color:#3ea070;">木属性伤害</span>，对架势槽造成大量伤害。</div><div data-level="3">向目标发起攻击，造成452%攻击力的<span style="color:#3ea070;">木属性伤害</span>，对架势槽造成大量伤害。</div><div data-level="4">向目标发起攻击，造成552.5%攻击力的<span style="color:#3ea070;">木属性伤害</span>，对架势槽造成大量伤害。</div><div data-level="5">向目标发起攻击，造成652.9%攻击力的<span style="color:#3ea070;">木属性伤害</span>，对架势槽造成大量伤害。</div></div>
-</div>
-</div>
-<div class="skill-property-box"><div class="property-box"><div class="property-name">茂盛花木</div><div class="property-desc">奇波和搭档角色的木属性伤害增加12%。</div></div><div class="property-box"><div class="property-name">萝冠Ⅰ</div><div class="property-desc">奇波对决中，自身特技冷却时间缩短50%，特技伤害降低40%。</div></div></div>
-</div>
-</div>
+const UA =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 
-```
+const args = parseArgs(process.argv.slice(2))
+
+function parseArgs(argv) {
+  const out = { limit: 0, only: '', forceImages: false, prune: false, delay: 350 }
+  for (let i = 0; i < argv.length; i += 1) {
+    const token = argv[i]
+    const next = argv[i + 1]
+    if (token === '--limit' && next) {
+      out.limit = Number(next) || 0
+      i += 1
+    } else if (token === '--only' && next) {
+      out.only = next
+      i += 1
+    } else if (token === '--delay' && next) {
+      out.delay = Math.max(0, Number(next) || 0)
+      i += 1
+    } else if (token === '--force-images') {
+      out.forceImages = true
+    } else if (token === '--prune') {
+      out.prune = true
+    }
+  }
+  return out
+}
+
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}
+
+function isIdent(key) {
+  return /^[A-Za-z_$][\w$]*$/.test(key)
+}
+
+function serialize(value, indent = 0) {
+  const pad = '  '.repeat(indent)
+  const inner = '  '.repeat(indent + 1)
+  if (value === null) return 'null'
+  if (typeof value === 'string') return JSON.stringify(value)
+  if (typeof value === 'number') return Number.isFinite(value) ? String(value) : 'null'
+  if (typeof value === 'boolean') return value ? 'true' : 'false'
+  if (Array.isArray(value)) {
+    if (!value.length) return '[]'
+    return `[\n${value.map((item) => `${inner}${serialize(item, indent + 1)}`).join(',\n')}\n${pad}]`
+  }
+  if (typeof value === 'object') {
+    const entries = Object.entries(value).filter(([, item]) => item !== undefined)
+    if (!entries.length) return '{}'
+    return `{\n${entries
+      .map(([key, item]) => `${inner}${isIdent(key) ? key : JSON.stringify(key)}: ${serialize(item, indent + 1)}`)
+      .join(',\n')}\n${pad}}`
+  }
+  return 'null'
+}
+
+function toModuleSource(data) {
+  return `/** ${data.name} NO.${data.no} */\nexport default ${serialize(data)}\n`
+}
+
+function decodeWikiPath(href = '') {
+  if (!href) return ''
+  try {
+    return decodeURIComponent(href)
+  } catch {
+    return href
+  }
+}
+
+function absoluteUrl(href) {
+  if (!href) return ''
+  if (href.startsWith('http://') || href.startsWith('https://')) return href
+  if (href.startsWith('//')) return `https:${href}`
+  if (href.startsWith('/')) return `${ORIGIN}${href}`
+  return `${ORIGIN}/${href}`
+}
+
+function wikiSlugFromHref(href) {
+  const path = decodeWikiPath(href).replace(/\/+$/, '')
+  const parts = path.split('/')
+  return parts[parts.length - 1] || ''
+}
+
+function parseNo(text) {
+  const raw = String(text || '')
+    .replace(/^NO\.\s*/i, '')
+    .trim()
+  if (!raw) return ''
+  if (/^\d+$/.test(raw)) return Number(raw)
+  return raw
+}
+
+function slugifyId(name) {
+  const py = pinyin(String(name || ''), {
+    toneType: 'none',
+    type: 'array',
+    nonZh: 'consecutive',
+    v: true,
+  })
+  const joined = (Array.isArray(py) ? py.join('') : String(py || ''))
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  return joined
+}
+
+function uniqueId(base, used, no) {
+  let id = base || `qibo-${String(no).toLowerCase()}`
+  if (!used.has(id)) return id
+  const withNo = `${id}-${String(no).toLowerCase()}`
+  if (!used.has(withNo)) return withNo
+  let i = 2
+  while (used.has(`${id}-${i}`)) i += 1
+  return `${id}-${i}`
+}
+
+function textWithBreaks($, el) {
+  if (!el || !el.length) return ''
+  const clone = el.clone()
+  clone.find('br').replaceWith('\n')
+  return clone
+    .text()
+    .replace(/\u00a0/g, ' ')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
+function pickElements(e1, e2) {
+  return [e1, e2].map((item) => String(item || '').trim()).filter((item) => item && item !== '空')
+}
+
+function extFromUrlOrType(url, contentType) {
+  const fromType = String(contentType || '')
+    .split(';')[0]
+    .trim()
+    .toLowerCase()
+  if (fromType === 'image/jpeg') return '.jpg'
+  if (fromType === 'image/webp') return '.webp'
+  if (fromType === 'image/gif') return '.gif'
+  if (fromType === 'image/png') return '.png'
+  const clean = String(url || '').split('?')[0]
+  const m = clean.match(/\.(png|jpg|jpeg|webp|gif)$/i)
+  if (!m) return '.png'
+  return m[1].toLowerCase() === 'jpeg' ? '.jpg' : `.${m[1].toLowerCase()}`
+}
+
+async function fetchText(url, { retries = 3 } = {}) {
+  let lastError
+  for (let attempt = 1; attempt <= retries; attempt += 1) {
+    try {
+      const res = await fetch(url, {
+        headers: {
+          'User-Agent': UA,
+          Accept: 'text/html,application/xhtml+xml;q=0.9,*/*;q=0.8',
+          'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+          Referer: LIST_URL,
+        },
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`)
+      return await res.text()
+    } catch (error) {
+      lastError = error
+      if (attempt < retries) await sleep(600 * attempt)
+    }
+  }
+  throw lastError
+}
+
+async function fetchBuffer(url, { retries = 3 } = {}) {
+  let lastError
+  for (let attempt = 1; attempt <= retries; attempt += 1) {
+    try {
+      const res = await fetch(url, {
+        headers: {
+          'User-Agent': UA,
+          Accept: 'image/avif,image/webp,image/apng,image/*,*/*;q=0.8',
+          Referer: `${ORIGIN}/ap/`,
+        },
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`)
+      const buf = Buffer.from(await res.arrayBuffer())
+      return { buf, contentType: res.headers.get('content-type') || '' }
+    } catch (error) {
+      lastError = error
+      if (attempt < retries) await sleep(600 * attempt)
+    }
+  }
+  throw lastError
+}
+
+async function loadExisting() {
+  const bySlug = new Map()
+  const byName = new Map()
+  const byId = new Map()
+  if (!existsSync(DATA_DIR)) return { bySlug, byName, byId }
+  const files = await readdir(DATA_DIR)
+  for (const file of files) {
+    if (!file.endsWith('.js')) continue
+    const href = pathToFileURL(join(DATA_DIR, file)).href
+    const mod = await import(href)
+    const data = mod.default
+    if (!data?.id) continue
+    byId.set(data.id, data)
+    if (data.wikiSlug) bySlug.set(data.wikiSlug, data)
+    if (data.name) byName.set(data.name, data)
+  }
+  return { bySlug, byName, byId }
+}
+
+function parseList(html) {
+  const $ = cheerio.load(html)
+  const list = []
+  $('.divsort.ap-kibo-child').each((_, node) => {
+    const $el = $(node)
+    const name = $el.find('.kibo-name').first().text().trim()
+    const href = $el.find('a[href]').first().attr('href') || ''
+    if (!name || !href) return
+    list.push({
+      name,
+      no: parseNo($el.find('.kibo-number').first().text()),
+      href,
+      wikiSlug: wikiSlugFromHref(href),
+      wikiUrl: absoluteUrl(href),
+      elements: pickElements($el.attr('data-e1'), $el.attr('data-e2')),
+      race: String($el.attr('data-param3') || '').trim(),
+      stage: String($el.attr('data-param4') || '').trim(),
+      sizeType: String($el.attr('data-param5') || '').trim(),
+      shiny: String($el.attr('data-param6') || '').trim() === '有',
+      special: String($el.attr('data-param7') || '').trim() === '是',
+    })
+  })
+  return list
+}
+
+function parseSkills($) {
+  const skills = []
+  const seen = new Set()
+  $('.kibo-skill-box .apskill.skill-box').each((_, node) => {
+    const $box = $(node)
+    const name = $box.find('.skill-name').first().text().trim()
+    if (!name || seen.has(name)) return
+    seen.add(name)
+    const maxLevel = Number($box.attr('data-max-level') || 0) || undefined
+    const levels = []
+    $box.find('.apskill-data [data-level]').each((__, lvNode) => {
+      const $lv = $(lvNode)
+      const level = Number($lv.attr('data-level'))
+      const desc = textWithBreaks($, $lv)
+      if (!level || !desc) return
+      levels.push({ level, desc })
+    })
+    levels.sort((a, b) => a.level - b.level)
+    const desc =
+      textWithBreaks($, $box.find('.apskill-desc.skill-desc').first()) ||
+      levels.at(-1)?.desc ||
+      ''
+    skills.push({
+      name,
+      ...(maxLevel ? { maxLevel } : {}),
+      desc,
+      ...(levels.length ? { levels } : {}),
+    })
+  })
+  return skills
+}
+
+function parseProperties($) {
+  const properties = []
+  const seen = new Set()
+  $('.kibo-skill-box .property-box').each((_, node) => {
+    const $box = $(node)
+    const name = $box.find('.property-name').first().text().trim()
+    const desc = textWithBreaks($, $box.find('.property-desc').first())
+    if (!name || seen.has(name)) return
+    seen.add(name)
+    properties.push({ name, desc })
+  })
+  return properties
+}
+
+function parseHome($) {
+  const $home = $('.kibo-home').first()
+  if (!$home.length) return { homeJobs: [], drops: [] }
+  const raw = textWithBreaks($, $home)
+  const jobMatch = raw.match(/家园工种：([^\n掉落]*)/)
+  const homeJobs = jobMatch
+    ? jobMatch[1]
+        .split(/[、,，]/)
+        .map((item) => item.trim())
+        .filter(Boolean)
+    : []
+  const drops = []
+  $home.find('.common_item-name').each((_, node) => {
+    const name = $(node).text().trim()
+    if (name) drops.push(name)
+  })
+  return { homeJobs, drops }
+}
+
+function parseEvolutions($) {
+  const evolutions = []
+  const seen = new Set()
+  $('.kibo-rank-box .ap-kibo-child').each((_, node) => {
+    const $el = $(node)
+    const name = $el.find('.kibo-name').first().text().trim()
+    if (!name || seen.has(name)) return
+    seen.add(name)
+    const href = $el.find('a[href]').first().attr('href') || ''
+    const stage = $el.parent().find('.rank-stage').first().text().trim()
+    evolutions.push({
+      name,
+      no: parseNo($el.find('.kibo-number').first().text()),
+      ...(stage ? { stage } : {}),
+      ...(href ? { wikiSlug: wikiSlugFromHref(href) } : {}),
+    })
+  })
+  return evolutions
+}
+
+function parsePixel($) {
+  const $img = $(PIXEL_SELECTOR).first()
+  if (!$img.length) return { pixelImageUrl: '', width: 0, height: 0 }
+  const src = $img.attr('src') || $img.attr('data-src') || ''
+  return {
+    pixelImageUrl: absoluteUrl(src),
+    width: Number($img.attr('data-file-width') || $img.attr('width') || 0) || 0,
+    height: Number($img.attr('data-file-height') || $img.attr('height') || 0) || 0,
+  }
+}
+
+function parseDetail(html, listed) {
+  const $ = cheerio.load(html)
+  const labels = {}
+  $('.kibo-label-box .kibo-label').each((_, node) => {
+    const $label = $(node)
+    const key = $label.clone().children().remove().end().text().replace(/[：:]/g, '').trim()
+    const value = $label.find('span').first().text().trim()
+    if (key) labels[key] = value
+  })
+  const intro = textWithBreaks($, $('.kibo-info-box .kibo-dec').first())
+  const obtain = textWithBreaks($, $('.kibo-get').first()).replace(/^获取方式\s*/, '')
+  const { homeJobs, drops } = parseHome($)
+  const pixel = parsePixel($)
+  const labeledElements = pickElements(
+    ...(String(labels['元素'] || '').split(/[\/、,，]/).map((item) => item.trim())),
+  )
+  return {
+    battleTag: labels['标签'] || '',
+    race: labels['种族'] || listed.race || '',
+    height: labels['身高'] || '',
+    stage: labels['阶段'] || listed.stage || '',
+    sizeType: labels['体型'] || listed.sizeType || '',
+    intro,
+    obtain,
+    homeJobs,
+    drops,
+    skills: parseSkills($),
+    properties: parseProperties($),
+    evolutions: parseEvolutions($),
+    elements: listed.elements?.length ? listed.elements : labeledElements,
+    pixelImageUrl: pixel.pixelImageUrl,
+    imageWidth: pixel.width || undefined,
+    imageHeight: pixel.height || undefined,
+  }
+}
+
+function buildRecord(listed, detail, id, imagePath) {
+  return {
+    id,
+    no: listed.no,
+    name: listed.name,
+    wikiSlug: listed.wikiSlug,
+    wikiUrl: listed.wikiUrl,
+    elements: detail.elements?.length ? detail.elements : listed.elements,
+    battleTag: detail.battleTag,
+    race: detail.race,
+    height: detail.height,
+    stage: detail.stage,
+    sizeType: detail.sizeType,
+    shiny: listed.shiny,
+    special: listed.special,
+    obtain: detail.obtain,
+    intro: detail.intro,
+    image: imagePath,
+    pixelImageUrl: detail.pixelImageUrl,
+    ...(detail.imageWidth ? { imageWidth: detail.imageWidth } : {}),
+    ...(detail.imageHeight ? { imageHeight: detail.imageHeight } : {}),
+    homeJobs: detail.homeJobs,
+    drops: detail.drops,
+    skills: detail.skills,
+    properties: detail.properties,
+    evolutions: detail.evolutions,
+  }
+}
+
+async function downloadPixel(url, id, existing, force) {
+  if (!url) return { image: existing?.image || '', skipped: true, reason: 'no-url' }
+  const prevUrl = existing?.pixelImageUrl
+  const prevImage = existing?.image || ''
+  const prevAbs = prevImage ? join(ROOT, 'public', prevImage.replace(/^\//, '')) : ''
+  if (!force && prevUrl === url && prevAbs && existsSync(prevAbs)) {
+    return { image: prevImage, skipped: true, reason: 'unchanged' }
+  }
+  const { buf, contentType } = await fetchBuffer(url)
+  const ext = extFromUrlOrType(url, contentType)
+  const filename = `${id}${ext}`
+  await mkdir(IMAGE_DIR, { recursive: true })
+  await writeFile(join(IMAGE_DIR, filename), buf)
+  if (prevAbs && existsSync(prevAbs) && !prevAbs.endsWith(filename)) {
+    await rm(prevAbs, { force: true })
+  }
+  return { image: `${IMAGE_PUBLIC_PATH}/${filename}`, skipped: false }
+}
+
+async function writeQiboFile(data) {
+  await mkdir(DATA_DIR, { recursive: true })
+  const file = join(DATA_DIR, `${data.id}.js`)
+  const next = toModuleSource(data)
+  if (existsSync(file)) {
+    const prev = await readFile(file, 'utf8')
+    if (prev === next) return { file, changed: false }
+  }
+  await writeFile(file, next, 'utf8')
+  return { file, changed: true }
+}
+
+function resolveId(listed, existing, used) {
+  const reused =
+    existing.bySlug.get(listed.wikiSlug) ||
+    (existing.byName.get(listed.name) && existing.byName.get(listed.name).wikiSlug == null
+      ? existing.byName.get(listed.name)
+      : null)
+  if (reused?.id && (!used.has(reused.id) || used.get(reused.id) === listed.wikiSlug)) {
+    return reused.id
+  }
+  return uniqueId(slugifyId(listed.wikiSlug || listed.name), used, listed.no)
+}
+
+async function pruneStale(keepIds, keepImages) {
+  if (!existsSync(DATA_DIR)) return { files: 0, images: 0 }
+  let files = 0
+  let images = 0
+  for (const file of await readdir(DATA_DIR)) {
+    if (!file.endsWith('.js')) continue
+    const id = file.slice(0, -3)
+    if (keepIds.has(id)) continue
+    await rm(join(DATA_DIR, file), { force: true })
+    files += 1
+  }
+  if (existsSync(IMAGE_DIR)) {
+    for (const file of await readdir(IMAGE_DIR)) {
+      const publicPath = `${IMAGE_PUBLIC_PATH}/${file}`
+      if (keepImages.has(publicPath)) continue
+      await rm(join(IMAGE_DIR, file), { force: true })
+      images += 1
+    }
+  }
+  return { files, images }
+}
+
+async function main() {
+  console.log('[kib-spider] 读取奇波一览…')
+  const listHtml = await fetchText(LIST_URL)
+  let listed = parseList(listHtml)
+  if (!listed.length) throw new Error('列表页未解析到奇波，页面结构可能已变化')
+
+  if (args.only) {
+    listed = listed.filter(
+      (item) => item.name === args.only || item.wikiSlug === args.only || String(item.no) === args.only,
+    )
+    if (!listed.length) throw new Error(`未找到 --only ${args.only}`)
+  }
+  if (args.limit > 0) listed = listed.slice(0, args.limit)
+
+  const existing = await loadExisting()
+  const used = new Map()
+  for (const item of listed) {
+    const id = resolveId(item, existing, used)
+    used.set(id, item.wikiSlug)
+    item.id = id
+  }
+
+  const stats = { written: 0, unchanged: 0, images: 0, imageSkip: 0, failed: 0 }
+  const keepIds = new Set()
+  const keepImages = new Set()
+
+  for (let i = 0; i < listed.length; i += 1) {
+    const item = listed[i]
+    const label = `[${i + 1}/${listed.length}] ${item.name} (NO.${item.no})`
+    try {
+      if (i) await sleep(args.delay)
+      const html = await fetchText(item.wikiUrl)
+      const detail = parseDetail(html, item)
+      const prev = existing.bySlug.get(item.wikiSlug) || existing.byId.get(item.id)
+      const imageResult = await downloadPixel(detail.pixelImageUrl, item.id, prev, args.forceImages)
+      if (imageResult.skipped) stats.imageSkip += 1
+      else stats.images += 1
+      const record = buildRecord(item, detail, item.id, imageResult.image)
+      const written = await writeQiboFile(record)
+      if (written.changed) stats.written += 1
+      else stats.unchanged += 1
+      keepIds.add(record.id)
+      if (record.image) keepImages.add(record.image)
+      const imgNote = imageResult.skipped ? `图跳过(${imageResult.reason})` : '已下载图'
+      console.log(`${label} ${written.changed ? '已更新' : '无变化'} ${imgNote}`)
+    } catch (error) {
+      stats.failed += 1
+      console.error(`${label} 失败: ${error.message}`)
+      if (item.id) keepIds.add(item.id)
+      const prev = existing.bySlug.get(item.wikiSlug) || existing.byId.get(item.id)
+      if (prev?.image) keepImages.add(prev.image)
+    }
+  }
+
+  if (args.prune && !args.only && !args.limit) {
+    const pruned = await pruneStale(keepIds, keepImages)
+    console.log(`[kib-spider] 已清理过期文件 ${pruned.files}、图片 ${pruned.images}`)
+  }
+
+  console.log(
+    `[kib-spider] 完成：写入 ${stats.written}，未变 ${stats.unchanged}，下载图片 ${stats.images}，跳过图片 ${stats.imageSkip}，失败 ${stats.failed}`,
+  )
+  if (stats.failed) process.exitCode = 1
+}
+
+main().catch((error) => {
+  console.error('[kib-spider] 中止:', error)
+  process.exit(1)
+})

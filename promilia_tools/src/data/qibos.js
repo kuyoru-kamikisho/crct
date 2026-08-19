@@ -1,54 +1,29 @@
-/** 奇波图鉴示例 —— 结构可扩展 */
-export const qibos = [
-  {
-    id: 'xiaoyahu',
-    no: 1,
-    name: '小芽狐',
-    elements: ['木'],
-    location: '初始区域 / 森林一带',
-    captureRate: '较高',
-    skills: ['待补充'],
-    intro: '狐系奇波初阶形态。',
-  },
-  {
-    id: 'pengweihu',
-    no: 2,
-    name: '蓬尾狐',
-    elements: ['木'],
-    location: '森林一带',
-    captureRate: '中等',
-    skills: ['待补充'],
-    intro: '小芽狐进化形态。',
-  },
-  {
-    id: 'luoguanlinghu',
-    no: 3,
-    name: '萝冠灵狐',
-    elements: ['木'],
-    location: '森林深处',
-    captureRate: '较低',
-    skills: ['待补充'],
-    intro: '狐系终阶形态。',
-  },
-  {
-    id: 'yanmoumou',
-    no: 4,
-    name: '焰哞哞',
-    elements: ['火'],
-    location: '火山地带',
-    captureRate: '较高',
-    skills: ['待补充'],
-    intro: '牛系火属性奇波。',
-  },
-  {
-    id: 'heliuzai',
-    no: 7,
-    name: '河狸仔',
-    elements: ['水'],
-    location: '河流 / 湖泊',
-    captureRate: '较高',
-    skills: ['待补充'],
-    intro: '河狸系初阶，擅长水系作业。',
-  },
-]
+/**
+ * 奇波图鉴入口
+ * 各奇波数据拆分在 ./qibos/{id}.js，由 scripts/kib-spider.js 从 BWiki 同步
+ */
+const modules = import.meta.glob('./qibos/*.js', { eager: true, import: 'default' })
 
+const byId = Object.fromEntries(
+  Object.values(modules)
+    .filter((q) => q?.id)
+    .map((q) => [q.id, q]),
+)
+
+function parseNoParts(no) {
+  const s = String(no ?? '')
+  const m = s.match(/^(\d+)([A-Za-z]*)$/)
+  if (!m) return [Number.MAX_SAFE_INTEGER, s]
+  return [Number(m[1]), m[2] || '']
+}
+
+export const qibos = Object.values(byId).sort((a, b) => {
+  const [na, sa] = parseNoParts(a.no)
+  const [nb, sb] = parseNoParts(b.no)
+  if (na !== nb) return na - nb
+  return sa.localeCompare(sb)
+})
+
+export function getQiboById(id) {
+  return byId[id] || null
+}

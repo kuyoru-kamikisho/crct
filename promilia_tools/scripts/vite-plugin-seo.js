@@ -4,7 +4,6 @@ import { pathToFileURL } from 'node:url'
 import { buildSeo, INDEXABLE_STATIC_PATHS, PLACEHOLDER_PATHS } from '../src/seo/meta.js'
 import { CONFIGURED_SITE_URL } from '../src/seo/site.js'
 import zhCN from '../src/i18n/locales/zh-CN.js'
-import { qibos } from '../src/data/qibos.js'
 
 function escapeAttr(text) {
   return String(text || '')
@@ -120,9 +119,14 @@ function fileForPath(outDir, routePath) {
   return join(outDir, `${routePath.replace(/^\//, '')}.html`)
 }
 
-async function loadCharacters(root) {
-  const dir = join(root, 'src/data/characters')
-  const files = await readdir(dir)
+async function loadDataModules(root, relativeDir) {
+  const dir = join(root, relativeDir)
+  let files = []
+  try {
+    files = await readdir(dir)
+  } catch {
+    return []
+  }
   const list = []
   for (const file of files) {
     if (!file.endsWith('.js')) continue
@@ -131,6 +135,27 @@ async function loadCharacters(root) {
     if (mod.default?.id) list.push(mod.default)
   }
   return list
+}
+
+async function loadCharacters(root) {
+  return loadDataModules(root, 'src/data/characters')
+}
+
+function parseQiboNo(no) {
+  const s = String(no ?? '')
+  const m = s.match(/^(\d+)([A-Za-z]*)$/)
+  if (!m) return [Number.MAX_SAFE_INTEGER, s]
+  return [Number(m[1]), m[2] || '']
+}
+
+async function loadQibos(root) {
+  const list = await loadDataModules(root, 'src/data/qibos')
+  return list.sort((a, b) => {
+    const [na, sa] = parseQiboNo(a.no)
+    const [nb, sb] = parseQiboNo(b.no)
+    if (na !== nb) return na - nb
+    return sa.localeCompare(sb)
+  })
 }
 
 function xmlEscape(text) {
@@ -216,6 +241,7 @@ export function seoPrerenderPlugin() {
       }
 
       const characters = await loadCharacters(root)
+      const qibos = await loadQibos(root)
       const today = new Date().toISOString().slice(0, 10)
       const jobs = []
 

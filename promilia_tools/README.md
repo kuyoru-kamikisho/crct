@@ -1,9 +1,11 @@
+> **声明：** 本项目仅供个人学习与交流使用，不用于任何商业目的。内容如有侵权，请联系本仓库所有者，将尽快修改或删除相关内容。
+
 # 蓝色星原：旅谣 Wiki 工具
 
 《蓝色星原：旅谣》（Azur Promilia）非官方纯静态 Wiki 工具。  
 技术栈：Vue 3 · Vite · Pinia · Vue Router · SCSS · vue-i18n
 
-情报结构参考 [BWiki 蓝色星原：旅谣](https://wiki.biligame.com/ap/%E9%A6%96%E9%A1%B5)，界面样式为独立设计。
+数据来源参考 [BWiki 蓝色星原：旅谣](https://wiki.biligame.com/ap/%E9%A6%96%E9%A1%B5)，界面样式为AI独立设计。
 
 ## 功能
 
