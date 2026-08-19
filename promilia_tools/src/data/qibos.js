@@ -51,3 +51,4 @@ export const qibos = [
     intro: '河狸系初阶，擅长水系作业。',
   },
 ]
+
