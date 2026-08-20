@@ -5,6 +5,7 @@ import { characters, getCharacterById } from '@/data/characters'
 import { qibos, getQiboById } from '@/data/qibos'
 import { buildSeo } from '@/seo/meta'
 import { DEFAULT_LOCALE, SITE_NAME, THEME_COLOR, getSiteUrl } from '@/seo/site'
+import { ogLocaleOf } from '@/i18n'
 
 function ensureMeta(attr, key, content) {
   if (content == null || content === '') return
@@ -48,7 +49,7 @@ function ensureJsonLd(data) {
   el.textContent = JSON.stringify(data)
 }
 
-function applySeo(payload, siteUrl) {
+function applySeo(payload, siteUrl, locale) {
   document.title = payload.title
   ensureMeta('name', 'description', payload.description)
   ensureMeta('name', 'keywords', payload.keywords)
@@ -58,7 +59,7 @@ function applySeo(payload, siteUrl) {
   ensureMeta('property', 'og:description', payload.description)
   ensureMeta('property', 'og:type', payload.ogType)
   ensureMeta('property', 'og:site_name', SITE_NAME)
-  ensureMeta('property', 'og:locale', 'zh_CN')
+  ensureMeta('property', 'og:locale', ogLocaleOf(locale))
   if (payload.canonical) {
     ensureMeta('property', 'og:url', payload.canonical)
     ensureLink('canonical', payload.canonical)
@@ -109,7 +110,7 @@ export function useSeo() {
           (route.name === 'character-detail' && !character) ||
           (route.name === 'qibo-detail' && !qibo),
       })
-      applySeo(payload, getSiteUrl())
+      applySeo(payload, getSiteUrl(), locale.value)
     },
     { immediate: true },
   )

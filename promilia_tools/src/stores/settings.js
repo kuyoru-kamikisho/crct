@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { storageGet, storageSet } from '@/utils/storage'
 import { MQ_NARROW } from '@/utils/breakpoints'
+import { htmlLangOf } from '@/i18n'
 
 const THEMES = ['azure', 'dusk', 'aurora', 'stardust']
 
@@ -107,11 +108,7 @@ export const useSettingsStore = defineStore('settings', {
     applyDom() {
       document.documentElement.setAttribute('data-theme', this.theme)
       document.documentElement.style.setProperty('--cursor-color', this.cursorColor)
-      document.documentElement.lang = this.locale.startsWith('zh')
-        ? 'zh-CN'
-        : this.locale.startsWith('ja')
-          ? 'ja'
-          : 'en'
+      document.documentElement.lang = htmlLangOf(this.locale)
     },
   },
 })

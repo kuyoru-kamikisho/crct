@@ -54,7 +54,7 @@ function websiteNode(siteUrl, messages) {
     name: siteLabel(m),
     alternateName: [SITE_NAME, SITE_NAME_EN, GAME_NAME, GAME_NAME_EN, m.app.nameEn],
     url: url || undefined,
-    inLanguage: ['zh-CN', 'en', 'ja'],
+    inLanguage: ['zh-CN', 'en', 'ja', 'ko'],
     description: m.seo?.homeDescription,
     potentialAction: /^https?:\/\//i.test(String(url))
       ? {

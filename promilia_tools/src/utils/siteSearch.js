@@ -22,8 +22,9 @@ let fuse = new Fuse(documents, fuseOptions)
 Promise.all([
   import('@/i18n/locales/en-US').then((m) => m.default),
   import('@/i18n/locales/ja-JP').then((m) => m.default),
-]).then(([enUS, jaJP]) => {
-  documents = buildSearchDocuments([zhCN, enUS, jaJP])
+  import('@/i18n/locales/ko-KR').then((m) => m.default),
+]).then(([enUS, jaJP, koKR]) => {
+  documents = buildSearchDocuments([zhCN, enUS, jaJP, koKR])
   fuse = new Fuse(documents, fuseOptions)
 })
 

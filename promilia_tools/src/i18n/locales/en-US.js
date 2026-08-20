@@ -170,7 +170,7 @@ export default {
     identity:
       'I am a player from China, and the person who started this multilingual wiki for players around the world.',
     origin:
-      'I created this wiki to lower the language barrier and give players in every region one shared, accurate, consistent public reference. Whether you read Chinese, English, Japanese, or a language we add later, you should be able to look up characters, Qibo, systems, story, and items in the same structure—instead of piecing together scattered, conflicting fan notes from different communities.',
+      'I created this wiki to lower the language barrier and give players in every region one shared, accurate, consistent public reference. Whether you read Chinese, English, Japanese, Korean, or a language we add later, you should be able to look up characters, Qibo, systems, story, and items in the same structure—instead of piecing together scattered, conflicting fan notes from different communities.',
     visionTitle: 'What we want this wiki to become',
     vision:
       'The goal is a truly shared, locally readable community wiki: one canonical fact, maintained once, then localized in lockstep. When a player switches languages, they should not land on a different set of rumors. They should see the same knowledge, written clearly in their language. Translation here is not a mechanical word swap. It is making the same information accurate and natural in the target language.',
@@ -233,7 +233,7 @@ export default {
     ],
     neededTitle: 'What we need most right now',
     neededItems: [
-      'Proofreading of Chinese, English, and Japanese pages, plus a cross-language glossary.',
+      'Proofreading of Chinese, English, Japanese, and Korean pages, plus a cross-language glossary.',
       'Fact-checking character and Qibo data, including obtain methods, skills, and systems.',
       'Better search, mobile layout, and page-loading performance.',
       'A mirror, CDN, or static-asset host to ease bandwidth on the main site.',

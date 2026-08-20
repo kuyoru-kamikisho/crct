@@ -15,12 +15,32 @@ export const SUPPORTED_LOCALES = {
   'zh-CN': { code: 'zh-CN', name: 'Chinese', nativeName: '简体中文' },
   'en-US': { code: 'en-US', name: 'English', nativeName: 'English' },
   'ja-JP': { code: 'ja-JP', name: 'Japanese', nativeName: '日本語' },
+  'ko-KR': { code: 'ko-KR', name: 'Korean', nativeName: '한국어' },
 }
 
 const loaders = {
   'zh-CN': () => Promise.resolve(zhCN),
   'en-US': () => import('./locales/en-US').then((m) => m.default),
   'ja-JP': () => import('./locales/ja-JP').then((m) => m.default),
+  'ko-KR': () => import('./locales/ko-KR').then((m) => m.default),
+}
+
+/** @param {string} [code] */
+export function htmlLangOf(code) {
+  if (!code) return 'zh-CN'
+  if (code.startsWith('zh')) return 'zh-CN'
+  if (code.startsWith('ja')) return 'ja'
+  if (code.startsWith('ko')) return 'ko'
+  return 'en'
+}
+
+/** @param {string} [code] */
+export function ogLocaleOf(code) {
+  if (!code) return 'zh_CN'
+  if (code.startsWith('zh')) return 'zh_CN'
+  if (code.startsWith('ja')) return 'ja_JP'
+  if (code.startsWith('ko')) return 'ko_KR'
+  return 'en_US'
 }
 
 const initial = storageGet('locale', 'zh-CN')
@@ -48,7 +68,7 @@ export async function setAppLocale(code) {
     i18n.global.setLocaleMessage(code, messages)
   }
   i18n.global.locale.value = code
-  document.documentElement.lang = code.startsWith('zh') ? 'zh-CN' : code.startsWith('ja') ? 'ja' : 'en'
+  document.documentElement.lang = htmlLangOf(code)
   return true
 }
 
