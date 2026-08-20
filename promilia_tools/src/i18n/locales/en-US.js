@@ -100,8 +100,9 @@ export default {
     qiboDetailKeywords: '$rp,Qibo $rp,Azur Promilia Qibo,skills',
     qiboImageAlt: '$rp (NO.$rp) pixel art from Azur Promilia',
     contributeTitle: 'Contribute | Azur Promilia Wiki',
-    contributeDescription: 'Help maintain the unofficial Azur Promilia wiki with data, translations, and guides.',
-    contributeKeywords: 'Azur Promilia wiki contribute',
+    contributeDescription:
+      'The multilingual Azur Promilia Wiki is recruiting content editors, developers, and infrastructure supporters worldwide.',
+    contributeKeywords: 'Azur Promilia wiki contribute, translation, open source, volunteer',
     placeholderDescription: 'This section is under construction. Contributions are welcome.',
     notFoundTitle: 'Page not found | Azur Promilia Wiki',
     ogImageAlt: 'Azur Promilia Wiki',
@@ -152,14 +153,124 @@ export default {
   },
   contribute: {
     title: 'Contribute',
+    eyebrow: 'An open call to collaborate',
+    letterTitle: 'A letter to players around the world',
     qq: 'QQ Group',
-    qqGroup: '869284102',
+    qqGroup: '1111111111',
+    qqHint: 'Wiki player group · QR placeholder',
     repo: 'Repository',
     contributors: 'Contributors',
     ad: 'Sponsorship',
     adHint: 'Ad slot reserved for community configuration.',
     howTo: 'How to help',
     howToDesc: 'Fork the repo, add codex data or locale packs, then open a Pull Request.',
+    previewCta: 'Open the live preview',
+    repoCta: 'Open the GitHub repo',
+    greeting: 'Hello, fellow fans of Azur Promilia!',
+    identity:
+      'I am a player from China, and the person who started this multilingual wiki for players around the world.',
+    origin:
+      'I created this wiki to lower the language barrier and give players in every region one shared, accurate, consistent public reference. Whether you read Chinese, English, Japanese, or a language we add later, you should be able to look up characters, Qibo, systems, story, and items in the same structure—instead of piecing together scattered, conflicting fan notes from different communities.',
+    visionTitle: 'What we want this wiki to become',
+    vision:
+      'The goal is a truly shared, locally readable community wiki: one canonical fact, maintained once, then localized in lockstep. When a player switches languages, they should not land on a different set of rumors. They should see the same knowledge, written clearly in their language. Translation here is not a mechanical word swap. It is making the same information accurate and natural in the target language.',
+    progressTitle: 'Where the project stands',
+    progress:
+      'With help from AI translation and generation tools, I have already built a working prototype. The site framework, language switching, and basic page structure are up and running.',
+    preview:
+      'You can open {link} to see the current demo. One important caveat: AI helped us raise the scaffolding quickly, but reliable content still needs people who know the game and the language. Skill text, story tone, proper names, and version differences cannot be left to a model alone.',
+    challengeLead: 'As the project moves forward, two very practical problems are already in the way.',
+    challengesTitle: 'The two most urgent problems',
+    challenge1Title: 'A multilingual wiki cannot be maintained by one person',
+    challenge1:
+      'Translation, proofreading, fact-checking, tracking game updates, and syncing new characters and systems across every language is not realistic for a single maintainer. Long-term solo work almost guarantees errors, inconsistent terms, and delayed updates. A wiki only stays useful if it is accurate and timely. If those two things slip, trust disappears quickly.',
+    challenge2Title: 'A personal server cannot carry a much larger audience',
+    challenge2:
+      'The server and bandwidth I currently pay for myself can only handle small-scale visits. They are not ready for a sudden rush of traffic. If usage grows, the site may slow down, time out, or go down. Storing and serving art, portraits, and other assets will also hit a ceiling before long.',
+    inviteLead:
+      'That is why I am opening this invitation to fans worldwide. This is a fully fan-driven open-source project on GitHub. At least in this early stage, nobody who contributes will receive salary, payment, or commercial profit. The project runs on volunteer enthusiasm.',
+    invitesTitle: 'Three ways to help',
+    contentTitle: 'We are recruiting content contributors worldwide',
+    contentLead:
+      'Players from every country and region are welcome. You do not need professional technical skills. If you love this game and can spare a little time to improve the wiki, you are already the person we need.',
+    contentRoles: [
+      'Translate into your language, then proofread, unify terms, and polish the wording.',
+      'Track game updates and add new characters, Qibo, systems, and events.',
+      'Check existing pages for errors and correct AI mistakes, outdated facts, and contradictions.',
+      'Help with layout, asset organization, screenshot captions, formatting, and information architecture.',
+      'Help build a shared glossary so skill, item, and place names stay consistent across the site.',
+    ],
+    contentClose:
+      'Only by dividing the work can this multilingual wiki stay alive for the long term. Even half an hour a week—one page proofread, one error fixed—is a real contribution.',
+    techTitle: 'Developers are welcome to join the technical side',
+    techLead:
+      'The basic wiki framework already runs, but it is still an early prototype with plenty of room to grow. If you have experience with front-end development, static-site operations, or wiki customization, and you want to put that skill into a fan project, please join the technical team.',
+    techItems: [
+      'Improve the multilingual architecture so adding languages and changing structure stays cheap.',
+      'Make site-wide search precise across characters, skills, Qibo, items, and other catalogs.',
+      'Iterate tools such as the gacha simulator and team calculator, and clean up their data interfaces.',
+      'Improve mobile layout so looking up data on a phone feels natural.',
+      'Fix bugs, speed up loading, and improve image and static-asset caching.',
+    ],
+    techClose:
+      'Like content work, this is unpaid open-source collaboration. Every code change is public in the repository, and every improvement directly helps players around the world look things up faster.',
+    infraTitle: 'We are looking for server and infrastructure support',
+    infraLead:
+      'Because this is currently a personal expense, the server and bandwidth I pay for can only support small test traffic. They cannot absorb a larger concurrent load, and they cannot comfortably store and deliver more portraits, screenshots, and other assets.',
+    infraItems: [
+      'Spare cloud servers, or compute that can host a static site.',
+      'CDN, object storage, or a mirror, to distribute images and assets.',
+      'Sponsorship for domains, certificates, backups, and monitoring.',
+    ],
+    infraClose:
+      'If community donations open later, every amount will be used transparently for servers, domain renewal, CDN, and storage. The books will be public. There will be no personal profit. The only goal is to keep the wiki free for players worldwide.',
+    startTitle: 'How to start right now',
+    startSteps: [
+      'Open the GitHub repository, read the README, and learn the current page conventions.',
+      'Start with the language you know best: claim a page, pick up an Issue, or submit a correction.',
+      'Send changes through a Pull Request. If you are unsure, open an Issue first.',
+      'Join the QQ group to align terminology, progress, and near-term priorities with other contributors.',
+    ],
+    neededTitle: 'What we need most right now',
+    neededItems: [
+      'Proofreading of Chinese, English, and Japanese pages, plus a cross-language glossary.',
+      'Fact-checking character and Qibo data, including obtain methods, skills, and systems.',
+      'Better search, mobile layout, and page-loading performance.',
+      'A mirror, CDN, or static-asset host to ease bandwidth on the main site.',
+    ],
+    principlesTitle: 'Project principles',
+    principles: [
+      'This is an unofficial, community-run open-source project and is not affiliated with Manjuu or other rights holders.',
+      'At least in the early stage, all contributions are unpaid. There is no salary, compensation, or commercial share.',
+      'Documentation defaults to CC BY-NC-SA unless noted otherwise. Game assets belong to their rights holders.',
+      'AI-generated drafts are not considered reliable until a human has reviewed them.',
+      'If donations open, they will fund infrastructure only, with public accounting and no personal profit.',
+    ],
+    faqTitle: 'FAQ',
+    faq: [
+      {
+        q: 'Is this an official wiki?',
+        a: 'No. This is a fan-driven unofficial open-source project. Content is compiled from public information and should be checked against the live game.',
+      },
+      {
+        q: 'I cannot code. Can I still help?',
+        a: 'Yes. Translation, proofreading, data entry, corrections, layout, and asset work do not require professional development skills. Caring about the game and giving a little time is enough.',
+      },
+      {
+        q: 'If AI already translated the pages, why do people still need to proofread?',
+        a: 'Because skill text, proper names, story tone, and version differences are easy for a model to get wrong or make sound unnatural. AI speeds up the draft. People protect the quality.',
+      },
+      {
+        q: 'Will contributors be credited?',
+        a: 'Yes. Contributors will be listed on this page, and commits will remain in the GitHub history.',
+      },
+      {
+        q: 'If donations start later, how will the money be used?',
+        a: 'Only for infrastructure such as servers, domains, CDN, and storage. The books will be public, and the money will not become personal income.',
+      },
+    ],
+    closing:
+      'If you also want players around the world to share one accurate, complete, and timely wiki, please join us. Proofreading a single page, fixing one error, or opening one Issue already matters. Let us keep this multilingual wiki running together. Thank you for reading.',
   },
   character: {
     title: 'Character Codex',
