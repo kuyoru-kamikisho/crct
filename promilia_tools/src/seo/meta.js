@@ -1,4 +1,5 @@
 import { replaceRp } from '../utils/replaceRp.js'
+import { itemBelongsToSource } from '../data/itemSources.js'
 import zhCN from '../i18n/locales/zh-CN.js'
 import {
   GAME_NAME,
@@ -9,6 +10,7 @@ import {
   assetUrl,
   characterImagePath,
   qiboImagePath,
+  itemImagePath,
   pageUrl,
 } from './site.js'
 
@@ -99,6 +101,7 @@ function noscriptNav(messages) {
   <a href="${navHref('/')}">${escapeHtml(m.nav.home)}</a>
   <a href="${navHref('/encyclopedia/characters')}">${escapeHtml(m.nav.characters)}</a>
   <a href="${navHref('/encyclopedia/qibo')}">${escapeHtml(m.nav.qibo)}</a>
+  <a href="${navHref('/encyclopedia/items')}">${escapeHtml(m.nav.items)}</a>
   <a href="${navHref('/contribute')}">${escapeHtml(m.nav.contribute)}</a>
 </nav>`
 }
@@ -112,6 +115,10 @@ export function buildSeo({
   characters = [],
   qibo = null,
   qibos = [],
+  item = null,
+  items = [],
+  itemSource = null,
+  itemSources = [],
   noindex = false,
 } = {}) {
   const m = localeOf(messages)
@@ -153,6 +160,13 @@ export function buildSeo({
       .map(
         (q) =>
           `<li><a href="${navHref(`/encyclopedia/qibo/${q.id}`)}">${escapeHtml(q.name)}</a></li>`,
+      )
+      .join('')}</ul>
+<h2>${escapeHtml(m.nav.items)}</h2>
+<ul>${(itemSources.length ? itemSources : [{ path: '/encyclopedia/items', name: m.nav.items }])
+      .map(
+        (src) =>
+          `<li><a href="${navHref(src.path)}">${escapeHtml(src.name)}</a></li>`,
       )
       .join('')}</ul>`
   } else if (routeName === 'characters' || path === '/encyclopedia/characters') {
@@ -293,6 +307,85 @@ ${skills}
 ${properties}
 </article>`
     }
+  } else if (routeName === 'items' || path === '/encyclopedia/items') {
+    title = m.seo.itemsTitle
+    description = m.seo.itemsDescription
+    keywords = uniqueJoin([m.seo.itemsKeywords, ...items.slice(0, 24).map((entry) => entry.name)])
+    crumbs.push({ name: m.nav.items, path: '/encyclopedia/items' })
+    noscriptBody = `<h1>${escapeHtml(m.item.title)}</h1>
+<p>${escapeHtml(String(items.length))}</p>
+<ul>${items
+      .map(
+        (entry) =>
+          `<li><a href="${navHref(`/encyclopedia/item/${entry.id}`)}">${escapeHtml(entry.name)}</a></li>`,
+      )
+      .join('')}</ul>`
+  } else if (routeName === 'item-source' || /^\/encyclopedia\/obtain\/[^/]+$/.test(path)) {
+    if (!itemSource) {
+      title = m.seo.notFoundTitle
+      description = m.common.empty
+      robots = 'noindex,follow'
+      noscriptBody = `<h1>404</h1><p>${escapeHtml(m.common.empty)}</p>`
+    } else {
+    const sourceName = itemSource?.name || m.nav.items
+    const sourceItems = itemSource?.id
+      ? items.filter((entry) => itemBelongsToSource(entry, itemSource.id))
+      : []
+    title = replaceRp(m.seo.itemSourceTitle, sourceName)
+    description = replaceRp(m.seo.itemSourceDescription, sourceName)
+    keywords = uniqueJoin([
+      replaceRp(m.seo.itemSourceKeywords, sourceName),
+      ...(itemSource?.ways || []),
+      ...sourceItems.slice(0, 16).map((entry) => entry.name),
+    ])
+    crumbs.push({ name: sourceName, path: itemSource?.path || path })
+    noscriptBody = `<h1>${escapeHtml(sourceName)}</h1>
+<ul>${sourceItems
+      .map(
+        (entry) =>
+          `<li><a href="${navHref(`/encyclopedia/item/${entry.id}`)}">${escapeHtml(entry.name)}</a></li>`,
+      )
+      .join('')}</ul>`
+    }
+  } else if (routeName === 'item-detail' || /^\/encyclopedia\/item\/[^/]+$/.test(path)) {
+    if (!item) {
+      title = m.seo.notFoundTitle
+      description = m.common.empty
+      robots = 'noindex,follow'
+      noscriptBody = `<h1>404</h1><p>${escapeHtml(m.common.empty)}</p>`
+    } else {
+      title = replaceRp(m.seo.itemDetailTitle, item.name, item.rarity)
+      description = clip(
+        replaceRp(m.seo.itemDetailDescription, item.name, item.rarity, item.desc || item.spdesc || ''),
+        140,
+      )
+      keywords = uniqueJoin([
+        replaceRp(m.seo.itemDetailKeywords, item.name, item.name),
+        ...(item.types || []),
+        ...(item.tags || []),
+        ...(item.ways || []),
+        GAME_NAME,
+      ])
+      ogType = 'article'
+      ogImage = assetUrl(item.image || itemImagePath(item.id), siteUrl)
+      ogImageAlt = replaceRp(m.seo.itemImageAlt, item.name)
+      crumbs.push({ name: m.nav.items, path: '/encyclopedia/items' })
+      crumbs.push({
+        name: item.name,
+        path: `/encyclopedia/item/${item.id}`,
+      })
+      const effects = (item.effects || []).map((effect) => `<li>${escapeHtml(effect)}</li>`).join('')
+      noscriptBody = `<article>
+<h1>${escapeHtml(item.name)}</h1>
+<p>${escapeHtml(String(item.rarity || ''))}★ ${(item.types || []).map((type) => escapeHtml(type)).join(' / ')}</p>
+<p>${escapeHtml(item.desc || '')}</p>
+<p>${escapeHtml(item.spdesc || '')}</p>
+<img src="${navHref(item.image || itemImagePath(item.id))}" alt="${escapeHtml(ogImageAlt)}" />
+<h2>${escapeHtml(m.item.ways)}</h2>
+<p>${escapeHtml((item.ways || []).join('、') || m.nav.items)}</p>
+${effects ? `<h2>${escapeHtml(m.item.effects)}</h2><ul>${effects}</ul>` : ''}
+</article>`
+    }
   } else if (routeName === 'contribute' || path === '/contribute') {
     title = m.seo.contributeTitle
     description = m.seo.contributeDescription
@@ -338,6 +431,8 @@ ${properties}
           ? { '@id': `${canonical}#character` }
           : qibo
             ? { '@id': `${canonical}#qibo` }
+            : item
+              ? { '@id': `${canonical}#item` }
             : undefined,
       },
       breadcrumbList(crumbs, siteUrl),
@@ -368,6 +463,18 @@ ${properties}
             },
           ]
         : []),
+      ...(item
+        ? [
+            {
+              '@type': 'Thing',
+              '@id': `${canonical}#item`,
+              name: item.name,
+              alternateName: item.wikiSlug,
+              description: clip(item.desc || item.spdesc, 200),
+              image: ogImage || undefined,
+            },
+          ]
+        : []),
     ],
   }
 
@@ -392,17 +499,12 @@ export const INDEXABLE_STATIC_PATHS = [
   { path: '/', name: 'home', changefreq: 'daily', priority: '1.0' },
   { path: '/encyclopedia/characters', name: 'characters', changefreq: 'weekly', priority: '0.9' },
   { path: '/encyclopedia/qibo', name: 'qibo', changefreq: 'weekly', priority: '0.9' },
+  { path: '/encyclopedia/items', name: 'items', changefreq: 'weekly', priority: '0.9' },
   { path: '/contribute', name: 'contribute', changefreq: 'monthly', priority: '0.5' },
 ]
 
 /** 建设中的栏目：预渲染但 noindex，避免薄内容进索引 */
 export const PLACEHOLDER_PATHS = [
-  '/encyclopedia/gatherables',
-  '/encyclopedia/goods',
-  '/encyclopedia/spirit',
-  '/encyclopedia/equipment',
-  '/encyclopedia/items',
-  '/encyclopedia/cuisine',
   '/encyclopedia/achievements',
   '/encyclopedia/affixes',
   '/guides/character',

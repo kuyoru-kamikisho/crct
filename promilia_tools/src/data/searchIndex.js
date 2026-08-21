@@ -1,5 +1,6 @@
 import { characters } from '@/data/characters'
 import { qibos } from '@/data/qibos'
+import { items } from '@/data/items'
 import { navSections } from '@/data/navigation'
 import zhCN from '@/i18n/locales/zh-CN'
 
@@ -25,6 +26,7 @@ function uniqueJoin(parts) {
 }
 
 function getPath(obj, path) {
+  if (!path) return undefined
   return path.split('.').reduce((acc, key) => acc?.[key], obj)
 }
 
@@ -48,7 +50,7 @@ export function buildSearchDocuments(locales = [zhCN]) {
   }
   /** @type {Array<{
    *   id: string
-   *   kind: 'character' | 'skill' | 'qibo' | 'page'
+   *   kind: 'character' | 'skill' | 'qibo' | 'item' | 'page'
    *   title: string
    *   aliases: string
    *   subtitle: string
@@ -75,12 +77,13 @@ export function buildSearchDocuments(locales = [zhCN]) {
       docs.push({
         id: `page:${child.path}`,
         kind: 'page',
-        title: getPath(zhCN, child.labelKey) || child.id,
+        title: child.label || getPath(zhCN, child.labelKey) || child.id,
         labelKey: child.labelKey,
-        aliases: allLocaleText(child.labelKey),
+        aliases: uniqueJoin([child.label, child.labelKey ? allLocaleText(child.labelKey) : '']),
         subtitle: getPath(zhCN, section.labelKey) || '',
         text: uniqueJoin([
-          allLocaleText(child.labelKey),
+          child.label,
+          child.labelKey ? allLocaleText(child.labelKey) : '',
           allLocaleText(section.labelKey),
           child.path,
           child.id,
@@ -150,6 +153,22 @@ export function buildSearchDocuments(locales = [zhCN]) {
           query: { skill: sk.name },
         },
       })
+    })
+  }
+
+  for (const item of items) {
+    const sourceNames = (item.ways || []).length ? item.ways : [zhCN.item.title]
+    docs.push({
+      id: `item:${item.id}`,
+      kind: 'item',
+      title: item.name,
+      aliases: uniqueJoin([item.id, item.wikiSlug, ...(item.types || []), ...(item.tags || [])]),
+      subtitle: [item.rarity ? `${item.rarity}★` : '', ...(item.types || []).slice(0, 2)].filter(Boolean).join(' · '),
+      text: uniqueJoin([
+        ...collectStrings(item),
+        ...sourceNames,
+      ]),
+      to: { name: 'item-detail', params: { id: item.id } },
     })
   }
 

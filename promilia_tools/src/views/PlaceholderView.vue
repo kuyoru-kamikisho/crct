@@ -13,7 +13,7 @@ const title = computed(() => {
   const path = route.path
   for (const sec of navSections) {
     const hit = sec.children.find((c) => c.path === path)
-    if (hit) return t(hit.labelKey)
+    if (hit) return hit.label || t(hit.labelKey)
   }
   return t('nav.encyclopedia')
 })

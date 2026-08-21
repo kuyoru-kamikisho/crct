@@ -1,0 +1,20 @@
+/** 炽烈火核·随机类型 */
+export default {
+  id: "chiliehuohe-suijileixing",
+  name: "炽烈火核·随机类型",
+  wikiSlug: "炽烈火核·随机类型",
+  wikiUrl: "https://wiki.biligame.com/ap/炽烈火核·随机类型",
+  rarity: 3,
+  types: [
+    "材料"
+  ],
+  tags: [
+    "材料"
+  ],
+  ways: [],
+  desc: "可能获得勇气、毅力、智慧中任意类型的火核。",
+  spdesc: "",
+  effects: [],
+  image: "/imgs/items/chiliehuohe-suijileixing.png",
+  imageUrl: "https://patchwiki.biligame.com/images/ap/1/16/97lws8ywbmef0zbkkjcq8p68q77dzdo.png"
+}

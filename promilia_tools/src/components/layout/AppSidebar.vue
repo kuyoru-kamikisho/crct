@@ -15,9 +15,9 @@ const settings = useSettingsStore()
 const openIds = ref(navSections.map((s) => s.id))
 
 watch(
-  () => route.path,
-  (path) => {
-    const hit = navSections.find((s) => s.children.some((c) => path.startsWith(c.path)))
+  () => [route.path, route.name, route.query.from],
+  () => {
+    const hit = navSections.find((s) => s.children.some((c) => isActive(c.path)))
     if (hit && !openIds.value.includes(hit.id)) {
       openIds.value.push(hit.id)
     }
@@ -32,7 +32,13 @@ function toggle(id) {
 }
 
 function isActive(path) {
-  return route.path === path || route.path.startsWith(path + '/')
+  if (route.path === path || route.path.startsWith(`${path}/`)) return true
+  if (route.name === 'item-detail') {
+    const from = typeof route.query.from === 'string' ? route.query.from : ''
+    if (from) return path === `/encyclopedia/obtain/${from}`
+    return path === '/encyclopedia/items'
+  }
+  return false
 }
 
 function isSectionActive(sec) {
@@ -58,11 +64,11 @@ async function onLocale(code) {
           type="button"
           class="section-title"
           :class="{ active: isSectionActive(sec) }"
-          :title="t(sec.labelKey)"
+          :title="sec.label || t(sec.labelKey)"
           @click="toggle(sec.id)"
         >
           <svg-icon class="nav-icon" type="mdi" :size="20" :path="sec.icon" aria-hidden="true" />
-          <span class="label">{{ t(sec.labelKey) }}</span>
+          <span class="label">{{ sec.label || t(sec.labelKey) }}</span>
           <span class="chev" :class="{ open: openIds.includes(sec.id) }">›</span>
         </button>
         <ul v-show="openIds.includes(sec.id)" class="nav-list">
@@ -70,10 +76,10 @@ async function onLocale(code) {
             <router-link
               :to="item.path"
               :class="{ active: isActive(item.path) }"
-              :title="t(item.labelKey)"
+              :title="item.label || t(item.labelKey)"
             >
               <svg-icon class="item-icon" type="mdi" :size="16" :path="item.icon" aria-hidden="true" />
-              <span>{{ t(item.labelKey) }}</span>
+              <span>{{ item.label || t(item.labelKey) }}</span>
             </router-link>
           </li>
         </ul>

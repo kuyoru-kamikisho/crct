@@ -1,0 +1,22 @@
+/** 优质金麦种子 */
+export default {
+  id: "youzhijinmaizhongzi",
+  name: "优质金麦种子",
+  wikiSlug: "优质金麦种子",
+  wikiUrl: "https://wiki.biligame.com/ap/优质金麦种子",
+  rarity: 1,
+  types: [
+    "种子"
+  ],
+  tags: [
+    "种子"
+  ],
+  ways: [
+    "家园种植"
+  ],
+  desc: "可食用作物的种子，在农田种植后可收获对应品质的作物。",
+  spdesc: "",
+  effects: [],
+  image: "/imgs/items/youzhijinmaizhongzi.png",
+  imageUrl: "https://patchwiki.biligame.com/images/ap/2/23/4080op5yhbblubpha723bf9qtat508i.png"
+}

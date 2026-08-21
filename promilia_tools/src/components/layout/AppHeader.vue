@@ -55,6 +55,7 @@ async function onLocale(code) {
     <nav class="header-nav" :aria-label="t('header.quickNav')">
       <router-link to="/encyclopedia/characters">{{ t('nav.characters') }}</router-link>
       <router-link to="/encyclopedia/qibo">{{ t('nav.qibo') }}</router-link>
+      <router-link to="/encyclopedia/items">{{ t('nav.items') }}</router-link>
       <router-link to="/tools/gacha">{{ t('nav.gacha') }}</router-link>
       <router-link to="/contribute">{{ t('nav.contribute') }}</router-link>
     </nav>

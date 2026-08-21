@@ -1,20 +1,24 @@
 <script setup>
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { characters } from '@/data/characters'
 import { qibos } from '@/data/qibos'
+import { items, itemSourceCatalog } from '@/data/items'
 
 const { t } = useI18n()
 
-const entries = [
-  { to: '/encyclopedia/characters', labelKey: 'nav.characters', desc: '涂山小玉、红宝石…' },
-  { to: '/encyclopedia/qibo', labelKey: 'nav.qibo', desc: '小芽狐、焰哞哞…' },
-  { to: '/encyclopedia/spirit', labelKey: 'nav.spirit', desc: '厨房的秘密…' },
-  { to: '/encyclopedia/equipment', labelKey: 'nav.equipment', desc: '泣影、雷闪…' },
-  { to: '/guides/character', labelKey: 'nav.guideCharacter', desc: '' },
-  { to: '/tools/gacha', labelKey: 'nav.gacha', desc: '' },
-  { to: '/tools/team', labelKey: 'nav.teamCalc', desc: '' },
-  { to: '/contribute', labelKey: 'nav.contribute', desc: '' },
-]
+const sourceEntries = computed(() => itemSourceCatalog.slice(0, 8))
+
+const entries = computed(() => [
+  { to: '/encyclopedia/characters', label: t('nav.characters'), desc: characters.slice(0, 3).map((c) => c.name).join('、') },
+  { to: '/encyclopedia/qibo', label: t('nav.qibo'), desc: qibos.slice(0, 3).map((q) => q.name).join('、') },
+  { to: '/encyclopedia/items', label: t('nav.items'), desc: items.slice(0, 3).map((item) => item.name).join('、') },
+  ...sourceEntries.value
+    .filter((src) => src.kind === 'source')
+    .slice(0, 3)
+    .map((src) => ({ to: src.path, label: src.name, desc: `${src.count}` })),
+  { to: '/contribute', label: t('nav.contribute'), desc: '' },
+])
 </script>
 
 <template>
@@ -31,16 +35,16 @@ const entries = [
       <h2>{{ t('home.quickStats') }}</h2>
       <div class="stat-grid">
         <div class="stat">
-          <strong>{{ characters.length }}+</strong>
+          <strong>{{ characters.length }}</strong>
           <span>{{ t('home.characterCount') }}</span>
         </div>
         <div class="stat">
-          <strong>{{ qibos.length }}+</strong>
+          <strong>{{ qibos.length }}</strong>
           <span>{{ t('home.qiboCount') }}</span>
         </div>
         <div class="stat">
-          <strong>30+</strong>
-          <span>{{ t('home.spiritCount') }}</span>
+          <strong>{{ items.length }}</strong>
+          <span>{{ t('home.itemCount') }}</span>
         </div>
       </div>
     </section>
@@ -49,7 +53,7 @@ const entries = [
       <h2>{{ t('home.modules') }}</h2>
       <div class="module-grid">
         <router-link v-for="e in entries" :key="e.to" :to="e.to" class="module-card">
-          <h3>{{ t(e.labelKey) }}</h3>
+          <h3>{{ e.label }}</h3>
           <p v-if="e.desc">{{ e.desc }}</p>
         </router-link>
       </div>
@@ -66,8 +70,14 @@ const entries = [
       </ul>
       <h3>{{ t('nav.qibo') }}</h3>
       <ul class="name-list">
-        <li v-for="item in qibos" :key="item.id">
-          <router-link :to="{ name: 'qibo-detail', params: { id: item.id } }">{{ item.name }}</router-link>
+        <li v-for="qibo in qibos" :key="qibo.id">
+          <router-link :to="{ name: 'qibo-detail', params: { id: qibo.id } }">{{ qibo.name }}</router-link>
+        </li>
+      </ul>
+      <h3>{{ t('nav.items') }}</h3>
+      <ul class="name-list">
+        <li v-for="src in itemSourceCatalog" :key="src.id">
+          <router-link :to="src.path">{{ src.name }}（{{ src.count }}）</router-link>
         </li>
       </ul>
     </section>
@@ -118,82 +128,72 @@ h1 {
 
 .intro {
   margin: 0 0 12px;
-  max-width: 52em;
   color: var(--c-text-muted);
+  line-height: 1.7;
 }
 
 .notice {
   margin: 0;
   font-size: 12px;
   color: var(--c-text-muted);
-  opacity: 0.85;
 }
 
 .stats,
 .modules,
 .catalog {
-  margin-top: 32px;
-  animation: rise 0.55s ease 0.08s both;
+  margin: 28px 0;
 }
 
 h2 {
   margin: 0 0 14px;
-  font-size: 16px;
-  color: var(--c-text);
+  font-size: 15px;
+  color: var(--c-accent-soft);
+}
+
+.stat-grid,
+.module-grid {
+  display: grid;
+  gap: 12px;
 }
 
 .stat-grid {
-  display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
 
-  @media (max-width: 479px) {
-    gap: 8px;
+  @media (max-width: 560px) {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
 .stat {
-  padding: 18px;
+  padding: 16px;
   border-radius: $radius-md;
   border: 1px solid var(--c-border);
   background: var(--c-surface);
-  text-align: center;
-  min-width: 0;
-
-  @media (max-width: 479px) {
-    padding: 12px 8px;
-  }
 
   strong {
     display: block;
-    font-size: clamp(18px, 5vw, 26px);
-    color: var(--c-accent);
+    font-size: 22px;
+    color: var(--c-star);
   }
 
   span {
-    color: var(--c-text-muted);
     font-size: 12px;
+    color: var(--c-text-muted);
   }
 }
 
 .module-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 160px), 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr));
 }
 
 .module-card {
-  display: block;
-  padding: 18px 16px;
+  padding: 16px;
   border-radius: $radius-md;
   border: 1px solid var(--c-border);
-  background: linear-gradient(160deg, rgba(14, 36, 52, 0.55), rgba(14, 36, 52, 0.2));
+  background: var(--c-surface);
   color: var(--c-text);
+  text-decoration: none;
   min-width: 0;
-  transition:
-    border-color 0.2s,
-    transform 0.2s,
-    box-shadow 0.2s;
 
   h3 {
     margin: 0 0 6px;
@@ -206,37 +206,22 @@ h2 {
     color: var(--c-text-muted);
   }
 
-  @media (hover: hover) and (pointer: fine) {
-    &:hover {
-      border-color: var(--c-accent);
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-glow);
-      color: var(--c-text);
-    }
-  }
-}
-
-@keyframes rise {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-  to {
-    opacity: 1;
-    transform: none;
+  &:hover {
+    border-color: var(--c-accent);
+    color: var(--c-text);
   }
 }
 
 .catalog-lead {
-  margin: 0 0 12px;
+  margin: 0 0 16px;
   color: var(--c-text-muted);
   font-size: 13px;
 }
 
 .catalog h3 {
   margin: 16px 0 8px;
-  font-size: 14px;
-  color: var(--c-accent-soft);
+  font-size: 13px;
+  color: var(--c-text);
 }
 
 .name-list {
@@ -246,14 +231,25 @@ h2 {
   margin: 0;
   padding: 0;
   list-style: none;
+  font-size: 13px;
 
   a {
-    color: var(--c-text);
-    font-size: 13px;
+    color: var(--c-accent-soft);
 
     &:hover {
       color: var(--c-accent);
     }
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
   }
 }
 </style>

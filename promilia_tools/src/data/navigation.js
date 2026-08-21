@@ -10,9 +10,14 @@ import {
   mdiCalculatorVariant,
   mdiCalendarStar,
   mdiCardsPlayingOutline,
+  mdiClipboardTextOutline,
   mdiCompass,
+  mdiCow,
+  mdiFish,
   mdiFood,
   mdiGamepadVariant,
+  mdiGrain,
+  mdiHammerWrench,
   mdiHandHeartOutline,
   mdiHeartOutline,
   mdiLeaf,
@@ -21,11 +26,41 @@ import {
   mdiPawOutline,
   mdiPuzzleOutline,
   mdiScriptTextOutline,
+  mdiSprout,
   mdiStorefrontOutline,
-  mdiSword,
   mdiTagOutline,
   mdiTrophyOutline,
+  mdiTshirtCrew,
 } from '@mdi/js'
+import { ALL_ITEMS_SOURCE_ID, itemSourceCatalog } from '@/data/items'
+
+const SOURCE_ICONS = {
+  bag: mdiBagPersonal,
+  shop: mdiStorefrontOutline,
+  food: mdiFood,
+  workshop: mdiHammerWrench,
+  textile: mdiTshirtCrew,
+  mill: mdiGrain,
+  ranch: mdiCow,
+  farm: mdiSprout,
+  fish: mdiFish,
+  leaf: mdiLeaf,
+  compass: mdiCompass,
+  heart: mdiHeartOutline,
+  star: mdiAutoFix,
+  quest: mdiClipboardTextOutline,
+  other: mdiBagPersonal,
+}
+
+function itemNavChildren() {
+  return itemSourceCatalog.map((src) => ({
+    id: `item-${src.id}`,
+    label: src.name,
+    labelKey: src.id === ALL_ITEMS_SOURCE_ID ? 'nav.items' : undefined,
+    path: src.path,
+    icon: SOURCE_ICONS[src.icon] || mdiBagPersonal,
+  }))
+}
 
 /**
  * 侧栏导航结构 —— 子模块可随时扩充
@@ -38,12 +73,7 @@ export const navSections = [
     children: [
       { id: 'characters', labelKey: 'nav.characters', path: '/encyclopedia/characters', icon: mdiAccountStar },
       { id: 'qibo', labelKey: 'nav.qibo', path: '/encyclopedia/qibo', icon: mdiPaw },
-      { id: 'gatherables', labelKey: 'nav.gatherables', path: '/encyclopedia/gatherables', icon: mdiLeaf },
-      { id: 'goods', labelKey: 'nav.goods', path: '/encyclopedia/goods', icon: mdiStorefrontOutline },
-      { id: 'spirit', labelKey: 'nav.spirit', path: '/encyclopedia/spirit', icon: mdiAutoFix },
-      { id: 'equipment', labelKey: 'nav.equipment', path: '/encyclopedia/equipment', icon: mdiSword },
-      { id: 'items', labelKey: 'nav.items', path: '/encyclopedia/items', icon: mdiBagPersonal },
-      { id: 'cuisine', labelKey: 'nav.cuisine', path: '/encyclopedia/cuisine', icon: mdiFood },
+      ...itemNavChildren(),
       { id: 'achievements', labelKey: 'nav.achievements', path: '/encyclopedia/achievements', icon: mdiTrophyOutline },
       { id: 'affixes', labelKey: 'nav.affixes', path: '/encyclopedia/affixes', icon: mdiTagOutline },
     ],

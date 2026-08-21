@@ -50,6 +50,24 @@ const routes = [
     meta: { titleKey: 'nav.qibo' },
   },
   {
+    path: '/encyclopedia/items',
+    name: 'items',
+    component: () => import('@/views/encyclopedia/ItemListView.vue'),
+    meta: { titleKey: 'nav.items' },
+  },
+  {
+    path: '/encyclopedia/obtain/:source',
+    name: 'item-source',
+    component: () => import('@/views/encyclopedia/ItemListView.vue'),
+    meta: { titleKey: 'nav.items' },
+  },
+  {
+    path: '/encyclopedia/item/:id',
+    name: 'item-detail',
+    component: () => import('@/views/encyclopedia/ItemDetailView.vue'),
+    meta: { titleKey: 'nav.items' },
+  },
+  {
     path: '/encyclopedia/:type',
     name: 'encyclopedia-placeholder',
     component: () => import('@/views/PlaceholderView.vue'),

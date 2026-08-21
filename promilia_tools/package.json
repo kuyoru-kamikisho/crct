@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "spider:qibo": "node scripts/kib-spider.js"
+    "spider:qibo": "node scripts/kib-spider.js",
+    "spider:items": "node scripts/item-spider.js"
   },
   "dependencies": {
     "@jamescoyle/vue-icon": "^0.1.2",

@@ -3,6 +3,7 @@ import { dirname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { buildSeo, INDEXABLE_STATIC_PATHS, PLACEHOLDER_PATHS } from '../src/seo/meta.js'
 import { CONFIGURED_SITE_URL } from '../src/seo/site.js'
+import { buildItemSourceCatalog } from '../src/data/itemSources.js'
 import zhCN from '../src/i18n/locales/zh-CN.js'
 
 function escapeAttr(text) {
@@ -158,6 +159,15 @@ async function loadQibos(root) {
   })
 }
 
+async function loadItems(root) {
+  const list = await loadDataModules(root, 'src/data/items')
+  return list.sort((a, b) => {
+    const rarityDiff = Number(b.rarity || 0) - Number(a.rarity || 0)
+    if (rarityDiff) return rarityDiff
+    return String(a.name).localeCompare(String(b.name), 'zh-CN')
+  })
+}
+
 function xmlEscape(text) {
   return String(text)
     .replace(/&/g, '&amp;')
@@ -242,6 +252,8 @@ export function seoPrerenderPlugin() {
 
       const characters = await loadCharacters(root)
       const qibos = await loadQibos(root)
+      const items = await loadItems(root)
+      const itemSources = buildItemSourceCatalog(items)
       const today = new Date().toISOString().slice(0, 10)
       const jobs = []
 
@@ -277,6 +289,28 @@ export function seoPrerenderPlugin() {
           noindex: false,
         })
       }
+      for (const source of itemSources.filter((src) => src.kind === 'source')) {
+        jobs.push({
+          path: source.path,
+          name: 'item-source',
+          itemSource: source,
+          changefreq: 'weekly',
+          priority: '0.7',
+          lastmod: today,
+          noindex: false,
+        })
+      }
+      for (const item of items) {
+        jobs.push({
+          path: `/encyclopedia/item/${item.id}`,
+          name: 'item-detail',
+          item,
+          changefreq: 'weekly',
+          priority: '0.75',
+          lastmod: today,
+          noindex: false,
+        })
+      }
       for (const path of PLACEHOLDER_PATHS) {
         jobs.push({
           path,
@@ -296,8 +330,12 @@ export function seoPrerenderPlugin() {
           messages: zhCN,
           character: job.character || null,
           qibo: job.qibo || null,
+          item: job.item || null,
+          itemSource: job.itemSource || null,
           characters,
           qibos,
+          items,
+          itemSources,
           noindex: job.noindex,
         })
         const html = injectHead(template, seo)
@@ -313,6 +351,8 @@ export function seoPrerenderPlugin() {
         messages: zhCN,
         characters,
         qibos,
+        items,
+        itemSources,
         noindex: true,
       })
       await writeFile(join(outDir, '404.html'), injectHead(template, notFoundSeo), 'utf8')

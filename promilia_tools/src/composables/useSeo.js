@@ -3,6 +3,7 @@ import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { characters, getCharacterById } from '@/data/characters'
 import { qibos, getQiboById } from '@/data/qibos'
+import { items, getItemById, getItemSource, itemSourceCatalog } from '@/data/items'
 import { buildSeo } from '@/seo/meta'
 import { DEFAULT_LOCALE, SITE_NAME, THEME_COLOR, getSiteUrl } from '@/seo/site'
 import { ogLocaleOf } from '@/i18n'
@@ -96,6 +97,9 @@ export function useSeo() {
       const character =
         route.name === 'character-detail' ? getCharacterById(route.params.id) : null
       const qibo = route.name === 'qibo-detail' ? getQiboById(route.params.id) : null
+      const item = route.name === 'item-detail' ? getItemById(route.params.id) : null
+      const itemSource =
+        route.name === 'item-source' ? getItemSource(route.params.source) : null
       const payload = buildSeo({
         path: route.path,
         routeName: route.name,
@@ -105,10 +109,16 @@ export function useSeo() {
         characters,
         qibo,
         qibos,
+        item,
+        items,
+        itemSource,
+        itemSources: itemSourceCatalog,
         noindex:
           Boolean(route.meta?.noindex) ||
           (route.name === 'character-detail' && !character) ||
-          (route.name === 'qibo-detail' && !qibo),
+          (route.name === 'qibo-detail' && !qibo) ||
+          (route.name === 'item-detail' && !item) ||
+          (route.name === 'item-source' && !itemSource),
       })
       applySeo(payload, getSiteUrl(), locale.value)
     },

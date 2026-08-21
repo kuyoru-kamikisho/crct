@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import SvgIcon from '@jamescoyle/vue-icon'
 import {
   mdiAccountStar,
+  mdiBagPersonal,
   mdiBookOpenPageVariant,
   mdiClose,
   mdiLightningBolt,
@@ -19,6 +20,7 @@ const KIND_ICONS = {
   character: mdiAccountStar,
   skill: mdiLightningBolt,
   qibo: mdiPaw,
+  item: mdiBagPersonal,
   page: mdiBookOpenPageVariant,
 }
 
@@ -46,6 +48,7 @@ const KIND_LABEL_KEYS = {
   character: 'search.character',
   skill: 'search.skill',
   qibo: 'search.qibo',
+  item: 'search.item',
   page: 'search.page',
 }
 

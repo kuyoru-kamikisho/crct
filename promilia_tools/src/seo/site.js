@@ -61,3 +61,7 @@ export function characterImagePath(id) {
 export function qiboImagePath(id) {
   return `/imgs/qibos/${id}.png`
 }
+
+export function itemImagePath(id) {
+  return `/imgs/items/${id}.png`
+}
