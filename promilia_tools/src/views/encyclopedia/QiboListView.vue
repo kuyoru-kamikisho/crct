@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import { qibos } from '@/data/qibos'
@@ -47,41 +47,6 @@ const filtered = computed(() => {
 function onPixelError(event) {
   event.target.style.display = 'none'
 }
-
-let revealRaf = 0
-let revealPointer = null
-
-function applyCardReveal() {
-  revealRaf = 0
-  const pointer = revealPointer
-  if (!pointer) return
-  const cards = pointer.grid.querySelectorAll('.card')
-  for (const card of cards) {
-    const rect = card.getBoundingClientRect()
-    card.style.setProperty('--mx', `${pointer.x - rect.left}px`)
-    card.style.setProperty('--my', `${pointer.y - rect.top}px`)
-  }
-}
-
-function onGridPointerMove(event) {
-  if (event.pointerType === 'touch') return
-  revealPointer = { x: event.clientX, y: event.clientY, grid: event.currentTarget }
-  if (!revealRaf) revealRaf = requestAnimationFrame(applyCardReveal)
-}
-
-function onGridPointerLeave() {
-  revealPointer = null
-  if (!revealRaf) return
-  cancelAnimationFrame(revealRaf)
-  revealRaf = 0
-}
-
-onUnmounted(() => {
-  revealPointer = null
-  if (!revealRaf) return
-  cancelAnimationFrame(revealRaf)
-  revealRaf = 0
-})
 </script>
 
 <template>
@@ -92,13 +57,9 @@ onUnmounted(() => {
       <input v-model="q" type="search" class="search" :placeholder="t('common.search')" />
     </header>
 
-    <div class="grid" @pointermove="onGridPointerMove" @pointerleave="onGridPointerLeave">
-      <router-link
-        v-for="item in filtered"
-        :key="item.id"
-        :to="{ name: 'qibo-detail', params: { id: item.id } }"
-        class="card"
-      >
+    <div class="grid">
+      <router-link v-for="item in filtered" :key="item.id" :to="{ name: 'qibo-detail', params: { id: item.id } }"
+        class="card">
         <div class="kibo-pixel">
           <img v-if="item.image" class="pixel" :src="item.image" :alt="item.name" width="96" height="96" loading="lazy"
             decoding="async" @error="onPixelError" />
@@ -180,83 +141,84 @@ onUnmounted(() => {
 }
 
 .grid {
-  position: relative;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 180px), 1fr));
   gap: 12px;
 }
 
 .card {
-  --mx: 50%;
-  --my: 50%;
-  isolation: isolate;
   min-width: 0;
   padding: 16px;
   position: relative;
+  overflow: hidden;
+  isolation: isolate;
   border-radius: $radius-md;
   border: 1px solid var(--c-border);
   background: var(--c-surface);
   color: var(--c-text);
   text-decoration: none;
+  transition:
+    transform 0.22s ease,
+    border-color 0.22s ease,
+    box-shadow 0.22s ease,
+    background 0.22s ease;
 
-  &::before,
-  &::after {
+  &::before {
     content: '';
     position: absolute;
     inset: 0;
-    border-radius: inherit;
+    z-index: 0;
     pointer-events: none;
+    background: linear-gradient(5deg,
+        color-mix(in srgb, var(--c-accent) 22%, transparent),
+        transparent 46%);
     opacity: 0;
     transition: opacity 0.22s ease;
   }
 
-  /* 悬浮卡片内部的淡白雾 */
-  &::before {
+  >* {
+    position: relative;
     z-index: 1;
-    background: radial-gradient(
-      190px circle at var(--mx) var(--my),
-      rgba(255, 255, 255, 0.16),
-      rgba(255, 255, 255, 0.05) 32%,
-      transparent 64%
-    );
   }
 
-  /* 灯光边框：邻近卡片也会被照到 */
-  &::after {
-    z-index: 2;
-    padding: 1px;
-    background: radial-gradient(
-      150px circle at var(--mx) var(--my),
-      color-mix(in srgb, #fff 90%, var(--c-accent)),
-      color-mix(in srgb, #fff 28%, var(--c-accent)) 28%,
-      transparent 64%
-    );
-    mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    mask-composite: exclude;
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
+  h2 {
+    transition: color 0.22s ease;
   }
 
-  &:hover {
-    color: var(--c-text);
+  @media (hover: hover) and (pointer: fine) {
+    &:hover {
+      z-index: 1;
+      color: var(--c-text);
+      transform: translateY(-4px);
+      border-color: var(--c-accent);
+      box-shadow:
+        var(--shadow-glow),
+        0 14px 28px color-mix(in srgb, var(--c-bg) 50%, transparent);
 
-    .pixel {
-      animation: pixelAnimation 1s steps(8) infinite;
+      &::before {
+        opacity: 1;
+      }
+
+      h2 {
+        color: var(--c-accent-soft);
+      }
+
+      .pixel {
+        animation: pixelAnimation 1s steps(8) infinite;
+      }
     }
   }
-}
 
-@media (hover: hover) and (pointer: fine) {
-  .grid:hover .card::after {
-    opacity: 1;
-  }
+  @media (prefers-reduced-motion: reduce) {
+    transition: border-color 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
 
-  .card:hover::before {
-    opacity: 1;
+    &:hover {
+      transform: none;
+
+      .pixel {
+        animation: none;
+      }
+    }
   }
 }
 
