@@ -1,0 +1,46 @@
+### GET with environment
+GET {{host}}/get
+Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+# @name createUser
+POST {{host}}/post
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "id": "{{$uuid}}",
+  "at": "{{$isoTimestamp}}"
+}
+
+### Query params on multiple lines
+GET {{host}}/get
+    ?foo=1
+    &bar=hello
+
+### HEAD
+HEAD {{host}}/get
+
+### SSE stream
+# @stream
+GET {{host}}/stream/5
+Accept: text/event-stream
+
+### Download file
+# @download
+GET {{host}}/image/png
+>> sample.png
+
+### GraphQL
+GRAPHQL https://countries.trevorblades.com/
+Content-Type: application/json
+
+{
+  "query": "{ continents { code name } }"
+}
+
+### WebSocket echo
+WEBSOCKET wss://echo.websocket.events
+
+hello from http_client
