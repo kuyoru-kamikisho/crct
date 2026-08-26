@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 
 import '../models/models.dart';
 import '../parser/http_highlighter.dart';
 import '../theme/app_theme.dart';
 import '../utils/helpers.dart';
+import '../utils/line_layout.dart';
 
 typedef RunLineCallback = void Function(int lineIndex);
 
@@ -96,8 +98,23 @@ class _HttpCodeEditorState extends State<HttpCodeEditor> {
   final ScrollController _gutterScroll = ScrollController();
   final FocusNode _focus = FocusNode();
 
-  static const double _lineHeight = 20;
-  static const double _fontSize = 13.5;
+  static const TextStyle _baseStyle = TextStyle(
+    fontFamily: kEditorFontFamily,
+    fontSize: kEditorFontSize,
+    height: kEditorLineHeight / kEditorFontSize,
+  );
+
+  static const StrutStyle _strut = StrutStyle(
+    fontFamily: kEditorFontFamily,
+    fontSize: kEditorFontSize,
+    height: kEditorLineHeight / kEditorFontSize,
+    forceStrutHeight: true,
+  );
+
+  List<double> _lineHeights = const [kEditorLineHeight];
+  String _measuredText = '';
+  double _measuredWidth = -1;
+  double _measuredScaler = -1;
 
   @override
   void initState() {
@@ -107,14 +124,82 @@ class _HttpCodeEditorState extends State<HttpCodeEditor> {
   }
 
   void _sync() {
-    if (_gutterScroll.hasClients &&
-        (_gutterScroll.offset - _textScroll.offset).abs() > 0.5) {
-      _gutterScroll.jumpTo(_textScroll.offset);
+    if (!_gutterScroll.hasClients || !_textScroll.hasClients) return;
+    final target = _textScroll.offset.clamp(
+      _gutterScroll.position.minScrollExtent,
+      _gutterScroll.position.maxScrollExtent,
+    );
+    if ((_gutterScroll.offset - target).abs() > 0.5) {
+      _gutterScroll.jumpTo(target);
     }
   }
 
   void _onChange() {
     if (mounted) setState(() {});
+  }
+
+  bool _sameHeights(List<double> a, List<double> b) {
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if ((a[i] - b[i]).abs() > 0.5) return false;
+    }
+    return true;
+  }
+
+  List<double> _heightsFor(String text, double maxWidth, TextScaler scaler) {
+    final sf = scaler.scale(kEditorFontSize);
+    if (text == _measuredText &&
+        (maxWidth - _measuredWidth).abs() < 0.5 &&
+        sf == _measuredScaler &&
+        _lineHeights.isNotEmpty) {
+      return _lineHeights;
+    }
+    _measuredText = text;
+    _measuredWidth = maxWidth;
+    _measuredScaler = sf;
+    _lineHeights = measureLogicalLineHeights(
+      text: text,
+      maxWidth: maxWidth,
+      style: _baseStyle,
+      strutStyle: _strut,
+      textScaler: scaler,
+    );
+    return _lineHeights;
+  }
+
+  /// 用实际 RenderEditable 的折行盒子校正 gutter 高度，避免测量与绘制不一致。
+  void _refineHeightsFromRender() {
+    final ro = _focus.context?.findRenderObject();
+    if (ro is! RenderEditable || !ro.hasSize) return;
+
+    final text = widget.controller.text;
+    final ranges = logicalLineRanges(text);
+    final maxOffset = text.length;
+    final heights = <double>[];
+
+    for (final r in ranges) {
+      final start = r.start.clamp(0, maxOffset);
+      final end = r.end.clamp(0, maxOffset);
+      final boxes = ro.getBoxesForSelection(
+        end > start
+            ? TextSelection(baseOffset: start, extentOffset: end)
+            : TextSelection.collapsed(offset: start),
+      );
+      if (boxes.isEmpty) {
+        heights.add(kEditorLineHeight);
+      } else {
+        final h = boxes.last.bottom - boxes.first.top;
+        heights.add(h < kEditorLineHeight ? kEditorLineHeight : h);
+      }
+    }
+
+    if (!_sameHeights(heights, _lineHeights)) {
+      setState(() {
+        _lineHeights = heights;
+        _measuredText = text;
+      });
+    }
+    _sync();
   }
 
   @override
@@ -137,124 +222,176 @@ class _HttpCodeEditorState extends State<HttpCodeEditor> {
       for (final r in widget.document.requests) r.requestLine,
     };
     final gutterW = 70.0 + (lineCount >= 1000 ? 10 : 0);
+    final scaler = MediaQuery.textScalerOf(context);
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _refineHeightsFromRender();
+    });
 
     return Container(
       color: colors.editorBg,
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          SizedBox(
-            width: gutterW,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                color: colors.gutterBg,
-                border: Border(right: BorderSide(color: colors.border)),
+      child: LayoutBuilder(
+        builder: (context, constraints) {
+          final textMaxWidth = (constraints.maxWidth -
+                  gutterW -
+                  kEditorContentPadding.horizontal)
+              .clamp(0.0, double.infinity);
+          final lineHeights = _heightsFor(text, textMaxWidth, scaler);
+
+          return Row(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SizedBox(
+                width: gutterW,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: colors.gutterBg,
+                    border: Border(right: BorderSide(color: colors.border)),
+                  ),
+                  child: ListView.builder(
+                    controller: _gutterScroll,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.only(
+                      bottom: kEditorContentPadding.bottom,
+                    ),
+                    itemCount: lineCount,
+                    itemExtentBuilder: (index, _) =>
+                        index < lineHeights.length
+                            ? lineHeights[index]
+                            : kEditorLineHeight,
+                    itemBuilder: (context, index) {
+                      final status = widget.lineStatus[index];
+                      final height = index < lineHeights.length
+                          ? lineHeights[index]
+                          : kEditorLineHeight;
+                      return _GutterLine(
+                        key: ValueKey('gutter-$index'),
+                        index: index,
+                        height: height,
+                        runnable: runnable.contains(index),
+                        status: status,
+                        colors: colors,
+                        onRun: () => widget.onRunLine(index),
+                      );
+                    },
+                  ),
+                ),
               ),
-              child: ListView.builder(
-                controller: _gutterScroll,
-                physics: const NeverScrollableScrollPhysics(),
-                padding: EdgeInsets.zero,
-                itemCount: lineCount,
-                itemExtent: _lineHeight,
-                itemBuilder: (context, index) {
-                  final status = widget.lineStatus[index];
-                  return SizedBox(
-                    height: _lineHeight,
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 22,
-                          child: runnable.contains(index)
-                              ? Tooltip(
-                                  message: '运行此请求',
-                                  child: Material(
-                                    color: Colors.transparent,
-                                    child: InkWell(
-                                      onTap: () => widget.onRunLine(index),
-                                      child: Icon(
-                                        Icons.play_arrow,
-                                        size: 16,
-                                        color: colors.play,
-                                      ),
-                                    ),
-                                  ),
-                                )
-                              : null,
-                        ),
-                        SizedBox(
-                          width: 14,
-                          child: status == null
-                              ? null
-                              : Icon(
-                                  switch (status) {
-                                    RequestRunStatus.running => Icons.hourglass_top,
-                                    RequestRunStatus.success => Icons.check_circle,
-                                    RequestRunStatus.failure => Icons.cancel,
-                                    RequestRunStatus.idle => Icons.circle_outlined,
-                                  },
-                                  size: 12,
-                                  color: switch (status) {
-                                    RequestRunStatus.success => colors.success,
-                                    RequestRunStatus.failure => colors.danger,
-                                    RequestRunStatus.running => colors.warning,
-                                    RequestRunStatus.idle => colors.dimText,
-                                  },
-                                ),
-                        ),
-                        Expanded(
-                          child: Text(
-                            '${index + 1}',
-                            textAlign: TextAlign.right,
-                            style: TextStyle(
-                              fontFamily: 'Consolas',
-                              fontSize: 12,
-                              height: _lineHeight / 12,
-                              color: colors.dimText,
+              Expanded(
+                child: TextField(
+                  controller: widget.controller,
+                  focusNode: _focus,
+                  scrollController: _textScroll,
+                  maxLines: null,
+                  expands: true,
+                  keyboardType: TextInputType.multiline,
+                  textAlignVertical: TextAlignVertical.top,
+                  style: _baseStyle.copyWith(color: colors.highlight.body),
+                  cursorColor: colors.accent,
+                  cursorWidth: 2,
+                  decoration: const InputDecoration(
+                    isCollapsed: true,
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    filled: false,
+                    contentPadding: kEditorContentPadding,
+                  ),
+                  strutStyle: _strut,
+                  inputFormatters: const [_TabToSpacesFormatter()],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+}
+
+class _GutterLine extends StatelessWidget {
+  const _GutterLine({
+    super.key,
+    required this.index,
+    required this.height,
+    required this.runnable,
+    required this.status,
+    required this.colors,
+    required this.onRun,
+  });
+
+  final int index;
+  final double height;
+  final bool runnable;
+  final RequestRunStatus? status;
+  final AppColors colors;
+  final VoidCallback onRun;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: height,
+      child: Align(
+        alignment: Alignment.topCenter,
+        child: SizedBox(
+          height: kEditorLineHeight,
+          child: Row(
+            children: [
+              SizedBox(
+                width: 22,
+                child: runnable
+                    ? Tooltip(
+                        message: '运行此请求',
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: onRun,
+                            child: Icon(
+                              Icons.play_arrow,
+                              size: 16,
+                              color: colors.play,
                             ),
                           ),
                         ),
-                        const SizedBox(width: 8),
-                      ],
-                    ),
-                  );
-                },
+                      )
+                    : null,
               ),
-            ),
+              SizedBox(
+                width: 14,
+                child: status == null
+                    ? null
+                    : Icon(
+                        switch (status!) {
+                          RequestRunStatus.running => Icons.hourglass_top,
+                          RequestRunStatus.success => Icons.check_circle,
+                          RequestRunStatus.failure => Icons.cancel,
+                          RequestRunStatus.idle => Icons.circle_outlined,
+                        },
+                        size: 12,
+                        color: switch (status!) {
+                          RequestRunStatus.success => colors.success,
+                          RequestRunStatus.failure => colors.danger,
+                          RequestRunStatus.running => colors.warning,
+                          RequestRunStatus.idle => colors.dimText,
+                        },
+                      ),
+              ),
+              Expanded(
+                child: Text(
+                  '${index + 1}',
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    fontFamily: kEditorFontFamily,
+                    fontSize: 12,
+                    height: kEditorLineHeight / 12,
+                    color: colors.dimText,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+            ],
           ),
-          Expanded(
-            child: TextField(
-              controller: widget.controller,
-              focusNode: _focus,
-              scrollController: _textScroll,
-              maxLines: null,
-              expands: true,
-              keyboardType: TextInputType.multiline,
-              textAlignVertical: TextAlignVertical.top,
-              style: TextStyle(
-                fontFamily: 'Consolas',
-                fontSize: _fontSize,
-                height: _lineHeight / _fontSize,
-                color: colors.highlight.body,
-              ),
-              cursorColor: colors.accent,
-              cursorWidth: 2,
-              decoration: const InputDecoration(
-                isCollapsed: true,
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                filled: false,
-                contentPadding: EdgeInsets.fromLTRB(12, 0, 12, 12),
-              ),
-              strutStyle: const StrutStyle(
-                fontSize: _fontSize,
-                height: _lineHeight / _fontSize,
-                forceStrutHeight: true,
-              ),
-              inputFormatters: const [_TabToSpacesFormatter()],
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
