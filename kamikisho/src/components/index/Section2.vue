@@ -43,6 +43,7 @@ export default {
               {name: "AGE动漫", link: "http://www.age.tv/", area: "g"},
               {name: "MX动漫", link: "https://www.mxdm6.fans/", area: "b"},
               {name: "咕咕番", link: "https://www.gugu3.com/", area: "g"},
+              {name: "樱之空", link: "https://skr.skr2.cc:666/", area: "g"},
               {name: "NyaFun", link: "https://www.nyafun.org/", area: "b"},
               {name: "樱花动漫", link: "https://www.yinhuadm.vip/", area: "b"},
               {name: "爱冻鳗", link: "https://girigirilove.top/", area: "r"},
