@@ -46,7 +46,7 @@ export default {
               {name: "樱之空", link: "https://skr.skr2.cc:666/", area: "g"},
               {name: "NyaFun", link: "https://www.nyafun.org/", area: "b"},
               {name: "樱花动漫", link: "https://www.yinhuadm.vip/", area: "b"},
-              {name: "爱冻鳗", link: "https://girigirilove.top/", area: "r"},
+              {name: "girigiri", link: "https://girigirilove.top/", area: "r"},
               {name: "omoFun", link: "https://www.omofun.in/", area: "b"},
               {name: "奇奇动漫", link: "https://www.qiqidongman.com/", area: "g"},
               {name: "Hanime1", link: "https://hanime1.me/", area: "r"},
