@@ -40,16 +40,17 @@
 
 <script>
 import info from '../../assets/index/text/info.txt?raw'
+import {mdiFacebook, mdiInstagram, mdiLinkedin, mdiTwitter} from '@mdi/js'
 
 export default {
   name: "Footer",
 
   data: () => ({
     icons: [
-      'mdi-facebook',
-      'mdi-twitter',
-      'mdi-linkedin',
-      'mdi-instagram',
+      mdiFacebook,
+      mdiTwitter,
+      mdiLinkedin,
+      mdiInstagram,
     ],
     info
   })

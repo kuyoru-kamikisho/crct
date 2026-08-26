@@ -1,40 +1,40 @@
 <template>
   <v-app id="app">
 
-    <CursorCollimator></CursorCollimator>
+    <CursorCollimator v-if="showCursor"></CursorCollimator>
 
     <Background></Background>
 
     <NavigationBar ref="Nav"></NavigationBar>
 
     <transition enter-active-class="k-animated bounceInRight" leave-active-class="k-animated bounceOutRight">
-      <S2Plugin v-show="this.$store.state.s2p"></S2Plugin>
+      <S2Plugin v-if="this.$store.state.s2p"></S2Plugin>
     </transition>
 
     <v-main>
 
       <transition enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
-        <HomePage v-show="this.$store.state.navbar[0]"></HomePage>
+        <HomePage v-if="this.$store.state.navbar[0]"></HomePage>
       </transition>
 
       <transition enter-active-class="k-animated k-fadeInDown" leave-active-class="k-animated k-fadeOutUp">
-        <Constrain v-show="this.$store.state.navbar[1]"></Constrain>
+        <Constrain v-if="this.$store.state.navbar[1]"></Constrain>
       </transition>
 
       <transition enter-active-class="animated fadeIn" leave-active-class="animated fadeOut">
-        <Price v-show="this.$store.state.navbar[2]"></Price>
+        <Price v-if="this.$store.state.navbar[2]"></Price>
       </transition>
 
       <transition enter-active-class="k-animated k-fadeInDown" leave-active-class="k-animated k-fadeOutUp">
-        <PreviousWorks v-show="this.$store.state.navbar[3]"></PreviousWorks>
+        <PreviousWorks v-if="this.$store.state.navbar[3]"></PreviousWorks>
       </transition>
 
       <transition enter-active-class="k-animated k-fadeInRight" leave-active-class="k-animated k-fadeOutRight">
-        <LoginPage v-show="this.$store.state.navbar[4]"></LoginPage>
+        <LoginPage v-if="this.$store.state.navbar[4]"></LoginPage>
       </transition>
 
       <transition enter-active-class="k-animated k-bounceInDown" leave-active-class="k-animated k-bounceOutUp">
-        <ExtraPage v-show="this.$store.state.homepageExtra"></ExtraPage>
+        <ExtraPage v-if="this.$store.state.homepageExtra"></ExtraPage>
       </transition>
 
     </v-main>
@@ -46,39 +46,28 @@
 
 <script>
 import "./assets/global/css-less/global.less"
-import "./assets/global/js-effects/sakura-float"
-// import "./assets/global/js-effects/click-blast.js"
 import NavigationBar from "@/components/index/NavigationBar.vue";
-import LoginPage from "@/components/index/LoginPage.vue";
-import SearchBar from "@/components/index/SearchBar.vue";
-import HomePage from "@/components/index/HomePage.vue";
 import ExtraPage from "@/components/index/ExtraPage.vue";
 import Background from "@/components/index/Background.vue";
-import S2Plugin from "@/components/index/S2-Plugin.vue";
-import Constrain from "@/components/index/ConstraintsInfo.vue"
-import Tamago from "@/components/index/Tamago.vue";
-import Price from "@/components/index/Price.vue";
-import PreviousWorks from "@/components/index/PreviousWorks.vue";
-import CursorCollimator from "@/components/global/CursorCollimator.vue";
 
 const app_main = {
   name: 'App',
   components: {
     NavigationBar,
-    LoginPage,
-    SearchBar,
-    HomePage,
     ExtraPage,
     Background,
-    S2Plugin,
-    Constrain,
-    Tamago,
-    Price,
-    PreviousWorks,
-    CursorCollimator
+    HomePage: () => import("@/components/index/HomePage.vue"),
+    LoginPage: () => import("@/components/index/LoginPage.vue"),
+    Constrain: () => import("@/components/index/ConstraintsInfo.vue"),
+    Tamago: () => import("@/components/index/Tamago.vue"),
+    Price: () => import("@/components/index/Price.vue"),
+    PreviousWorks: () => import("@/components/index/PreviousWorks.vue"),
+    S2Plugin: () => import("@/components/index/S2-Plugin.vue"),
+    CursorCollimator: () => import("@/components/global/CursorCollimator.vue"),
   },
   data: () => ({
     myInfo: "App.vue",
+    showCursor: false,
   }),
   methods: {
     /**
@@ -93,9 +82,26 @@ const app_main = {
         _this()
       }
     },
+    deferNonCritical() {
+      const idle = typeof requestIdleCallback === 'function'
+          ? (cb) => requestIdleCallback(cb, {timeout: 1800})
+          : (cb) => setTimeout(cb, 1)
+
+      idle(() => {
+        const motionOk = !window.matchMedia('(prefers-reduced-motion: reduce)').matches
+        const isPointerFine = window.matchMedia('(hover: hover) and (pointer: fine)').matches
+        if (motionOk) {
+          import("./assets/global/js-effects/sakura-float.js")
+        }
+        if (isPointerFine) {
+          this.showCursor = true
+        }
+      })
+    },
   },
   mounted() {
     document.addEventListener('keydown', (e) => this.hp(e))
+    this.deferNonCritical()
   }
 };
 
@@ -103,11 +109,6 @@ export default app_main
 </script>
 
 <style scoped lang="less">
-@font-face {
-  font-family: "汉仪文黑-85W";
-  src: url("assets/global/font-family/汉仪文黑-85W.TTF");
-}
-
 #app {
   font-family: sans-serif;
   -webkit-font-smoothing: antialiased;

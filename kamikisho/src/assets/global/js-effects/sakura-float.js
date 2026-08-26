@@ -163,5 +163,8 @@ window.onresize = function () {
 };
 
 img.onload = function () {
-    startSakura();
+    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    if (!reduceMotion && window.innerWidth >= 768) {
+        startSakura();
+    }
 };

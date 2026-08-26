@@ -14,13 +14,13 @@
         </v-tab>
         <v-tab @click="navCommit(1)">
           <v-icon color="purple accent-3">
-            mdi-language-xaml
+            {{ icons.languageXaml }}
           </v-icon>
           规则与流程
         </v-tab>
         <v-tab @click="navCommit(2)">
           <v-icon color="amber darken-1">
-            mdi-percent
+            {{ icons.percent }}
           </v-icon>
           定价
         </v-tab>
@@ -32,19 +32,16 @@
         </v-tab>
         <v-tab href="https://twitter.com/kuyoru_illust">
           <v-icon color="primary">
-            mdi-twitter
+            {{ icons.twitter }}
           </v-icon>
           Twitter
-        </v-tab>
-        <v-tab href="https://bcy.net/u/1477268">
-          半次元
         </v-tab>
         <v-tab href="https://space.bilibili.com/85638760">
           Bilibili
         </v-tab>
         <v-tab @click="navCommit(4)">
           <v-icon color="red accent-3">
-            mdi-coffee
+            {{ icons.coffee }}
           </v-icon>
           排单
         </v-tab>
@@ -54,10 +51,18 @@
 </template>
 
 <script>
+import {mdiCoffee, mdiLanguageXaml, mdiPercent, mdiTwitter} from '@mdi/js'
+
 export default {
   name: 'NavigationBar',
   data: () => ({
     myInfo: "NavigationBar.vue",
+    icons: {
+      languageXaml: mdiLanguageXaml,
+      percent: mdiPercent,
+      twitter: mdiTwitter,
+      coffee: mdiCoffee,
+    },
   }),
   methods: {
     navCommit(n) {

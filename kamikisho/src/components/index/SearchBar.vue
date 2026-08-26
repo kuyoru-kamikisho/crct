@@ -44,6 +44,7 @@ import baidu from '../../assets/index/homepage/baidu.svg'
 import google from '../../assets/index/homepage/google.svg'
 import bilibili from '../../assets/index/homepage/BILIBILI_LOGO.svg'
 import cross from '../../assets/index/homepage/cross.svg'
+import {mdiCached, mdiMagnify} from '@mdi/js'
 
 export default {
   name: "HomePage",
@@ -74,9 +75,9 @@ export default {
         title: "Baidu",
         redirect: "https://www.baidu.com/s?wd=",
         icon: baidu,
-        prependicon: "mdi-magnify",
+        prependicon: mdiMagnify,
         text: "百度一下",
-        appendoutericon: "mdi-cached",
+        appendoutericon: mdiCached,
         background: "transparent",
         color: "red",
         type: "search",
@@ -87,8 +88,8 @@ export default {
         type: "search",
         title: "Google",
         redirect: "https://www.google.com/search?q=",
-        prependicon: "mdi-magnify",
-        appendoutericon: "mdi-cached",
+        prependicon: mdiMagnify,
+        appendoutericon: mdiCached,
         text: "谷歌搜索",
         color: "red",
         background: "transparent",
@@ -99,11 +100,11 @@ export default {
         title: "bilibili",
         redirect: "https://search.bilibili.com/all?keyword=",
         icon: bilibili,
-        appendoutericon: "mdi-cached",
+        appendoutericon: mdiCached,
         text: "哔哩哔哩",
         background: "transparent",
         color: "red",
-        prependicon: "mdi-magnify",
+        prependicon: mdiMagnify,
         type: "search"
       },
     ],
@@ -175,7 +176,7 @@ export default {
 
 <style scoped lang="less">
 .inputer {
-  font-family: "汉仪文黑-85W", sans-serif;
+  font-family: "PingFang SC", "HarmonyOS Sans", "Microsoft YaHei", sans-serif;
   letter-spacing: 1.21rem;
 
   &::placeholder {
@@ -187,7 +188,7 @@ export default {
 }
 
 input[type="search"] {
-  font-family: "汉仪文黑-85W", sans-serif;
+  font-family: "PingFang SC", "HarmonyOS Sans", "Microsoft YaHei", sans-serif;
   letter-spacing: 1.6rem;
 }
 

@@ -25,9 +25,9 @@
 
         <v-text-field
             class="pb-4"
-            prepend-inner-icon="mdi-lumx"
+            :prepend-inner-icon="icons.lumx"
             background-color="transparent"
-            clear-icon="mdi-close"
+            :clear-icon="icons.close"
             counter
             maxlength="6"
             clearable
@@ -41,9 +41,9 @@
 
         <v-text-field
             class="pb-4"
-            prepend-inner-icon="mdi-lumx"
+            :prepend-inner-icon="icons.lumx"
             background-color="transparent"
-            clear-icon="mdi-close"
+            :clear-icon="icons.close"
             clearable
             color="light-blue darken-3"
             hide-details="auto"
@@ -80,9 +80,9 @@
 
         <v-text-field
             class="pb-4"
-            prepend-inner-icon="mdi-pen-minus"
+            :prepend-inner-icon="icons.penMinus"
             background-color="transparent"
-            clear-icon="mdi-close"
+            :clear-icon="icons.close"
             clearable
             color="light-blue darken-3"
             hide-details="auto"
@@ -94,9 +94,9 @@
 
         <v-text-field
             class="pb-4"
-            prepend-inner-icon="mdi-lock-check"
+            :prepend-inner-icon="icons.lockCheck"
             background-color="transparent"
-            clear-icon="mdi-close"
+            :clear-icon="icons.close"
             clearable
             color="deep-purple lighten-1"
             hide-details="auto"
@@ -108,9 +108,9 @@
 
         <v-text-field
             class="pb-4"
-            prepend-inner-icon="mdi-lock-pattern"
+            :prepend-inner-icon="icons.lockPattern"
             background-color="transparent"
-            clear-icon="mdi-close"
+            :clear-icon="icons.close"
             clearable
             color="green"
             hide-details="auto"
@@ -122,9 +122,9 @@
 
         <v-text-field
             class="pb-4"
-            prepend-inner-icon="mdi-gmail"
+            :prepend-inner-icon="icons.gmail"
             background-color="transparent"
-            clear-icon="mdi-close"
+            :clear-icon="icons.close"
             clearable
             color="orange darken-2"
             hide-details="auto"
@@ -136,9 +136,9 @@
 
         <v-text-field
             class="pb-4"
-            prepend-inner-icon="mdi-file-document-edit-outline"
+            :prepend-inner-icon="icons.fileDocument"
             background-color="transparent"
-            clear-icon="mdi-close"
+            :clear-icon="icons.close"
             clearable
             color="purple lighten-1"
             hide-details="auto"
@@ -150,9 +150,9 @@
 
         <v-text-field
             class="pb-4"
-            prepend-inner-icon="mdi-calendar-clock"
+            :prepend-inner-icon="icons.calendarClock"
             background-color="transparent"
-            clear-icon="mdi-close"
+            :clear-icon="icons.close"
             clearable
             color="green darken-3"
             hide-details="auto"
@@ -164,7 +164,7 @@
 
         <v-select
             background-color="transparent"
-            prepend-inner-icon="mdi-drag-variant"
+            :prepend-inner-icon="icons.dragVariant"
             color="black"
             label="选择您的约稿类型"
             type="radio"
@@ -177,7 +177,7 @@
 
         <v-select
             background-color="transparent"
-            prepend-inner-icon="mdi-drag-variant"
+            :prepend-inner-icon="icons.dragVariant"
             color="black"
             label="是否需要背景"
             type="radio"
@@ -190,7 +190,7 @@
 
         <v-select
             background-color="transparent"
-            prepend-inner-icon="mdi-drag-variant"
+            :prepend-inner-icon="icons.dragVariant"
             color="indigo darken-3"
             label="您的预算（CNY）"
             type="radio"
@@ -202,7 +202,7 @@
 
         <v-select
             background-color="transparent"
-            prepend-inner-icon="mdi-drag-variant"
+            :prepend-inner-icon="icons.dragVariant"
             color="indigo darken-3"
             label="您将授权画师以何种发布权限"
             type="radio"
@@ -215,7 +215,7 @@
 
         <v-select
             background-color="transparent"
-            prepend-inner-icon="mdi-drag-variant"
+            :prepend-inner-icon="icons.dragVariant"
             color="indigo darken-3"
             label="发布时的打码状况（如果允许发布）"
             type="radio"
@@ -227,7 +227,7 @@
 
         <v-select
             background-color="transparent"
-            prepend-inner-icon="mdi-drag-variant"
+            :prepend-inner-icon="icons.dragVariant"
             color="indigo darken-3"
             label="您期望使用哪种汇款方式"
             type="radio"
@@ -241,7 +241,7 @@
 
         <v-select
             background-color="transparent"
-            prepend-inner-icon="mdi-drag-variant"
+            :prepend-inner-icon="icons.dragVariant"
             color="purple"
             label="最终交付时您希望得到的图像格式："
             type="radio"
@@ -257,7 +257,7 @@
         <v-textarea
             v-model="registerData.comments"
             type="text"
-            prepend-inner-icon="mdi-archive-edit-outline"
+            :prepend-inner-icon="icons.archiveEdit"
             label="备注/绘制要求"
             counter
             maxlength="2000"
@@ -303,6 +303,7 @@
 
 <script>
 import axios from "axios";
+import {mdiArchiveEditOutline, mdiCalendarClock, mdiClose, mdiDragVariant, mdiFileDocumentEditOutline, mdiGmail, mdiLockCheck, mdiLockPattern, mdiLumx, mdiPenMinus} from '@mdi/js'
 
 export default {
   name: "LoginPage",
@@ -314,6 +315,18 @@ export default {
     valid1: true,
     valid2: true,
     know:true,
+    icons: {
+      lumx: mdiLumx,
+      close: mdiClose,
+      penMinus: mdiPenMinus,
+      lockCheck: mdiLockCheck,
+      lockPattern: mdiLockPattern,
+      gmail: mdiGmail,
+      fileDocument: mdiFileDocumentEditOutline,
+      calendarClock: mdiCalendarClock,
+      dragVariant: mdiDragVariant,
+      archiveEdit: mdiArchiveEditOutline,
+    },
 
     transactionTypes: [
       {type: '插画', abbr: 'Illustration'},
@@ -471,6 +484,10 @@ export default {
   }
 }
 </script>
+
+<style>
+@import "../../assets/global/css-less/font.less";
+</style>
 
 <style scoped>
 @keyframes img-moving {

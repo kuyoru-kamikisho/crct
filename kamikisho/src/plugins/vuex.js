@@ -3,15 +3,24 @@ import Vuex from "vuex";
 
 Vue.use(Vuex)
 
+const extraOn = (() => {
+    try {
+        const kHome = localStorage.getItem('k_home')
+        return kHome === 'on' || kHome === null
+    } catch (e) {
+        return true
+    }
+})()
+
 const store = new Vuex.Store({
     state: {
         displayRegister: true,
         displayLogin: false,
 
-        navbar: [true, false, false, false, false],
+        navbar: extraOn ? [false, false, false, false, false] : [true, false, false, false, false],
         tem: 0,
 
-        homepageExtra: false,
+        homepageExtra: extraOn,
 
         s2p: false,
 

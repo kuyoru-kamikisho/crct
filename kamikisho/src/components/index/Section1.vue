@@ -22,7 +22,7 @@
               class="font-weight-bold k-btn-text"
               @click="rule"
           >
-            <v-icon class="mr-2">mdi-cart-arrow-down</v-icon>
+            <v-icon class="mr-2">{{ icons.cart }}</v-icon>
             查看规则
           </v-btn>
         </v-col>
@@ -35,7 +35,7 @@
                  color="#d2d5e1"
                  @click="query"
           >
-            <v-icon class="mr-2">mdi-speedometer</v-icon>
+            <v-icon class="mr-2">{{ icons.speedometer }}</v-icon>
             查询进度
           </v-btn>
         </v-col>
@@ -46,7 +46,7 @@
               block
               dark
               class="font-weight-bold k-btn-text">
-            <v-icon class="mr-2">mdi-github</v-icon>
+            <v-icon class="mr-2">{{ icons.github }}</v-icon>
             GITHUB
           </v-btn>
         </v-col>
@@ -56,8 +56,17 @@
 </template>
 
 <script>
+import {mdiCartArrowDown, mdiGithub, mdiSpeedometer} from '@mdi/js'
+
 export default {
   name: "Section1",
+  data: () => ({
+    icons: {
+      cart: mdiCartArrowDown,
+      speedometer: mdiSpeedometer,
+      github: mdiGithub,
+    },
+  }),
   methods: {
     rule() {
       this.$store.commit({

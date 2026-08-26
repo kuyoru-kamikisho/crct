@@ -8,7 +8,7 @@
         <v-btn text tile class="k-absolute-force k-right-0 k-top-0"
                @click="tamago">
           <span class="green--text">离开此地</span>
-          <v-icon color="green">mdi-exit-run</v-icon>
+          <v-icon color="green">{{ icons.exitRun }}</v-icon>
         </v-btn>
 
         <v-card-title>
@@ -24,7 +24,7 @@
               <v-btn v-bind="attrs" v-on="on" dark fab class="k-btn ma-4 "
                      @click="key(t.s)">
                 <v-icon class="k-key" :color="t.c">
-                  mdi-key-outline
+                  {{ icons.keyOutline }}
                 </v-icon>
               </v-btn>
             </template>
@@ -74,6 +74,7 @@
 
 <script>
 import axios from "axios";
+import {mdiCardMultipleOutline, mdiCheckAll, mdiExitRun, mdiKeyOutline} from '@mdi/js'
 
 let Vtamago = {
   name: "Tamago",
@@ -93,12 +94,16 @@ let Vtamago = {
     btntext: '交付文书',
     interval: null,
     resp: '破碎的钥匙仿若阳光下熠熠生辉的金砂一般漂浮在上空',
-    clipicon: 'mdi-card-multiple-outline',
-    clipsuccess: 'mdi-check-all',
+    clipicon: mdiCardMultipleOutline,
+    clipsuccess: mdiCheckAll,
     clipbtnclass: 'k-clipboard',
     clipbtncolor: '',
     snackbar: false,
-    isKeyClick: false
+    isKeyClick: false,
+    icons: {
+      exitRun: mdiExitRun,
+      keyOutline: mdiKeyOutline,
+    },
   }),
 
   methods: {
@@ -107,7 +112,7 @@ let Vtamago = {
       clearInterval(this.$data.interval)
     },
     clipwrite() {
-      let temp = 'mdi-card-multiple-outline'
+      let temp = mdiCardMultipleOutline
       let text = this.$data.resp;
       if (navigator.clipboard) {
         navigator.clipboard.writeText(text);
@@ -179,6 +184,10 @@ let Vtamago = {
 }
 export default Vtamago
 </script>
+
+<style>
+@import "../../assets/global/css-less/font.less";
+</style>
 
 <style scoped lang="less">
 .k-clipboard {

@@ -4,7 +4,7 @@
       <a :href="pdf" download>
         <v-btn absolute class="k-left-0 k-top-0 yellow--text text--lighten-4" left top dark tile>
           <v-icon>
-            mdi-download-outline
+            {{ downloadIcon }}
           </v-icon>
           点击此处下载本文档（PDF版）
         </v-btn>
@@ -142,15 +142,21 @@
 
 <script>
 import pdf from '../../assets/todown/README.pdf'
+import {mdiDownloadOutline} from '@mdi/js'
 
 export default {
   name: "ConstraintsInfo",
 
   data: () => ({
-    pdf
+    pdf,
+    downloadIcon: mdiDownloadOutline,
   })
 }
 </script>
+
+<style>
+@import "../../assets/global/css-less/font.less";
+</style>
 
 <style scoped lang="less">
 .k-at{

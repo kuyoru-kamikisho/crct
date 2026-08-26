@@ -3,7 +3,6 @@
     <div id="v" v-if="load">
       <canvas ref="cav" id="cav" class="k-fixed k-x-transform-center k-element-penetrate"></canvas>
       <div class="k-fixed k-black-cover"></div>
-      <img class="k-fixed k-left-0 k-top-0 k-opacity-70 k-img-cov" :src="cover">
     </div>
     <div id="p" v-if="!load">
       <!-- color="#252426" 如果需要追加视频为背景则添加该属性 -->
@@ -18,15 +17,13 @@
 </template>
 
 <script>
-import cover from '../../assets/index/homepage/bg_cover.png'
-import huttsky from '../../assets/index/background/huttsky.png'
+import huttsky from '../../assets/index/background/huttsky.webp'
 import huttskyInfo from '../../assets/index/background/info/huttsky.txt?raw'
 import huttsky64 from '../../assets/index/background/huttsky-64.png'
 
 export default {
   name: "Background",
   data: () => ({
-    cover,
     huttsky,
     huttsky64,
     huttskyInfo,

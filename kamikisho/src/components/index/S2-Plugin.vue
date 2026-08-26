@@ -21,6 +21,10 @@ export default {
 }
 </script>
 
+<style>
+@import "../../assets/global/css-less/font.less";
+</style>
+
 <style scoped lang="less">
 p.k-dec-p2.k-absolute {
   left: 38px;
