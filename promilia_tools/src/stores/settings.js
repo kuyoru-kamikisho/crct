@@ -6,16 +6,16 @@ import { htmlLangOf, resolveInitialLocale } from '@/i18n'
 const THEMES = ['azure', 'dusk', 'aurora', 'stardust']
 
 const CURSOR_PRESETS = [
-  '#7ed4c0',
-  '#3ecfcf',
-  '#e8c97a',
-  '#e89ab0',
-  '#4cdb8a',
+  '#3e61d3',
   '#8aa4f0',
-  '#f0a060',
   '#c0a0f0',
-  '#60d0f0',
-  '#f080a0',
+  '#3ecfcf',
+  '#7deed4',
+  '#4cdb8a',
+  '#ece24d',
+  '#e89ab0',
+  '#f34979',
+  '#83827f',
 ]
 
 function randomHex() {
@@ -44,7 +44,7 @@ export const useSettingsStore = defineStore('settings', {
     locale: resolveInitialLocale(),
     theme: storageGet('theme', 'stardust'),
     cursorEnabled: storageGet('cursorEnabled', true),
-    cursorColor: storageGet('cursorColor', '#7ed4c0'),
+    cursorColor: storageGet('cursorColor', CURSOR_PRESETS[0]),
     sidebarCollapsed: storageGet('sidebarCollapsed', false),
     isNarrow: typeof window !== 'undefined' && window.matchMedia(MQ_NARROW).matches,
     mobileNavOpen: false,
