@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { storageGet, storageSet } from '@/utils/storage'
 import { MQ_NARROW } from '@/utils/breakpoints'
-import { htmlLangOf } from '@/i18n'
+import { htmlLangOf, resolveInitialLocale } from '@/i18n'
 
 const THEMES = ['azure', 'dusk', 'aurora', 'stardust']
 
@@ -41,8 +41,8 @@ function hslToHex(h, s, l) {
 
 export const useSettingsStore = defineStore('settings', {
   state: () => ({
-    locale: storageGet('locale', 'zh-CN'),
-    theme: storageGet('theme', 'azure'),
+    locale: resolveInitialLocale(),
+    theme: storageGet('theme', 'stardust'),
     cursorEnabled: storageGet('cursorEnabled', true),
     cursorColor: storageGet('cursorColor', '#7ed4c0'),
     sidebarCollapsed: storageGet('sidebarCollapsed', false),

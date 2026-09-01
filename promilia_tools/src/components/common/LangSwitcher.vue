@@ -1,10 +1,23 @@
 <script setup>
-defineProps({
+import { onMounted } from 'vue'
+import { detectBrowserLocale } from '@/i18n'
+import { storageGet } from '@/utils/storage'
+
+const props = defineProps({
   locales: { type: Object, required: true },
   modelValue: { type: String, required: true },
 })
 
 const emit = defineEmits(['update:modelValue'])
+
+onMounted(() => {
+  // 用户已手动选过语言则尊重偏好；否则按浏览器首选语言自动切换
+  if (storageGet('locale', null)) return
+  const detected = detectBrowserLocale(props.locales)
+  if (detected && detected !== props.modelValue) {
+    emit('update:modelValue', detected)
+  }
+})
 </script>
 
 <template>

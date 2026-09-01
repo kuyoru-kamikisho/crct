@@ -43,7 +43,43 @@ export function ogLocaleOf(code) {
   return 'en_US'
 }
 
-const initial = storageGet('locale', 'zh-CN')
+/**
+ * 按浏览器首选语言匹配已支持的 locale。
+ * 优先精确匹配（zh-CN），再按语言前缀匹配（zh → zh-CN、en-GB → en-US）。
+ * @param {Record<string, unknown>} [locales]
+ */
+export function detectBrowserLocale(locales = SUPPORTED_LOCALES) {
+  const codes = Object.keys(locales)
+  const fallback = codes.includes('zh-CN') ? 'zh-CN' : codes[0]
+  if (typeof navigator === 'undefined' || !codes.length) return fallback
+
+  const candidates = [
+    ...(Array.isArray(navigator.languages) ? navigator.languages : []),
+    navigator.language,
+  ].filter(Boolean)
+
+  for (const raw of candidates) {
+    const tag = String(raw).replace(/_/g, '-')
+    const lower = tag.toLowerCase()
+    const exact = codes.find((c) => c.toLowerCase() === lower)
+    if (exact) return exact
+    const prefix = lower.split('-')[0]
+    const fuzzy = codes.find(
+      (c) => c.toLowerCase() === prefix || c.toLowerCase().startsWith(`${prefix}-`),
+    )
+    if (fuzzy) return fuzzy
+  }
+  return fallback
+}
+
+/** 已保存的偏好优先；否则跟随浏览器首选语言。 */
+export function resolveInitialLocale() {
+  const stored = storageGet('locale', null)
+  if (stored && stored in SUPPORTED_LOCALES) return stored
+  return detectBrowserLocale()
+}
+
+const initial = resolveInitialLocale()
 
 export const i18n = createI18n({
   legacy: false,
