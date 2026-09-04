@@ -1,32 +1,16 @@
 <template>
   <div id="home">
-    <div id="v" v-if="load">
-      <canvas ref="cav" id="cav" class="k-fixed k-x-transform-center k-element-penetrate"></canvas>
-      <div class="k-fixed k-black-cover"></div>
-    </div>
-    <div id="p" v-if="!load">
-      <!-- color="#252426" 如果需要追加视频为背景则添加该属性 -->
-      <v-sheet width="100%" height="100%" class="k-fixed"></v-sheet>
-    </div>
-    <div id="i" class="k-fixed">
-      <v-img gradient="to bottom, rgba(100, 115, 201, 0.13), rgba(25, 32, 72, 0.7)" width="100vw" min-height="100vh"
-             :src="huttsky" :lazy-src="huttsky64"></v-img>
-    </div>
-    <p v-html="huttskyInfo" class="k-fixed k-img-info"></p>
+    <video autoplay loop muted class="k-img-cov">
+      <source src="@/assets/index/video/ngnl-shuubi.mp4" type="video/webm" />
+    </video>
+    <div class="k-black-cover"></div>
   </div>
 </template>
 
 <script>
-import huttsky from '../../assets/index/background/huttsky.webp'
-import huttskyInfo from '../../assets/index/background/info/huttsky.txt?raw'
-import huttsky64 from '../../assets/index/background/huttsky-64.png'
-
 export default {
   name: "Background",
   data: () => ({
-    huttsky,
-    huttsky64,
-    huttskyInfo,
     load: false
   }),
   methods: {
@@ -45,27 +29,28 @@ export default {
 </script>
 
 <style scoped lang="less">
+#home {
+  position: relative;
+}
+
 .k-img-cov {
-  width: auto;
-  height: 100%;
   min-width: 100%;
   min-height: 100%;
-  transform: translate(0);
-  -webkit-transition: opacity .3s ease;
-  transition: opacity .3s ease;
-  filter: brightness(30%);
+  object-fit: contain;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 0;
 }
 
 .k-black-cover {
-  background-color: rgba(0, 0, 0, 0.85);
-  width: 100%;
-  height: 100vh;
-}
-
-.k-img-info {
-  left: 2rem;
-  bottom: .6rem;
-  color: rgba(255, 255, 255, 0.45);
-  font-size: 12px;
+  background-color: rgba(0, 0, 0, 0.7);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
 }
 </style>

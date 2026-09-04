@@ -59,9 +59,9 @@ export default {
         case 'md':
           return 6 // 960-1264
         case 'lg':
-          return 6 // 1264-1904
+          return 6 // 1264-1700
         case 'xl':
-          return 5 // > 1904
+          return 5 // > 1700
       }
     },
   },

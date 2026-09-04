@@ -1,11 +1,8 @@
 <template>
-  <v-container
-      v-touch="{
-    right:rt,
-    left:lt,
-      }"
-      class="k-absolute k-x-transform-center k-container-ex"
-  >
+  <v-container v-touch="{
+    right: rt,
+    left: lt,
+  }" class="k-absolute k-x-transform-center k-container-ex">
     <SearchBar></SearchBar>
     <Section2></Section2>
   </v-container>
@@ -17,7 +14,7 @@ import Section2 from "@/components/index/Section2.vue";
 
 export default {
   name: "ExtraPage",
-  components:{
+  components: {
     SearchBar,
     Section2,
   },
@@ -35,8 +32,14 @@ export default {
 </script>
 
 <style scoped lang="less">
-.k-container-ex{
+.k-container-ex {
   padding: 42px 0 32px 0;
   background-color: transparent;
+}
+
+@media (min-width: 1904px) {
+  .k-container-ex {
+    max-width: 1700px;
+  }
 }
 </style>

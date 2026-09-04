@@ -31,8 +31,8 @@ export default {
      * xs--[0,600]
      * sm--[600,960]
      * md--[960,1264]
-     * lg--[1264,1904]
-     * xl--[1904,--]
+     * lg--[1264,1700]
+     * xl--[1700,--]
      * @return {number} pixels of width responsively
      */
     screenType() {

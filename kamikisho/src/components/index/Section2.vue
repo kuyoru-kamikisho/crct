@@ -21,7 +21,6 @@
         </a>
       </v-sheet>
     </v-sheet>
-
   </section>
 </template>
 

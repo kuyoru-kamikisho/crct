@@ -1,7 +1,6 @@
 <template>
   <div id="NavigationBar">
-    <v-app-bar short class="px-4" tile app clipped-left hide-on-scroll fixed fade-img-on-scroll
-      color="rgb(242 243 245 / 92%)">
+    <v-app-bar short class="px-4" tile app clipped-left fade-img-on-scroll dark color="rgb(31 30 33 / 92%)">
 
       <v-app-bar-nav-icon @click="homepageExCommit">
         <img class="k-nav-icon k-absolute k-cursor-pointer k-nav-img k-z-index-1"
@@ -47,15 +46,20 @@
         </v-tab>
       </v-tabs>
     </v-app-bar>
+    <div v-if="isOldDomain" class="link-tip">
+      <span>注意：本网站计划于2026年9月24日之后迁移至 </span>
+      <a href="https://anime.kuyoru.top/">https://anime.kuyoru.top/</a>
+    </div>
   </div>
 </template>
 
 <script>
-import {mdiCoffee, mdiLanguageXaml, mdiPercent, mdiTwitter} from '@mdi/js'
+import { mdiCoffee, mdiLanguageXaml, mdiPercent, mdiTwitter } from '@mdi/js'
 
 export default {
   name: 'NavigationBar',
   data: () => ({
+    isOldDomain: location.host === 'anime.kuyoru.com',
     myInfo: "NavigationBar.vue",
     icons: {
       languageXaml: mdiLanguageXaml,
@@ -96,7 +100,7 @@ export default {
         type: "homepageInit",
         k_home: true
       })
-      if(!k_home)localStorage.setItem('k_home', 'on')
+      if (!k_home) localStorage.setItem('k_home', 'on')
     } else {
       this.$store.commit({
         type: "homepageInit",
@@ -108,6 +112,10 @@ export default {
 </script>
 
 <style scoped lang="less">
+#NavigationBar {
+  position: relative;
+}
+
 .k-nav-icon {
   transform: translateX(48px);
   transition: clip-path .4s ease;
@@ -148,5 +156,23 @@ export default {
 
 .k-nav-img {
   width: 142px;
+}
+
+.link-tip {
+  color: white;
+  position: absolute;
+  top: 56px;
+  left: 0;
+  padding: 6px 0;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(0, 0, 0, .5);
+
+  a {
+    text-decoration: underline;
+    color: currentColor;
+  }
 }
 </style>
