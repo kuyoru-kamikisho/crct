@@ -86,6 +86,12 @@ const routes = [
     meta: { titleKey: 'nav.story', noindex: true },
   },
   {
+    path: '/tools/rank',
+    name: 'character-rank',
+    component: () => import('@/views/tools/CharacterRankView.vue'),
+    meta: { titleKey: 'nav.characterRank' },
+  },
+  {
     path: '/tools/:type',
     name: 'tools',
     component: () => import('@/views/PlaceholderView.vue'),

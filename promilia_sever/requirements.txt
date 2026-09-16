@@ -1,0 +1,2 @@
+# Python 3.9+ 标准库即可，无需 pip 安装。
+# 启动：python app.py

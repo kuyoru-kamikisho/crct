@@ -393,6 +393,14 @@ ${effects ? `<h2>${escapeHtml(m.item.effects)}</h2><ul>${effects}</ul>` : ''}
     crumbs.push({ name: m.nav.contribute, path: '/contribute' })
     noscriptBody = `<h1>${escapeHtml(m.contribute.title)}</h1>
 <p>${escapeHtml(m.contribute.howToDesc)}</p>`
+  } else if (routeName === 'character-rank' || path === '/tools/rank') {
+    title = m.seo.rankTitle || `${m.nav.characterRank || m.nav.tools}｜${suffix}`
+    description = m.seo.rankDescription || m.seo.homeDescription
+    keywords = m.seo.rankKeywords || m.seo.homeKeywords
+    crumbs.push({ name: m.nav.characterRank || m.nav.tools, path: '/tools/rank' })
+    noscriptBody = `<h1>${escapeHtml(m.rank?.title || m.nav.characterRank || '')}</h1>
+<p>${escapeHtml(m.rank?.hint || '')}</p>
+<p>${escapeHtml(m.rank?.ruleDaily || '')}</p>`
   } else if (routeName === 'not-found') {
     title = m.seo.notFoundTitle
     description = m.common.empty
@@ -500,6 +508,7 @@ export const INDEXABLE_STATIC_PATHS = [
   { path: '/encyclopedia/characters', name: 'characters', changefreq: 'weekly', priority: '0.9' },
   { path: '/encyclopedia/qibo', name: 'qibo', changefreq: 'weekly', priority: '0.9' },
   { path: '/encyclopedia/items', name: 'items', changefreq: 'weekly', priority: '0.9' },
+  { path: '/tools/rank', name: 'character-rank', changefreq: 'daily', priority: '0.7' },
   { path: '/contribute', name: 'contribute', changefreq: 'monthly', priority: '0.5' },
 ]
 

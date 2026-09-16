@@ -10,6 +10,7 @@ import {
   mdiCalculatorVariant,
   mdiCalendarStar,
   mdiCardsPlayingOutline,
+  mdiChartBar,
   mdiClipboardTextOutline,
   mdiCompass,
   mdiCow,
@@ -104,6 +105,7 @@ export const navSections = [
     labelKey: 'nav.tools',
     icon: mdiGamepadVariant,
     children: [
+      { id: 'character-rank', labelKey: 'nav.characterRank', path: '/tools/rank', icon: mdiChartBar },
       { id: 'gacha', labelKey: 'nav.gacha', path: '/tools/gacha', icon: mdiCardsPlayingOutline },
       { id: 'team-calc', labelKey: 'nav.teamCalc', path: '/tools/team', icon: mdiCalculatorVariant },
       { id: 'map-tool', labelKey: 'nav.mapTool', path: '/tools/map', icon: mdiMapOutline },

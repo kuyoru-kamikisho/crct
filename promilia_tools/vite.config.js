@@ -8,6 +8,13 @@ export default defineConfig({
   plugins: [vue(), vueJsx(), seoPrerenderPlugin()],
   server: {
     port: 5177,
+    proxy: {
+      '/vote-api': {
+        target: 'http://127.0.0.1:8787',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/vote-api/, ''),
+      },
+    },
   },
   resolve: {
     alias: {
