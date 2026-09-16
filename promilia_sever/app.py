@@ -286,6 +286,39 @@ def rank_payload(category: str) -> dict:
     }
 
 
+def hexagon_payload() -> dict:
+    conn = connect()
+    rows = conn.execute(
+        """
+        SELECT character_id AS id, category, SUM(votes) AS total
+        FROM daily_counts
+        GROUP BY character_id, category
+        """
+    ).fetchall()
+    by_id: dict[str, dict[str, int]] = {}
+    for row in rows:
+        cat = row["category"]
+        if cat not in CATEGORIES:
+            continue
+        bucket = by_id.setdefault(row["id"], {c: 0 for c in CATEGORIES})
+        bucket[cat] = int(row["total"])
+    ids = list(load_character_ids()) or list(by_id.keys())
+    extra = [cid for cid in by_id if cid not in ids]
+    characters = []
+    for cid in [*ids, *extra]:
+        scores = by_id.get(cid) or {c: 0 for c in CATEGORIES}
+        for cat in CATEGORIES:
+            scores.setdefault(cat, 0)
+        total = sum(scores[c] for c in CATEGORIES)
+        characters.append({"id": cid, "scores": scores, "total": total})
+    characters.sort(key=lambda item: (-item["total"], item["id"]))
+    return {
+        "ok": True,
+        "categories": list(CATEGORIES),
+        "characters": characters,
+    }
+
+
 def trend_payload(category: str, granularity: str) -> dict:
     if category not in CATEGORIES:
         return fail("INVALID_CATEGORY", "unknown category")
@@ -513,6 +546,8 @@ class VoteHandler(BaseHTTPRequestHandler):
         category = (qs.get("category") or ["favorite"])[0]
         if path == "/api/rank":
             return self._json(rank_payload(category))
+        if path == "/api/hexagon":
+            return self._json(hexagon_payload())
         if path == "/api/trend":
             gran = (qs.get("granularity") or ["day"])[0]
             return self._json(trend_payload(category, gran))

@@ -6,9 +6,17 @@ import { mdiClose, mdiHeart, mdiHeartOutline } from '@mdi/js'
 import AppBreadcrumb from '@/components/common/AppBreadcrumb.vue'
 import RankBarChart from '@/components/rank/RankBarChart.vue'
 import RankTrendChart from '@/components/rank/RankTrendChart.vue'
+import HexagonBoard from '@/components/rank/HexagonBoard.vue'
 import { characters } from '@/data/characters'
-import { VOTE_CATEGORIES, VOTE_MAX_SELECT } from '@/constants/vote'
-import { VoteApiError, fetchVoteRank, fetchVoteStatus, fetchVoteTrend, submitVote } from '@/api/vote'
+import { HEXAGON_TAB, VOTE_CATEGORIES, VOTE_MAX_SELECT } from '@/constants/vote'
+import {
+  VoteApiError,
+  fetchHexagonStats,
+  fetchVoteRank,
+  fetchVoteStatus,
+  fetchVoteTrend,
+  submitVote,
+} from '@/api/vote'
 import { replaceRp } from '@/utils/replaceRp'
 
 const { t, locale } = useI18n()
@@ -19,6 +27,8 @@ const crumbs = computed(() => [
 ])
 
 const category = ref('favorite')
+const hexagonRows = ref([])
+const loadingHexagon = ref(false)
 const drafts = reactive(Object.fromEntries(VOTE_CATEGORIES.map((id) => [id, []])))
 const votedMap = reactive(Object.fromEntries(VOTE_CATEGORIES.map((id) => [id, false])))
 const votedIdsMap = reactive(Object.fromEntries(VOTE_CATEGORIES.map((id) => [id, []])))
@@ -38,6 +48,7 @@ let toastTimer = 0
 const selected = computed(() => drafts[category.value] || [])
 const voted = computed(() => Boolean(votedMap[category.value]))
 const votedIds = computed(() => votedIdsMap[category.value] || [])
+const isHexagon = computed(() => category.value === HEXAGON_TAB)
 
 function displayName(character) {
   if (locale.value === 'zh-CN') return character.name
@@ -82,6 +93,42 @@ const confirmList = computed(() =>
     .map((id) => roster.value.find((c) => c.id === id))
     .filter(Boolean),
 )
+
+const hexagonItems = computed(() => {
+  const byId = Object.fromEntries(roster.value.map((c) => [c.id, c]))
+  const rows = hexagonRows.value.length
+    ? hexagonRows.value
+    : roster.value.map((c) => ({
+        id: c.id,
+        scores: Object.fromEntries(VOTE_CATEGORIES.map((key) => [key, 0])),
+        total: 0,
+      }))
+  return rows.map((row, index) => {
+    const meta = byId[row.id] || {
+      id: row.id,
+      name: row.id,
+      nameZh: row.id,
+      nameEn: row.id,
+      icon: `/imgs/characters/${row.id}.png`,
+    }
+    return {
+      ...meta,
+      scores: row.scores || {},
+      total: Number(row.total) || 0,
+      place: index + 1,
+    }
+  })
+})
+
+const hexagonMax = computed(() => {
+  let max = 1
+  for (const item of hexagonItems.value) {
+    for (const key of VOTE_CATEGORIES) {
+      max = Math.max(max, Number(item.scores?.[key]) || 0)
+    }
+  }
+  return max
+})
 
 function showToast(message, tone = 'info') {
   toast.value = message
@@ -161,7 +208,25 @@ async function loadCharts() {
   trendRows.value = trend.series || []
 }
 
+async function loadHexagon() {
+  loadingHexagon.value = true
+  try {
+    const data = await fetchHexagonStats()
+    hexagonRows.value = data.characters || []
+    offline.value = false
+  } catch (err) {
+    offline.value = err instanceof VoteApiError && err.code === 'OFFLINE'
+    if (!offline.value) showToast(errorText(err), 'warn')
+  } finally {
+    loadingHexagon.value = false
+  }
+}
+
 async function refreshAll() {
+  if (isHexagon.value) {
+    await loadHexagon()
+    return
+  }
   loadingBoard.value = true
   loadingCharts.value = true
   try {
@@ -209,6 +274,7 @@ watch(category, () => {
 })
 
 watch(granularity, async () => {
+  if (isHexagon.value) return
   loadingCharts.value = true
   try {
     const trend = await fetchVoteTrend(category.value, granularity.value)
@@ -233,22 +299,20 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <div class="page">
+  <div class="page" :class="{ 'hex-mode': isHexagon }">
     <AppBreadcrumb :items="crumbs" :label="t('header.breadcrumb')" />
 
     <header class="page-head">
       <div>
         <h1>{{ t('rank.title') }}</h1>
-        <p class="hint">{{ t('rank.hint') }}</p>
+        <p class="hint">{{ isHexagon ? t('rank.hexagonHint') : t('rank.hint') }}</p>
       </div>
     </header>
 
-    <section class="rules" :aria-label="t('rank.rulesTitle')">
+    <section v-if="!isHexagon" class="rules" :aria-label="t('rank.rulesTitle')">
       <h2>{{ t('rank.rulesTitle') }}</h2>
       <ul>
         <li>{{ t('rank.ruleDaily') }}</li>
-        <li>{{ t('rank.ruleDevice') }}</li>
-        <li>{{ t('rank.ruleLan') }}</li>
         <li>{{ t('rank.ruleIndependent') }}</li>
       </ul>
     </section>
@@ -266,15 +330,36 @@ onUnmounted(() => {
       >
         {{ t(`rank.categories.${id}`) }}
       </button>
+      <button
+        type="button"
+        class="tab"
+        role="tab"
+        :aria-selected="isHexagon"
+        :class="{ on: isHexagon }"
+        @click="category = HEXAGON_TAB"
+      >
+        {{ t('rank.hexagonTab') }}
+      </button>
     </div>
 
     <p v-if="offline" class="banner warn">{{ t('rank.offline') }}</p>
-    <p v-else-if="voted" class="banner ok">{{ t('rank.voted') }}</p>
+    <p v-else-if="!isHexagon && voted" class="banner ok">{{ t('rank.voted') }}</p>
     <p v-if="toast" class="banner" :class="toastTone">{{ toast }}</p>
 
+    <HexagonBoard
+      v-if="isHexagon"
+      :items="hexagonItems"
+      :max-score="hexagonMax"
+      :loading="loadingHexagon"
+      :hint="t('rank.hexagonLead')"
+      :loading-text="t('rank.loading')"
+      :empty-text="t('rank.noVotes')"
+    />
+
+    <template v-else>
     <section class="board">
       <div class="grid">
-        <article v-for="c in roster" :key="c.id" class="card" :class="{ picked: isHeartOn(c.id) }">
+        <article v-for="c in roster" :key="c.id" class="card" :class="{ picked: isHeartOn(c.id) }" @click="toggleSelect(c.id)">
           <div class="avatar">
             <span class="fallback">{{ c.nameZh.slice(0, 1) }}</span>
             <img
@@ -298,7 +383,6 @@ onUnmounted(() => {
             :disabled="voted"
             :aria-pressed="isHeartOn(c.id)"
             :aria-label="c.name"
-            @click="toggleSelect(c.id)"
           >
             <svg-icon type="mdi" :size="22" :path="isHeartOn(c.id) ? mdiHeart : mdiHeartOutline" />
           </button>
@@ -323,6 +407,7 @@ onUnmounted(() => {
         :loading="loadingCharts"
       />
     </div>
+    </template>
 
     <Teleport to="body">
       <div v-if="confirmOpen" class="overlay" @click.self="closeConfirm">
@@ -358,6 +443,10 @@ onUnmounted(() => {
 .page {
   min-width: 0;
   padding-bottom: 88px;
+
+  &.hex-mode {
+    padding-bottom: 16px;
+  }
 }
 
 .page-head {

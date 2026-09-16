@@ -50,6 +50,10 @@ export function fetchVoteTrend(category, granularity = 'day') {
   )
 }
 
+export function fetchHexagonStats() {
+  return request('/api/hexagon')
+}
+
 export function submitVote(category, characterIds) {
   return request('/api/vote', {
     method: 'POST',
