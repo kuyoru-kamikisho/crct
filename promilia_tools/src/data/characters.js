@@ -1,27 +1,6 @@
 /**
- * 角色图鉴入口
- * 各角色数据拆分在 ./characters/{id}.js，新增角色只需添加文件即可自动收录
+ * 角色图鉴辅助函数。全量列表走 /api/characters，详情走 /api/characters/:id。
  */
-import { CHARACTER_ORDER } from './characterOrder'
-
-const modules = import.meta.glob('./characters/*.js', { eager: true, import: 'default' })
-
-const byId = Object.fromEntries(
-  Object.values(modules)
-    .filter((c) => c?.id)
-    .map((c) => [c.id, c]),
-)
-
-const ordered = CHARACTER_ORDER.map((id) => byId[id]).filter(Boolean)
-const extras = Object.values(byId)
-  .filter((c) => !CHARACTER_ORDER.includes(c.id))
-  .sort((a, b) => String(a.name).localeCompare(String(b.name), 'zh-CN'))
-
-export const characters = [...ordered, ...extras]
-
-export function getCharacterById(id) {
-  return byId[id] || null
-}
 
 const ELEMENT_ORDER = ['火', '风', '地', '木', '冰', '水', '雷', '光', '暗', '无']
 
@@ -44,8 +23,12 @@ function sortElements(list) {
   })
 }
 
+export function getCharacterById(list, id) {
+  return list?.find((item) => item.id === id) || null
+}
+
 /** 从角色数据动态收集筛选项，数据变更后过滤条件会同步增减 */
-export function getCharacterFilterOptions() {
+export function getCharacterFilterOptions(characters = []) {
   return {
     rarity: uniqueValues(characters.map((c) => c.rarity)).sort((a, b) => b - a),
     elements: sortElements(uniqueValues(characters.flatMap((c) => c.elements ?? []))),

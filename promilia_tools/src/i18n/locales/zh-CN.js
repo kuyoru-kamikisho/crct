@@ -155,6 +155,8 @@ export default {
     condition: '达成条件',
     reward: '奖励',
     empty: '暂无数据',
+    catalogLoading: '正在加载图鉴数据…',
+    catalogError: '图鉴服务暂不可用，请先启动后端后刷新',
     viewDetail: '查看详情',
     all: '全部',
     filter: '筛选',

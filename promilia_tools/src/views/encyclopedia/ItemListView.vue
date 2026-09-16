@@ -1,5 +1,6 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import SvgIcon from '@jamescoyle/vue-icon'
@@ -10,9 +11,9 @@ import {
   createEmptyItemFilters,
   getItemFilterOptions,
   getItemsBySource,
-  getItemSource,
   matchItemFilters,
 } from '@/data/items'
+import { useCatalogStore } from '@/stores/catalog'
 import ItemFilter from '@/components/encyclopedia/ItemFilter.vue'
 import AppBreadcrumb from '@/components/common/AppBreadcrumb.vue'
 import { replaceRp } from '@/utils/replaceRp'
@@ -20,19 +21,26 @@ import { replaceRp } from '@/utils/replaceRp'
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
+const catalog = useCatalogStore()
+const { items, loading, error } = storeToRefs(catalog)
 const q = ref(typeof route.query.q === 'string' ? route.query.q : '')
 const filterOpen = ref(false)
 const filters = ref(createEmptyItemFilters())
+
+onMounted(() => {
+  catalog.ensureNav().catch(() => {})
+  catalog.ensureItems().catch(() => {})
+})
 
 const sourceId = computed(() => {
   const value = route.params.source
   return typeof value === 'string' && value ? value : ALL_ITEMS_SOURCE_ID
 })
-const source = computed(() => getItemSource(sourceId.value))
+const source = computed(() => catalog.getItemSource(sourceId.value))
 const pageTitle = computed(() => source.value?.name || t('item.title'))
-const sourceList = computed(() => getItemsBySource(sourceId.value))
+const sourceList = computed(() => getItemsBySource(items.value, sourceId.value))
 const isAll = computed(() => sourceId.value === ALL_ITEMS_SOURCE_ID)
-const sourceMissing = computed(() => !isAll.value && !source.value)
+const sourceMissing = computed(() => !isAll.value && !loading.value.items && !error.value.items && !source.value)
 
 const crumbs = computed(() => [
   { to: '/', label: t('nav.home') },
@@ -107,7 +115,13 @@ function onIconError(event) {
 </script>
 
 <template>
-  <div v-if="sourceMissing" class="page">
+  <div v-if="loading.items || loading.nav" class="page">
+    <p class="empty">{{ t('common.catalogLoading') }}</p>
+  </div>
+  <div v-else-if="error.items" class="page">
+    <p class="empty">{{ t('common.catalogError') }}</p>
+  </div>
+  <div v-else-if="sourceMissing" class="page">
     <p class="empty">{{ t('common.empty') }}</p>
     <p class="empty"><router-link to="/encyclopedia/items">{{ t('item.title') }}</router-link></p>
   </div>

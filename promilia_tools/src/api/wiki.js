@@ -32,3 +32,36 @@ export function searchWiki(query, { limit = 12 } = {}) {
 export function fetchWikiNav() {
   return request('/api/nav')
 }
+
+export function fetchCharacters() {
+  return request('/api/characters').then((data) => data.characters || [])
+}
+
+export function fetchCharacter(id) {
+  return request(`/api/characters/${encodeURIComponent(id)}`).then((data) => data.character || null)
+}
+
+export function fetchQibos() {
+  return request('/api/qibos').then((data) => data.qibos || [])
+}
+
+export function fetchQibo(id) {
+  return request(`/api/qibos/${encodeURIComponent(id)}`).then((data) => ({
+    qibo: data.qibo || null,
+    prev: data.prev || null,
+    next: data.next || null,
+  }))
+}
+
+export function fetchItems() {
+  return request('/api/items').then((data) => data.items || [])
+}
+
+export function fetchItem(id, { from } = {}) {
+  const qs = from ? `?from=${encodeURIComponent(from)}` : ''
+  return request(`/api/items/${encodeURIComponent(id)}${qs}`).then((data) => ({
+    item: data.item || null,
+    prev: data.prev || null,
+    next: data.next || null,
+  }))
+}

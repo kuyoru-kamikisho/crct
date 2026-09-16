@@ -1,7 +1,7 @@
 import { watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { characterSummaries, itemSourceCatalog, qiboSummaries } from '@/data/encyclopediaMeta'
+import { useCatalogStore } from '@/stores/catalog'
 import { buildSeo } from '@/seo/meta'
 import { DEFAULT_LOCALE, SITE_NAME, THEME_COLOR, getSiteUrl } from '@/seo/site'
 import { ogLocaleOf } from '@/i18n'
@@ -81,48 +81,72 @@ function applySeo(payload, siteUrl, locale) {
   void siteUrl
 }
 
-function lightEntities() {
+function lightEntities(catalog) {
   return {
     character: null,
-    characters: characterSummaries,
+    characters: catalog.characterSummaries,
     qibo: null,
-    qibos: qiboSummaries,
+    qibos: catalog.qiboSummaries,
     item: null,
     items: [],
     itemSource: null,
-    itemSources: itemSourceCatalog,
+    itemSources: catalog.itemSourceCatalog,
   }
 }
 
-async function loadRouteEntities(route) {
+async function loadRouteEntities(route, catalog) {
+  await catalog.ensureNav().catch(() => {})
   const name = route.name
-  if (name === 'characters' || name === 'character-detail' || name === 'character-rank') {
-    const { characters, getCharacterById } = await import('@/data/characters')
+  if (name === 'characters' || name === 'character-rank') {
+    await catalog.ensureCharacters().catch(() => {})
     return {
-      ...lightEntities(),
-      characters,
-      character: name === 'character-detail' ? getCharacterById(route.params.id) : null,
+      ...lightEntities(catalog),
+      characters: catalog.characters,
     }
   }
-  if (name === 'qibo' || name === 'qibo-detail') {
-    const { qibos, getQiboById } = await import('@/data/qibos')
+  if (name === 'character-detail') {
+    await catalog.loadCharacter(route.params.id).catch(() => {})
     return {
-      ...lightEntities(),
-      qibos,
-      qibo: name === 'qibo-detail' ? getQiboById(route.params.id) : null,
+      ...lightEntities(catalog),
+      character: catalog.currentCharacter,
+      characters: catalog.currentCharacter ? [catalog.currentCharacter] : catalog.characterSummaries,
     }
   }
-  if (name === 'items' || name === 'item-source' || name === 'item-detail') {
-    const { items, getItemById, getItemSource, itemSourceCatalog: catalog } = await import('@/data/items')
+  if (name === 'qibo') {
+    await catalog.ensureQibos().catch(() => {})
     return {
-      ...lightEntities(),
-      items,
-      item: name === 'item-detail' ? getItemById(route.params.id) : null,
-      itemSources: catalog,
-      itemSource: name === 'item-source' ? getItemSource(route.params.source) : null,
+      ...lightEntities(catalog),
+      qibos: catalog.qibos,
     }
   }
-  return lightEntities()
+  if (name === 'qibo-detail') {
+    await catalog.loadQibo(route.params.id).catch(() => {})
+    return {
+      ...lightEntities(catalog),
+      qibo: catalog.currentQibo,
+      qibos: catalog.currentQibo ? [catalog.currentQibo] : catalog.qiboSummaries,
+    }
+  }
+  if (name === 'items' || name === 'item-source') {
+    await catalog.ensureItems().catch(() => {})
+    return {
+      ...lightEntities(catalog),
+      items: catalog.items,
+      itemSources: catalog.itemSourceCatalog,
+      itemSource: name === 'item-source' ? catalog.getItemSource(route.params.source) : null,
+    }
+  }
+  if (name === 'item-detail') {
+    const from = typeof route.query.from === 'string' ? route.query.from : ''
+    await catalog.loadItem(route.params.id, from).catch(() => {})
+    return {
+      ...lightEntities(catalog),
+      item: catalog.currentItem,
+      items: catalog.currentItem ? [catalog.currentItem] : [],
+      itemSources: catalog.itemSourceCatalog,
+    }
+  }
+  return lightEntities(catalog)
 }
 
 /**
@@ -131,6 +155,7 @@ async function loadRouteEntities(route) {
 export function useSeo() {
   const route = useRoute()
   const { locale, messages } = useI18n()
+  const catalog = useCatalogStore()
   let seq = 0
 
   watch(
@@ -138,7 +163,7 @@ export function useSeo() {
     async () => {
       const my = ++seq
       const pack = messages.value?.[locale.value] || messages.value?.[DEFAULT_LOCALE]
-      const entities = await loadRouteEntities(route)
+      const entities = await loadRouteEntities(route, catalog)
       if (my !== seq) return
       const payload = buildSeo({
         path: route.path,

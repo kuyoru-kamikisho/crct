@@ -1,15 +1,17 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiFilter, mdiFilterOutline } from '@mdi/js'
 import {
-  characters,
   countActiveCharacterFilters,
   createEmptyCharacterFilters,
+  getCharacterFilterOptions,
   matchCharacterFilters,
 } from '@/data/characters'
+import { useCatalogStore } from '@/stores/catalog'
 import CharacterFilter from '@/components/encyclopedia/CharacterFilter.vue'
 import AppBreadcrumb from '@/components/common/AppBreadcrumb.vue'
 import { replaceRp } from '@/utils/replaceRp'
@@ -17,9 +19,15 @@ import { replaceRp } from '@/utils/replaceRp'
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
+const catalog = useCatalogStore()
+const { characters, loading, error } = storeToRefs(catalog)
 const q = ref(typeof route.query.q === 'string' ? route.query.q : '')
 const filterOpen = ref(false)
 const filters = ref(createEmptyCharacterFilters())
+
+onMounted(() => {
+  catalog.ensureCharacters().catch(() => {})
+})
 
 const crumbs = computed(() => [
   { to: '/', label: t('nav.home') },
@@ -45,10 +53,11 @@ watch(q, (value) => {
 })
 
 const activeFilterCount = computed(() => countActiveCharacterFilters(filters.value))
+const filterOptions = computed(() => getCharacterFilterOptions(characters.value))
 
 const filtered = computed(() => {
   const s = q.value.trim().toLowerCase()
-  return characters.filter((c) => {
+  return characters.value.filter((c) => {
     if (!matchCharacterFilters(c, filters.value)) return false
     if (!s) return true
     return (
@@ -61,9 +70,9 @@ const filtered = computed(() => {
 })
 
 const characterSummary = computed(() => {
-  const total = characters.length
-  const fiveStar = characters.filter((c) => c.rarity === 5).length
-  const fourStar = characters.filter((c) => c.rarity === 4).length
+  const total = characters.value.length
+  const fiveStar = characters.value.filter((c) => c.rarity === 5).length
+  const fourStar = characters.value.filter((c) => c.rarity === 4).length
   return replaceRp(t('character.summary'), total, fiveStar, fourStar)
 })
 
@@ -105,34 +114,38 @@ function onPortraitError(event) {
       </div>
     </header>
 
-    <Transition name="filter-drop">
-      <CharacterFilter v-if="filterOpen" v-model="filters" />
-    </Transition>
+    <p v-if="loading.characters" class="empty">{{ t('common.catalogLoading') }}</p>
+    <p v-else-if="error.characters" class="empty">{{ t('common.catalogError') }}</p>
+    <template v-else>
+      <Transition name="filter-drop">
+        <CharacterFilter v-if="filterOpen" v-model="filters" :options="filterOptions" />
+      </Transition>
 
-    <div class="grid">
-      <router-link v-for="c in filtered" :key="c.id" :to="`/encyclopedia/characters/${c.id}`" class="card">
-        <img
-          class="background"
-          :src="`/imgs/characters/${c.id}.png`"
-          :alt="portraitAlt(c)"
-          width="400"
-          height="520"
-          loading="lazy"
-          decoding="async"
-          @error="onPortraitError"
-        />
-        <div class="rarity">★ {{ c.rarity }}</div>
-        <h2>{{ c.name }}</h2>
-        <p class="en">{{ c.nameEn }}</p>
-        <div class="tags">
-          <span class="tag muted">{{ c.faction }}</span>
-          <span v-for="el in c.elements" :key="el" class="tag">{{ el }}</span>
-          <span class="tag muted">{{ c.profession }}</span>
-        </div>
-      </router-link>
-    </div>
+      <div class="grid">
+        <router-link v-for="c in filtered" :key="c.id" :to="`/encyclopedia/characters/${c.id}`" class="card">
+          <img
+            class="background"
+            :src="`/imgs/characters/${c.id}.png`"
+            :alt="portraitAlt(c)"
+            width="400"
+            height="520"
+            loading="lazy"
+            decoding="async"
+            @error="onPortraitError"
+          />
+          <div class="rarity">★ {{ c.rarity }}</div>
+          <h2>{{ c.name }}</h2>
+          <p class="en">{{ c.nameEn }}</p>
+          <div class="tags">
+            <span class="tag muted">{{ c.faction }}</span>
+            <span v-for="el in c.elements" :key="el" class="tag">{{ el }}</span>
+            <span class="tag muted">{{ c.profession }}</span>
+          </div>
+        </router-link>
+      </div>
 
-    <p v-if="!filtered.length" class="empty">{{ t('common.empty') }}</p>
+      <p v-if="!filtered.length" class="empty">{{ t('common.empty') }}</p>
+    </template>
   </div>
 </template>
 

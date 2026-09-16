@@ -48,15 +48,6 @@ export default defineConfig({
           if (id.includes('node_modules/vue-i18n')) {
             return 'i18n'
           }
-          if (id.includes('/src/data/items')) {
-            return 'items'
-          }
-          if (id.includes('/src/data/characters')) {
-            return 'characters'
-          }
-          if (id.includes('/src/data/qibos')) {
-            return 'qibos'
-          }
         },
       },
     },

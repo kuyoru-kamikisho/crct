@@ -48,3 +48,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+__pycache__/
+*.pyc
+# *.db
+# *.db-*
+# *.db-wal
+*.db-shm

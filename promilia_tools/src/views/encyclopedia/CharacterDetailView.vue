@@ -1,8 +1,9 @@
 <script setup>
 import { computed, nextTick, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { getCharacterById } from '@/data/characters'
+import { useCatalogStore } from '@/stores/catalog'
 import SvgIcon from '@jamescoyle/vue-icon';
 import { mdiClockOutline, mdiLightningBolt } from '@mdi/js';
 import SkillDesc from '@/components/common/SkillDesc.vue'
@@ -11,7 +12,16 @@ import { replaceRp } from '@/utils/replaceRp'
 
 const route = useRoute()
 const { t } = useI18n()
-const character = computed(() => getCharacterById(route.params.id))
+const catalog = useCatalogStore()
+const { currentCharacter: character, loading, error } = storeToRefs(catalog)
+
+watch(
+  () => route.params.id,
+  (id) => {
+    if (id) catalog.loadCharacter(id).catch(() => {})
+  },
+  { immediate: true },
+)
 const crumbs = computed(() => [
   { to: '/', label: t('nav.home') },
   { to: '/encyclopedia/characters', label: t('nav.characters') },
@@ -44,7 +54,8 @@ function onPortraitError(event) {
 </script>
 
 <template>
-  <article v-if="character" class="detail" aria-labelledby="character-heading">
+  <p v-if="loading.character" class="missing">{{ t('common.catalogLoading') }}</p>
+  <article v-else-if="character" class="detail" aria-labelledby="character-heading">
     <img
       class="background"
       :src="`/imgs/characters/${character.id}.png`"
@@ -133,7 +144,7 @@ function onPortraitError(event) {
     </section>
   </article>
   <div v-else class="missing">
-    <p>{{ t('common.empty') }}</p>
+    <p>{{ error.character === 'OFFLINE' ? t('common.catalogError') : t('common.empty') }}</p>
     <router-link to="/encyclopedia/characters">{{ t('nav.characters') }}</router-link>
   </div>
 </template>

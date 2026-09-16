@@ -1,10 +1,9 @@
-import { mkdir, readFile, readdir, stat, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, stat, writeFile } from 'node:fs/promises'
 import { dirname, join } from 'node:path'
-import { pathToFileURL } from 'node:url'
 import { buildSeo, INDEXABLE_STATIC_PATHS, PLACEHOLDER_PATHS } from '../src/seo/meta.js'
 import { CONFIGURED_SITE_URL } from '../src/seo/site.js'
 import { buildItemSourceCatalog } from '../src/data/itemSources.js'
-import { generateEncyclopediaMeta } from './generate-encyclopedia-meta.js'
+import { dumpCatalog } from './catalog-db.js'
 import zhCN from '../src/i18n/locales/zh-CN.js'
 
 function escapeAttr(text) {
@@ -121,52 +120,16 @@ function fileForPath(outDir, routePath) {
   return join(outDir, `${routePath.replace(/^\//, '')}.html`)
 }
 
-async function loadDataModules(root, relativeDir) {
-  const dir = join(root, relativeDir)
-  let files = []
-  try {
-    files = await readdir(dir)
-  } catch {
-    return []
-  }
-  const list = []
-  for (const file of files) {
-    if (!file.endsWith('.js')) continue
-    const href = pathToFileURL(join(dir, file)).href
-    const mod = await import(href)
-    if (mod.default?.id) list.push(mod.default)
-  }
-  return list
+async function loadCharacters() {
+  return dumpCatalog('characters')
 }
 
-async function loadCharacters(root) {
-  return loadDataModules(root, 'src/data/characters')
+async function loadQibos() {
+  return dumpCatalog('qibos')
 }
 
-function parseQiboNo(no) {
-  const s = String(no ?? '')
-  const m = s.match(/^(\d+)([A-Za-z]*)$/)
-  if (!m) return [Number.MAX_SAFE_INTEGER, s]
-  return [Number(m[1]), m[2] || '']
-}
-
-async function loadQibos(root) {
-  const list = await loadDataModules(root, 'src/data/qibos')
-  return list.sort((a, b) => {
-    const [na, sa] = parseQiboNo(a.no)
-    const [nb, sb] = parseQiboNo(b.no)
-    if (na !== nb) return na - nb
-    return sa.localeCompare(sb)
-  })
-}
-
-async function loadItems(root) {
-  const list = await loadDataModules(root, 'src/data/items')
-  return list.sort((a, b) => {
-    const rarityDiff = Number(b.rarity || 0) - Number(a.rarity || 0)
-    if (rarityDiff) return rarityDiff
-    return String(a.name).localeCompare(String(b.name), 'zh-CN')
-  })
+async function loadItems() {
+  return dumpCatalog('items')
 }
 
 function xmlEscape(text) {
@@ -227,21 +190,6 @@ export function seoPrerenderPlugin() {
       outDir = join(config.root, config.build.outDir)
       siteUrl = String(config.env.VITE_SITE_URL || CONFIGURED_SITE_URL || '').replace(/\/+$/, '')
     },
-    async configureServer() {
-      try {
-        const stats = await generateEncyclopediaMeta(root)
-        if (!stats?.skipped) {
-          console.info(
-            `[encyclopedia-meta] 已生成轻量目录：角色 ${stats.characters}，奇波 ${stats.qibos}，物品 ${stats.items}`,
-          )
-        }
-      } catch (error) {
-        console.warn('[encyclopedia-meta] 生成失败，沿用现有目录:', error.message)
-      }
-    },
-    async buildStart() {
-      await generateEncyclopediaMeta(root)
-    },
     configurePreviewServer(server) {
       server.middlewares.use(extensionlessHtmlMiddleware(outDir || join(root, 'dist')))
     },
@@ -266,9 +214,9 @@ export function seoPrerenderPlugin() {
         return
       }
 
-      const characters = await loadCharacters(root)
-      const qibos = await loadQibos(root)
-      const items = await loadItems(root)
+      const characters = await loadCharacters()
+      const qibos = await loadQibos()
+      const items = await loadItems()
       const itemSources = buildItemSourceCatalog(items)
       const today = new Date().toISOString().slice(0, 10)
       const jobs = []

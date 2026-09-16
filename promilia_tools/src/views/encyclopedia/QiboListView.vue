@@ -1,17 +1,24 @@
 <script setup>
-import { computed, ref, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { qibos } from '@/data/qibos'
+import { useCatalogStore } from '@/stores/catalog'
 import AppBreadcrumb from '@/components/common/AppBreadcrumb.vue'
 
 const { t } = useI18n()
 const route = useRoute()
+const catalog = useCatalogStore()
+const { qibos, loading, error } = storeToRefs(catalog)
 const q = ref(typeof route.query.q === 'string' ? route.query.q : '')
 const crumbs = computed(() => [
   { to: '/', label: t('nav.home') },
   { label: t('nav.qibo') },
 ])
+
+onMounted(() => {
+  catalog.ensureQibos().catch(() => {})
+})
 
 watch(
   () => route.query.q,
@@ -26,8 +33,8 @@ function skillNames(item) {
 
 const filtered = computed(() => {
   const s = q.value.trim().toLowerCase()
-  if (!s) return qibos
-  return qibos.filter((item) => {
+  if (!s) return qibos.value
+  return qibos.value.filter((item) => {
     const haystack = [
       item.name,
       item.id,
@@ -57,6 +64,9 @@ function onPixelError(event) {
       <input v-model="q" type="search" class="search" :placeholder="t('common.search')" />
     </header>
 
+    <p v-if="loading.qibos" class="empty">{{ t('common.catalogLoading') }}</p>
+    <p v-else-if="error.qibos" class="empty">{{ t('common.catalogError') }}</p>
+    <template v-else>
     <div class="grid">
       <router-link v-for="item in filtered" :key="item.id" :to="{ name: 'qibo-detail', params: { id: item.id } }"
         class="card">
@@ -98,6 +108,7 @@ function onPixelError(event) {
     </div>
 
     <p v-if="!filtered.length" class="empty">{{ t('common.empty') }}</p>
+    </template>
   </div>
 </template>
 

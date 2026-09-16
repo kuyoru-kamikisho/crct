@@ -5,6 +5,7 @@ import { useI18n } from 'vue-i18n'
 import { useSettingsStore } from '@/stores/settings'
 import { setAppLocale } from '@/i18n'
 import { useSeo } from '@/composables/useSeo'
+import { useCatalogStore } from '@/stores/catalog'
 import { MQ_NARROW } from '@/utils/breakpoints'
 import AppHeader from '@/components/layout/AppHeader.vue'
 import AppSidebar from '@/components/layout/AppSidebar.vue'
@@ -12,9 +13,11 @@ import AppFooter from '@/components/layout/AppFooter.vue'
 import FloatActions from '@/components/layout/FloatActions.vue'
 
 const settings = useSettingsStore()
+const catalog = useCatalogStore()
 const route = useRoute()
 const { t } = useI18n()
 useSeo()
+catalog.ensureNav().catch(() => {})
 
 let cursorApi = null
 let narrowQuery = null

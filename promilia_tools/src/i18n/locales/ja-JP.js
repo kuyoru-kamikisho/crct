@@ -154,6 +154,8 @@ export default {
     condition: '達成条件',
     reward: '報酬',
     empty: 'データなし',
+    catalogLoading: '図鑑データを読み込み中…',
+    catalogError: '図鑑サービスに接続できません。バックエンドを起動して更新してください。',
     viewDetail: '詳細',
     all: 'すべて',
     filter: '絞り込み',

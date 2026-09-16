@@ -11,18 +11,15 @@ import threading
 import time
 from pathlib import Path
 
+from catalog import list_all as load_catalog, source_mtime as catalog_mtime
+
 ROOT = Path(__file__).resolve().parent
 DATA_DIR = ROOT / "data"
 SEARCH_DB_PATH = DATA_DIR / "search.db"
-TOOLS_DATA = ROOT.parent / "promilia_tools" / "src" / "data"
-LOCALE_DIR = ROOT.parent / "promilia_tools" / "src" / "i18n" / "locales"
 
 ALL_ITEMS_SOURCE_ID = "items"
 ALL_ITEMS_SOURCE_NAME = "物品图鉴"
 
-COMMENT_RE = re.compile(r"/\*[\s\S]*?\*/")
-KEY_RE = re.compile(r"([{\[,]\s*)([A-Za-z_$][\w$]*)\s*:")
-TRAIL_COMMA_RE = re.compile(r",\s*([}\]])")
 HOME_STATION_RULES = (
     ("home-cuisine", "家园料理", "food", re.compile(r"家园[-·]?(料理铺|烹饪锅)")),
     ("home-workshop", "家园工坊", "workshop", re.compile(r"家园[-·]?(工作室|工作台)")),
@@ -157,61 +154,8 @@ def collect_strings(value, out=None):
     return out
 
 
-def parse_js_export_default(text: str):
-    cleaned = COMMENT_RE.sub("", text)
-    idx = cleaned.find("export default")
-    if idx < 0:
-        return None
-    expr = cleaned[idx + len("export default") :].strip().rstrip(";")
-    expr = KEY_RE.sub(r'\1"\2":', expr)
-    expr = TRAIL_COMMA_RE.sub(r"\1", expr)
-    try:
-        return json.loads(expr)
-    except json.JSONDecodeError:
-        return None
-
-
-def load_js_dir(directory: Path) -> list[dict]:
-    if not directory.is_dir():
-        return []
-    items = []
-    for path in sorted(directory.glob("*.js")):
-        try:
-            text = path.read_text(encoding="utf-8")
-        except OSError:
-            continue
-        data = parse_js_export_default(text)
-        if isinstance(data, dict) and data.get("id"):
-            items.append(data)
-    return items
-
-
-def load_character_order() -> list[str]:
-    path = TOOLS_DATA / "characterOrder.js"
-    try:
-        text = path.read_text(encoding="utf-8")
-    except OSError:
-        return []
-    return re.findall(r"['\"]([a-z0-9][a-z0-9-]*)['\"]", text)
-
-
 def source_mtime() -> float:
-    latest = 0.0
-    roots = [
-        TOOLS_DATA / "characters",
-        TOOLS_DATA / "qibos",
-        TOOLS_DATA / "items",
-        TOOLS_DATA / "characterOrder.js",
-        LOCALE_DIR,
-    ]
-    for root in roots:
-        paths = [root] if root.is_file() else list(root.glob("*.js")) if root.is_dir() else []
-        for path in paths:
-            try:
-                latest = max(latest, path.stat().st_mtime)
-            except OSError:
-                continue
-    return latest
+    return catalog_mtime()
 
 
 def slugify_source_id(name: str) -> str:
@@ -307,34 +251,6 @@ def build_item_source_catalog(items: list[dict]) -> list[dict]:
     return sorted(catalog.values(), key=lambda row: (row["rank"], -row["count"], row["name"]))
 
 
-def parse_qibo_no(no):
-    text = str(no or "")
-    match = re.match(r"^(\d+)([A-Za-z]*)$", text)
-    if not match:
-        return (10**18, text)
-    return (int(match.group(1)), match.group(2) or "")
-
-
-def sort_characters(items: list[dict]) -> list[dict]:
-    order = load_character_order()
-    by_id = {item["id"]: item for item in items}
-    ordered = [by_id[cid] for cid in order if cid in by_id]
-    extras = sorted(
-        (item for item in items if item["id"] not in order),
-        key=lambda item: item.get("name") or item["id"],
-    )
-    return [*ordered, *extras]
-
-
-def sort_qibos(items: list[dict]) -> list[dict]:
-    return sorted(items, key=lambda item: (*parse_qibo_no(item.get("no")), item.get("name") or ""))
-
-
-def sort_items(items: list[dict]) -> list[dict]:
-    return sorted(
-        items,
-        key=lambda item: (-int(item.get("rarity") or 0), item.get("name") or item["id"]),
-    )
 
 
 def make_doc(**kwargs) -> dict:
@@ -762,9 +678,9 @@ def load_cache_from_db() -> bool:
 
 
 def rebuild_index() -> dict:
-    characters = sort_characters(load_js_dir(TOOLS_DATA / "characters"))
-    qibos = sort_qibos(load_js_dir(TOOLS_DATA / "qibos"))
-    items = sort_items(load_js_dir(TOOLS_DATA / "items"))
+    characters = load_catalog("characters")
+    qibos = load_catalog("qibos")
+    items = load_catalog("items")
     sources = build_item_source_catalog(items)
     docs = build_documents(characters, qibos, items, sources)
     persist_index(docs, sources, characters, qibos, items)

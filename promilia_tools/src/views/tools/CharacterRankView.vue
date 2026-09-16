@@ -1,5 +1,6 @@
 <script setup>
 import { computed, onMounted, onUnmounted, reactive, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiClose, mdiHeart, mdiHeartOutline } from '@mdi/js'
@@ -7,7 +8,7 @@ import AppBreadcrumb from '@/components/common/AppBreadcrumb.vue'
 import RankBarChart from '@/components/rank/RankBarChart.vue'
 import RankTrendChart from '@/components/rank/RankTrendChart.vue'
 import HexagonBoard from '@/components/rank/HexagonBoard.vue'
-import { characters } from '@/data/characters'
+import { useCatalogStore } from '@/stores/catalog'
 import { HEXAGON_TAB, VOTE_CATEGORIES, VOTE_MAX_SELECT } from '@/constants/vote'
 import {
   VoteApiError,
@@ -20,6 +21,8 @@ import {
 import { replaceRp } from '@/utils/replaceRp'
 
 const { t, locale } = useI18n()
+const catalog = useCatalogStore()
+const { characters } = storeToRefs(catalog)
 
 const crumbs = computed(() => [
   { to: '/', label: t('nav.home') },
@@ -56,7 +59,7 @@ function displayName(character) {
 }
 
 const roster = computed(() =>
-  characters.map((c) => ({
+  characters.value.map((c) => ({
     id: c.id,
     name: displayName(c),
     nameZh: c.name,
@@ -289,6 +292,7 @@ watch(granularity, async () => {
 
 onMounted(() => {
   window.addEventListener('keydown', onKeydown)
+  catalog.ensureCharacters().catch(() => {})
   refreshAll()
 })
 

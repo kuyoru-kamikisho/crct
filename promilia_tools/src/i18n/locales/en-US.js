@@ -155,6 +155,8 @@ export default {
     condition: 'Condition',
     reward: 'Reward',
     empty: 'No data yet',
+    catalogLoading: 'Loading encyclopedia…',
+    catalogError: 'Encyclopedia service is unavailable. Start the backend and refresh.',
     viewDetail: 'Details',
     all: 'All',
     filter: 'Filter',

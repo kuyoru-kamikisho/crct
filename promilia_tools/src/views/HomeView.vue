@@ -1,41 +1,43 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n'
-import {
-  characterSummaries,
-  encyclopediaStats,
-  featuredItemNames,
-  itemSourceCatalog,
-  qiboSummaries,
-} from '@/data/encyclopediaMeta'
+import { useCatalogStore } from '@/stores/catalog'
 
 const { t } = useI18n()
+const catalog = useCatalogStore()
+const { characterSummaries, qiboSummaries, featuredItemNames, encyclopediaStats, itemSourceCatalog, loading, error } =
+  storeToRefs(catalog)
 
-const sourceEntries = computed(() => itemSourceCatalog.filter((src) => src.kind === 'source').slice(0, 8))
+onMounted(() => {
+  catalog.ensureNav().catch(() => {})
+})
+
+const sourceEntries = computed(() => (itemSourceCatalog.value || []).filter((src) => src.kind === 'source').slice(0, 8))
 
 const entries = computed(() => [
   {
     to: '/encyclopedia/characters',
     label: t('nav.characters'),
-    desc: characterSummaries.slice(0, 3).map((c) => c.name).join('、'),
+    desc: characterSummaries.value.slice(0, 3).map((c) => c.name).join('、'),
   },
   {
     to: '/encyclopedia/qibo',
     label: t('nav.qibo'),
-    desc: qiboSummaries.slice(0, 3).map((q) => q.name).join('、'),
+    desc: qiboSummaries.value.slice(0, 3).map((q) => q.name).join('、'),
   },
   {
     to: '/encyclopedia/items',
     label: t('nav.items'),
-    desc: featuredItemNames.join('、'),
+    desc: featuredItemNames.value.join('、'),
   },
   ...sourceEntries.value.slice(0, 3).map((src) => ({ to: src.path, label: src.name, desc: `${src.count}` })),
   { to: '/contribute', label: t('nav.contribute'), desc: '' },
 ])
 
-const featuredCharacters = characterSummaries.slice(0, 8)
-const featuredQibos = qiboSummaries.slice(0, 8)
-const catalogSources = computed(() => itemSourceCatalog)
+const featuredCharacters = computed(() => characterSummaries.value.slice(0, 8))
+const featuredQibos = computed(() => qiboSummaries.value.slice(0, 8))
+const catalogSources = computed(() => itemSourceCatalog.value || [])
 </script>
 
 <template>
@@ -47,6 +49,9 @@ const catalogSources = computed(() => itemSourceCatalog)
       <p class="intro">{{ t('home.intro') }}</p>
       <p class="notice">{{ t('home.notice') }}</p>
     </section>
+
+    <p v-if="loading.nav" class="catalog-lead">{{ t('common.catalogLoading') }}</p>
+    <p v-else-if="error.nav" class="catalog-lead">{{ t('common.catalogError') }}</p>
 
     <section class="stats" :aria-label="t('home.quickStats')">
       <h2>{{ t('home.quickStats') }}</h2>

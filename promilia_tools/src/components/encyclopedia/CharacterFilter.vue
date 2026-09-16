@@ -3,21 +3,22 @@ import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiEraserVariant, mdiStar } from '@mdi/js'
-import { getCharacterFilterOptions } from '@/data/characters'
 import { getElementVisual } from '@/data/elements'
 import { replaceRp } from '@/utils/replaceRp'
 
 const filters = defineModel({ type: Object, required: true })
+const props = defineProps({
+  options: { type: Object, required: true },
+})
 const { t } = useI18n()
-const options = getCharacterFilterOptions()
 
 const groups = computed(() => [
-  { key: 'rarity', label: t('common.rarity'), kind: 'rarity', items: options.rarity },
-  { key: 'elements', label: t('common.element'), kind: 'elements', items: options.elements },
-  { key: 'profession', label: t('common.profession'), kind: 'chips', items: options.profession },
-  { key: 'faction', label: t('common.faction'), kind: 'chips', items: options.faction },
-  { key: 'race', label: t('common.race'), kind: 'chips', items: options.race },
-  { key: 'weapon', label: t('common.weapon'), kind: 'chips', items: options.weapon },
+  { key: 'rarity', label: t('common.rarity'), kind: 'rarity', items: props.options.rarity },
+  { key: 'elements', label: t('common.element'), kind: 'elements', items: props.options.elements },
+  { key: 'profession', label: t('common.profession'), kind: 'chips', items: props.options.profession },
+  { key: 'faction', label: t('common.faction'), kind: 'chips', items: props.options.faction },
+  { key: 'race', label: t('common.race'), kind: 'chips', items: props.options.race },
+  { key: 'weapon', label: t('common.weapon'), kind: 'chips', items: props.options.weapon },
 ])
 
 const hasSelection = computed(() =>

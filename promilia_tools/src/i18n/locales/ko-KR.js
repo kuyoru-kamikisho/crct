@@ -155,6 +155,8 @@ export default {
     condition: '달성 조건',
     reward: '보상',
     empty: '아직 데이터가 없습니다',
+    catalogLoading: '도감 데이터를 불러오는 중…',
+    catalogError: '도감 서비스에 연결할 수 없습니다. 백엔드를 실행한 뒤 새로고침하세요.',
     viewDetail: '자세히 보기',
     all: '전체',
     filter: '필터',

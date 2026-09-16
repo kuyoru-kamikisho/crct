@@ -1,6 +1,3 @@
-import { characters } from '@/data/characters'
-import { qibos } from '@/data/qibos'
-import { items } from '@/data/items'
 import { navSections } from '@/data/navigation'
 import zhCN from '@/i18n/locales/zh-CN'
 
@@ -32,9 +29,9 @@ function getPath(obj, path) {
 
 /**
  * 构建全站搜索文档（离线参考 / 预渲染可复用）。
- * 运行时站内搜索走后端 search.db，请勿在布局或首页同步 import 本文件。
+ * 运行时站内搜索走后端 search.db；图鉴正文从 SQLite 传入，勿同步 import 本地 JS 清单。
  */
-export function buildSearchDocuments(locales = [zhCN]) {
+export function buildSearchDocuments({ characters = [], qibos = [], items = [], locales = [zhCN] } = {}) {
   const packs = locales.length ? locales : [zhCN]
 
   function allLocaleText(path) {

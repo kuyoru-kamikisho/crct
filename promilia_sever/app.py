@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-"""角色投票服务（Python 3.9+ 标准库，无需安装数据库或第三方包）。
+"""角色投票与图鉴服务（Python 3.9+ 标准库，无需安装数据库或第三方包）。
 
 启动：
     python app.py
     python app.py --host 0.0.0.0 --port 8787
 
-数据存在同目录 data/votes.db（SQLite WAL）。角色名单自动扫描
-promilia_tools/src/data/characters/*.js，新增角色文件后无需改服务代码。
+数据在同目录 data/：
+    votes.db        投票
+    search.db       站内搜索
+    characters.db   角色图鉴
+    items.db        物品图鉴
+    qibos.db        奇波图鉴
 """
 
 from __future__ import annotations
@@ -24,17 +28,25 @@ from collections import defaultdict, deque
 from datetime import datetime, timezone, timedelta
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from urllib.parse import parse_qs, urlparse
+from urllib.parse import parse_qs, unquote, urlparse
 
 ROOT = Path(__file__).resolve().parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
 from wiki_index import SEARCH_DB_PATH, ensure_index as ensure_search_index, health_payload as search_health, nav_payload, search_docs
+from catalog import CHARACTERS_DB, ITEMS_DB, QIBOS_DB, counts as catalog_counts, list_ids as catalog_ids
+from encyclopedia import (
+    character_payload,
+    characters_payload,
+    item_payload,
+    items_payload,
+    qibo_payload,
+    qibos_payload,
+)
 
 DATA_DIR = ROOT / "data"
 DB_PATH = DATA_DIR / "votes.db"
-CHAR_DIR = ROOT.parent / "promilia_tools" / "src" / "data" / "characters"
 
 TZ_SHANGHAI = timezone(timedelta(hours=8))
 MAX_SELECT = 5
@@ -42,10 +54,7 @@ MAX_BODY = 16 * 1024
 TOKEN_RE = re.compile(r"^[A-Za-z0-9_-]{16,80}$")
 FINGERPRINT_RE = re.compile(r"^[a-f0-9]{32,128}$")
 CHAR_ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]{1,62}$")
-CHAR_FILE_ID_RE = re.compile(
-    r"""^\s*id:\s*["']([a-z0-9][a-z0-9-]{1,62})["']\s*,?\s*$""",
-    re.M,
-)
+ENTITY_ID_RE = re.compile(r"^[a-z0-9][a-z0-9_-]{0,80}$")
 
 CATEGORIES = (
     "favorite",
@@ -57,7 +66,6 @@ CATEGORIES = (
 )
 
 WRITE_LOCK = threading.Lock()
-CHAR_CACHE = {"ids": frozenset(), "mtime": -1.0, "checked": 0.0}
 LOCAL = threading.local()
 RATE = None
 
@@ -71,33 +79,7 @@ def now_iso() -> str:
 
 
 def load_character_ids() -> frozenset[str]:
-    now = time.time()
-    if now - CHAR_CACHE["checked"] < 15:
-        return CHAR_CACHE["ids"]
-    CHAR_CACHE["checked"] = now
-    if not CHAR_DIR.is_dir():
-        return CHAR_CACHE["ids"]
-    latest = 0.0
-    files = list(CHAR_DIR.glob("*.js"))
-    for path in files:
-        try:
-            latest = max(latest, path.stat().st_mtime)
-        except OSError:
-            continue
-    if latest == CHAR_CACHE["mtime"] and CHAR_CACHE["ids"]:
-        return CHAR_CACHE["ids"]
-    ids = []
-    for path in files:
-        try:
-            text = path.read_text(encoding="utf-8")
-        except OSError:
-            continue
-        match = CHAR_FILE_ID_RE.search(text)
-        if match:
-            ids.append(match.group(1))
-    CHAR_CACHE["ids"] = frozenset(ids)
-    CHAR_CACHE["mtime"] = latest
-    return CHAR_CACHE["ids"]
+    return catalog_ids("characters")
 
 
 def connect() -> sqlite3.Connection:
@@ -425,6 +407,8 @@ INDEX_HTML = """<!doctype html>
   <h1>Promilia Wiki 服务</h1>
   <p>服务已启动。提供角色投票与站内搜索 / 导航索引。</p>
   <p>健康检查：<a href="/api/health">/api/health</a></p>
+  <p>角色列表：<a href="/api/characters">/api/characters</a></p>
+  <p>角色详情：<a href="/api/characters/moyin">/api/characters/moyin</a></p>
   <p>站内搜索：<a href="/api/search?q=%E6%9C%AB%E9%9F%B3">/api/search?q=末音</a></p>
   <p>导航目录：<a href="/api/nav">/api/nav</a></p>
 </body>
@@ -443,17 +427,17 @@ class VoteHandler(BaseHTTPRequestHandler):
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
         self.send_header("Access-Control-Max-Age", "600")
 
-    def _send(self, status: int, body: bytes, content_type: str) -> None:
+    def _send(self, status: int, body: bytes, content_type: str, cache_control: str = "no-store") -> None:
         self.send_response(status)
         self._cors()
         self.send_header("Content-Type", content_type)
         self.send_header("Content-Length", str(len(body)))
-        self.send_header("Cache-Control", "no-store")
+        self.send_header("Cache-Control", cache_control)
         self.end_headers()
         if self.command != "HEAD":
             self.wfile.write(body)
 
-    def _json(self, payload: dict, status: int = 200) -> None:
+    def _json(self, payload: dict, status: int = 200, cache_control: str = "no-store") -> None:
         body = json.dumps(payload, ensure_ascii=False, separators=(",", ":")).encode("utf-8")
         code = status
         if not payload.get("ok", True) and status == 200:
@@ -473,7 +457,7 @@ class VoteHandler(BaseHTTPRequestHandler):
                 "QUERY_TOO_LONG": 400,
             }
             code = mapping.get(payload.get("code"), 400)
-        self._send(code, body, "application/json; charset=utf-8")
+        self._send(code, body, "application/json; charset=utf-8", cache_control)
 
     def _html(self, text: str) -> None:
         self._send(200, text.encode("utf-8"), "text/html; charset=utf-8")
@@ -492,13 +476,21 @@ class VoteHandler(BaseHTTPRequestHandler):
         if path == "/api/health":
             ids = load_character_ids()
             search = search_health()
+            catalog = catalog_counts()
             return self._json(
                 {
                     "ok": True,
                     "service": "promilia-wiki",
                     "date": today_str(),
-                    "characters": len(ids),
+                    "characters": catalog.get("characters", len(ids)),
+                    "qibos": catalog.get("qibos", 0),
+                    "items": catalog.get("items", 0),
                     "db": str(DB_PATH),
+                    "catalog": {
+                        "characters": str(CHARACTERS_DB),
+                        "items": str(ITEMS_DB),
+                        "qibos": str(QIBOS_DB),
+                    },
                     "search": search,
                 }
             )
@@ -530,7 +522,31 @@ class VoteHandler(BaseHTTPRequestHandler):
                 return self._json({"ok": False, "code": "FAIL", "message": "search unavailable"}, 500)
             return self._json({"ok": True, "query": query.strip(), "results": results})
         if path == "/api/nav":
-            return self._json(nav_payload())
+            return self._json(nav_payload(), cache_control="public, max-age=60")
+
+        catalog_cache = "public, max-age=60"
+        if path == "/api/characters":
+            return self._json(characters_payload(), cache_control=catalog_cache)
+        if path.startswith("/api/characters/"):
+            entity_id = unquote(path.split("/", 3)[-1])
+            if not ENTITY_ID_RE.match(entity_id):
+                return self._json(fail("NOT_FOUND", "character not found"), 404)
+            return self._json(character_payload(entity_id), cache_control=catalog_cache)
+        if path == "/api/qibos":
+            return self._json(qibos_payload(), cache_control=catalog_cache)
+        if path.startswith("/api/qibos/"):
+            entity_id = unquote(path.split("/", 3)[-1])
+            if not ENTITY_ID_RE.match(entity_id):
+                return self._json(fail("NOT_FOUND", "qibo not found"), 404)
+            return self._json(qibo_payload(entity_id), cache_control=catalog_cache)
+        if path == "/api/items":
+            return self._json(items_payload(), cache_control=catalog_cache)
+        if path.startswith("/api/items/"):
+            entity_id = unquote(path.split("/", 3)[-1])
+            if not ENTITY_ID_RE.match(entity_id):
+                return self._json(fail("NOT_FOUND", "item not found"), 404)
+            source_id = unquote((qs.get("from") or [""])[0]) or None
+            return self._json(item_payload(entity_id, source_id), cache_control=catalog_cache)
 
         category = (qs.get("category") or ["favorite"])[0]
         if path == "/api/rank":
@@ -611,11 +627,13 @@ def main() -> None:
     RATE = RateLimiter()
 
     httpd = ThreadingHTTPServer((args.host, args.port), VoteHandler)
-    n_chars = len(CHAR_CACHE["ids"])
+    catalog = catalog_counts()
     print(f"Promilia wiki service  http://{args.host}:{args.port}", flush=True)
     print(f"Votes SQLite   {DB_PATH}", flush=True)
     print(f"Search SQLite  {SEARCH_DB_PATH}", flush=True)
-    print(f"Characters  {n_chars} from {CHAR_DIR}", flush=True)
+    print(f"Characters SQLite  {CHARACTERS_DB}  ({catalog.get('characters', 0)})", flush=True)
+    print(f"Items SQLite       {ITEMS_DB}  ({catalog.get('items', 0)})", flush=True)
+    print(f"Qibos SQLite       {QIBOS_DB}  ({catalog.get('qibos', 0)})", flush=True)
     print(
         f"Search index  docs={search_stats.get('docs')} items={search_stats.get('items')} qibos={search_stats.get('qibos')}",
         flush=True,

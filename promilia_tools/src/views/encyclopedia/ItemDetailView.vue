@@ -1,41 +1,48 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiStar } from '@mdi/js'
-import {
-  ALL_ITEMS_SOURCE_ID,
-  getItemById,
-  getItemsBySource,
-  getItemSource,
-  itemSourcesOf,
-} from '@/data/items'
+import { ALL_ITEMS_SOURCE_ID, itemSourcesOf } from '@/data/items'
 import { classifyWay } from '@/data/itemSources'
+import { useCatalogStore } from '@/stores/catalog'
 import AppBreadcrumb from '@/components/common/AppBreadcrumb.vue'
 import { replaceRp } from '@/utils/replaceRp'
 
 const route = useRoute()
 const { t } = useI18n()
+const catalog = useCatalogStore()
+const {
+  currentItem: item,
+  currentItemPrev: prevItem,
+  currentItemNext: nextItem,
+  loading,
+  error,
+} = storeToRefs(catalog)
 
-const item = computed(() => getItemById(route.params.id))
 const fromSourceId = computed(() => {
   const value = route.query.from
   return typeof value === 'string' && value ? value : ALL_ITEMS_SOURCE_ID
 })
-const fromSource = computed(() => getItemSource(fromSourceId.value) || getItemSource(ALL_ITEMS_SOURCE_ID))
-const list = computed(() => getItemsBySource(fromSourceId.value))
-const itemIndex = computed(() => list.value.findIndex((entry) => entry.id === item.value?.id))
-const prevItem = computed(() => (itemIndex.value > 0 ? list.value[itemIndex.value - 1] : null))
-const nextItem = computed(() =>
-  itemIndex.value >= 0 && itemIndex.value < list.value.length - 1 ? list.value[itemIndex.value + 1] : null,
+
+watch(
+  () => [route.params.id, fromSourceId.value],
+  ([id, from]) => {
+    catalog.ensureNav().catch(() => {})
+    if (id) catalog.loadItem(id, from).catch(() => {})
+  },
+  { immediate: true },
 )
-const relatedSources = computed(() => (item.value ? itemSourcesOf(item.value) : []))
+
+const fromSource = computed(() => catalog.getItemSource(fromSourceId.value) || catalog.getItemSource(ALL_ITEMS_SOURCE_ID))
+const relatedSources = computed(() => (item.value ? itemSourcesOf(item.value, catalog.itemSourceCatalog) : []))
 const wayLinks = computed(() => {
   if (!item.value?.ways?.length) return []
   return item.value.ways.map((way) => {
     const classified = classifyWay(way)
-    const source = classified ? getItemSource(classified.id) : null
+    const source = classified ? catalog.getItemSource(classified.id) : null
     return {
       way,
       to: source ? source.path : '/encyclopedia/items',
@@ -65,7 +72,8 @@ function onIconError(event) {
 </script>
 
 <template>
-  <article v-if="item" class="detail" aria-labelledby="item-heading">
+  <p v-if="loading.item" class="missing">{{ t('common.catalogLoading') }}</p>
+  <article v-else-if="item" class="detail" aria-labelledby="item-heading">
     <AppBreadcrumb :items="crumbs" :label="t('header.breadcrumb')" />
 
     <header class="hero">
@@ -137,7 +145,7 @@ function onIconError(event) {
     </nav>
   </article>
   <div v-else class="missing">
-    <p>{{ t('common.empty') }}</p>
+    <p>{{ error.item === 'OFFLINE' ? t('common.catalogError') : t('common.empty') }}</p>
     <router-link to="/encyclopedia/items">{{ t('item.title') }}</router-link>
   </div>
 </template>

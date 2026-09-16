@@ -1,8 +1,8 @@
 /**
- * 从 BWiki《奇波一览》爬取奇波数据，写入 src/data/qibos/{id}.js，
+ * 从 BWiki《奇波一览》爬取奇波数据，写入后端 qibos.db，
  * 并下载详情页 `.kibo-pixelimg.tab-pane.kibo-tab-normall.active` 中的像素图。
  *
- * 可重复执行：wiki 新增条目会补文件，已有条目按详情页覆盖更新；
+ * 可重复执行：wiki 新增条目会补记录，已有条目按详情页覆盖更新；
  * 像素图仅在本地缺失或源地址变化时重新下载。
  *
  * 用法：
@@ -13,16 +13,16 @@
  *   node scripts/kib-spider.js --prune
  */
 
-import { mkdir, readdir, readFile, rm, writeFile } from 'node:fs/promises'
+import { mkdir, readdir, rm, writeFile } from 'node:fs/promises'
 import { existsSync } from 'node:fs'
 import { dirname, join } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { fileURLToPath } from 'node:url'
 import * as cheerio from 'cheerio'
 import { pinyin } from 'pinyin-pro'
+import { dumpCatalog, indexExisting, pruneCatalog, upsertCatalog } from './catalog-db.js'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const ROOT = join(__dirname, '..')
-const DATA_DIR = join(ROOT, 'src/data/qibos')
 const IMAGE_DIR = join(ROOT, 'public/imgs/qibos')
 const IMAGE_PUBLIC_PATH = '/imgs/qibos'
 
@@ -223,22 +223,7 @@ async function fetchBuffer(url, { retries = 3 } = {}) {
 }
 
 async function loadExisting() {
-  const bySlug = new Map()
-  const byName = new Map()
-  const byId = new Map()
-  if (!existsSync(DATA_DIR)) return { bySlug, byName, byId }
-  const files = await readdir(DATA_DIR)
-  for (const file of files) {
-    if (!file.endsWith('.js')) continue
-    const href = pathToFileURL(join(DATA_DIR, file)).href
-    const mod = await import(href)
-    const data = mod.default
-    if (!data?.id) continue
-    byId.set(data.id, data)
-    if (data.wikiSlug) bySlug.set(data.wikiSlug, data)
-    if (data.name) byName.set(data.name, data)
-  }
-  return { bySlug, byName, byId }
+  return indexExisting(dumpCatalog('qibos'))
 }
 
 function parseList(html) {
@@ -447,15 +432,8 @@ async function downloadPixel(url, id, existing, force) {
 }
 
 async function writeQiboFile(data) {
-  await mkdir(DATA_DIR, { recursive: true })
-  const file = join(DATA_DIR, `${data.id}.js`)
-  const next = toModuleSource(data)
-  if (existsSync(file)) {
-    const prev = await readFile(file, 'utf8')
-    if (prev === next) return { file, changed: false }
-  }
-  await writeFile(file, next, 'utf8')
-  return { file, changed: true }
+  const result = upsertCatalog('qibos', data)
+  return { changed: (result.written || 0) > 0 }
 }
 
 function resolveId(listed, existing, used) {
@@ -471,16 +449,8 @@ function resolveId(listed, existing, used) {
 }
 
 async function pruneStale(keepIds, keepImages) {
-  if (!existsSync(DATA_DIR)) return { files: 0, images: 0 }
-  let files = 0
+  const pruned = pruneCatalog('qibos', keepIds)
   let images = 0
-  for (const file of await readdir(DATA_DIR)) {
-    if (!file.endsWith('.js')) continue
-    const id = file.slice(0, -3)
-    if (keepIds.has(id)) continue
-    await rm(join(DATA_DIR, file), { force: true })
-    files += 1
-  }
   if (existsSync(IMAGE_DIR)) {
     for (const file of await readdir(IMAGE_DIR)) {
       const publicPath = `${IMAGE_PUBLIC_PATH}/${file}`
@@ -489,7 +459,7 @@ async function pruneStale(keepIds, keepImages) {
       images += 1
     }
   }
-  return { files, images }
+  return { files: pruned.removed || 0, images }
 }
 
 async function main() {
@@ -554,13 +524,6 @@ async function main() {
   console.log(
     `[kib-spider] 完成：写入 ${stats.written}，未变 ${stats.unchanged}，下载图片 ${stats.images}，跳过图片 ${stats.imageSkip}，失败 ${stats.failed}`,
   )
-  try {
-    const { generateEncyclopediaMeta } = await import('./generate-encyclopedia-meta.js')
-    await generateEncyclopediaMeta(ROOT, { force: true })
-    console.log('[kib-spider] 已刷新 encyclopediaMeta')
-  } catch (error) {
-    console.warn('[kib-spider] 刷新 encyclopediaMeta 失败:', error.message)
-  }
   if (stats.failed) process.exitCode = 1
 }
 

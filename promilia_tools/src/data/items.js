@@ -1,6 +1,5 @@
 /**
- * 物品图鉴入口
- * 各物品数据拆分在 ./items/{id}.js，由 scripts/item-spider.js 从 BWiki 同步
+ * 物品图鉴辅助函数。全量列表走 /api/items，详情走 /api/items/:id。
  */
 import {
   ALL_ITEMS_SOURCE_ID,
@@ -10,38 +9,22 @@ import {
   itemBelongsToSource,
 } from './itemSources'
 
-const modules = import.meta.glob('./items/*.js', { eager: true, import: 'default' })
-
-const byId = Object.fromEntries(
-  Object.values(modules)
-    .filter((item) => item?.id)
-    .map((item) => [item.id, item]),
-)
-
-export const items = Object.values(byId).sort((a, b) => {
-  const rarityDiff = Number(b.rarity || 0) - Number(a.rarity || 0)
-  if (rarityDiff) return rarityDiff
-  return String(a.name).localeCompare(String(b.name), 'zh-CN')
-})
-
-export const itemSourceCatalog = buildItemSourceCatalog(items)
-
-export function getItemById(id) {
-  return byId[id] || null
+export function getItemById(list, id) {
+  return list?.find((item) => item.id === id) || null
 }
 
-export function getItemSource(id) {
-  return getItemSourceById(itemSourceCatalog, id)
+export function getItemSource(catalog, id) {
+  return getItemSourceById(catalog, id)
 }
 
-export function getItemsBySource(sourceId) {
-  if (!sourceId || sourceId === ALL_ITEMS_SOURCE_ID) return items
-  return items.filter((item) => itemBelongsToSource(item, sourceId))
+export function getItemsBySource(list, sourceId) {
+  if (!sourceId || sourceId === ALL_ITEMS_SOURCE_ID) return list
+  return list.filter((item) => itemBelongsToSource(item, sourceId))
 }
 
-export function itemSourcesOf(item) {
+export function itemSourcesOf(item, catalog) {
   return classifyItemSources(item)
-    .map((src) => getItemSource(src.id))
+    .map((src) => getItemSourceById(catalog, src.id))
     .filter(Boolean)
 }
 
@@ -75,7 +58,7 @@ export function matchItemFilters(item, filters) {
   return true
 }
 
-export function getItemFilterOptions(list = items) {
+export function getItemFilterOptions(list = []) {
   return {
     rarity: uniqueValues(list.map((item) => item.rarity).filter((n) => Number(n) > 0)).sort((a, b) => b - a),
     types: sortByLocale(uniqueValues(list.flatMap((item) => item.types || []))),
@@ -84,4 +67,4 @@ export function getItemFilterOptions(list = items) {
   }
 }
 
-export { ALL_ITEMS_SOURCE_ID }
+export { ALL_ITEMS_SOURCE_ID, buildItemSourceCatalog }

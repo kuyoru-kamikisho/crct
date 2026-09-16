@@ -1,10 +1,11 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { onMounted, ref, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { useSettingsStore } from '@/stores/settings'
-import { navSections } from '@/data/navigation'
+import { useCatalogStore } from '@/stores/catalog'
 import { SUPPORTED_LOCALES, setAppLocale } from '@/i18n'
 import LangSwitcher from '@/components/common/LangSwitcher.vue'
 import ThemeSwitcher from '@/components/common/ThemeSwitcher.vue'
@@ -12,12 +13,28 @@ import ThemeSwitcher from '@/components/common/ThemeSwitcher.vue'
 const { t } = useI18n()
 const route = useRoute()
 const settings = useSettingsStore()
-const openIds = ref(navSections.map((s) => s.id))
+const catalog = useCatalogStore()
+const { navSections } = storeToRefs(catalog)
+const openIds = ref([])
+
+onMounted(() => {
+  catalog.ensureNav().catch(() => {})
+})
 
 watch(
-  () => [route.path, route.name, route.query.from],
+  navSections,
+  (sections) => {
+    if (!openIds.value.length && sections.length) {
+      openIds.value = sections.map((s) => s.id)
+    }
+  },
+  { immediate: true },
+)
+
+watch(
+  () => [route.path, route.name, route.query.from, navSections.value],
   () => {
-    const hit = navSections.find((s) => s.children.some((c) => isActive(c.path)))
+    const hit = navSections.value.find((s) => s.children.some((c) => isActive(c.path)))
     if (hit && !openIds.value.includes(hit.id)) {
       openIds.value.push(hit.id)
     }

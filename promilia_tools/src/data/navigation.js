@@ -34,7 +34,6 @@ import {
   mdiTshirtCrew,
 } from '@mdi/js'
 import { ALL_ITEMS_SOURCE_ID } from '@/data/itemSources'
-import { itemSourceCatalog } from '@/data/encyclopediaMeta'
 
 const SOURCE_ICONS = {
   bag: mdiBagPersonal,
@@ -54,7 +53,17 @@ const SOURCE_ICONS = {
   other: mdiBagPersonal,
 }
 
-function itemNavChildren() {
+function itemNavChildren(itemSourceCatalog = []) {
+  if (!itemSourceCatalog.length) {
+    return [
+      {
+        id: 'item-items',
+        labelKey: 'nav.items',
+        path: '/encyclopedia/items',
+        icon: SOURCE_ICONS.bag,
+      },
+    ]
+  }
   return itemSourceCatalog.map((src) => ({
     id: `item-${src.id}`,
     label: src.name,
@@ -65,60 +74,64 @@ function itemNavChildren() {
 }
 
 /**
- * 侧栏导航结构 —— 子模块可随时扩充
+ * 侧栏导航结构 —— 物品来源由 /api/nav 注入
  */
-export const navSections = [
-  {
-    id: 'encyclopedia',
-    labelKey: 'nav.encyclopedia',
-    icon: mdiBookOpenPageVariant,
-    children: [
-      { id: 'characters', labelKey: 'nav.characters', path: '/encyclopedia/characters', icon: mdiAccountStar },
-      { id: 'qibo', labelKey: 'nav.qibo', path: '/encyclopedia/qibo', icon: mdiPaw },
-      ...itemNavChildren(),
-      { id: 'achievements', labelKey: 'nav.achievements', path: '/encyclopedia/achievements', icon: mdiTrophyOutline },
-      { id: 'affixes', labelKey: 'nav.affixes', path: '/encyclopedia/affixes', icon: mdiTagOutline },
-    ],
-  },
-  {
-    id: 'guides',
-    labelKey: 'nav.guides',
-    icon: mdiCompass,
-    children: [
-      { id: 'guide-character', labelKey: 'nav.guideCharacter', path: '/guides/character', icon: mdiBookAccount },
-      { id: 'guide-qibo', labelKey: 'nav.guideQibo', path: '/guides/qibo', icon: mdiPawOutline },
-      { id: 'guide-farm', labelKey: 'nav.guideFarm', path: '/guides/farm', icon: mdiBarn },
-      { id: 'guide-puzzle', labelKey: 'nav.guidePuzzle', path: '/guides/puzzle', icon: mdiPuzzleOutline },
-      { id: 'guide-event', labelKey: 'nav.guideEvent', path: '/guides/event', icon: mdiCalendarStar },
-    ],
-  },
-  {
-    id: 'story',
-    labelKey: 'nav.story',
-    icon: mdiScriptTextOutline,
-    children: [
-      { id: 'story-main', labelKey: 'nav.storyMain', path: '/story/main', icon: mdiBookOpenVariant },
-      { id: 'story-side', labelKey: 'nav.storySide', path: '/story/side', icon: mdiBookOpenOutline },
-    ],
-  },
-  {
-    id: 'tools',
-    labelKey: 'nav.tools',
-    icon: mdiGamepadVariant,
-    children: [
-      { id: 'character-rank', labelKey: 'nav.characterRank', path: '/tools/rank', icon: mdiChartBar },
-      { id: 'gacha', labelKey: 'nav.gacha', path: '/tools/gacha', icon: mdiCardsPlayingOutline },
-      { id: 'team-calc', labelKey: 'nav.teamCalc', path: '/tools/team', icon: mdiCalculatorVariant },
-      { id: 'map-tool', labelKey: 'nav.mapTool', path: '/tools/map', icon: mdiMapOutline },
-    ],
-  },
-  {
-    id: 'contribute',
-    labelKey: 'nav.contribute',
-    icon: mdiHandHeartOutline,
-    children: [{ id: 'contribute', labelKey: 'nav.contribute', path: '/contribute', icon: mdiHeartOutline }],
-  },
-]
+export function buildNavSections(itemSourceCatalog = []) {
+  return [
+    {
+      id: 'encyclopedia',
+      labelKey: 'nav.encyclopedia',
+      icon: mdiBookOpenPageVariant,
+      children: [
+        { id: 'characters', labelKey: 'nav.characters', path: '/encyclopedia/characters', icon: mdiAccountStar },
+        { id: 'qibo', labelKey: 'nav.qibo', path: '/encyclopedia/qibo', icon: mdiPaw },
+        ...itemNavChildren(itemSourceCatalog),
+        { id: 'achievements', labelKey: 'nav.achievements', path: '/encyclopedia/achievements', icon: mdiTrophyOutline },
+        { id: 'affixes', labelKey: 'nav.affixes', path: '/encyclopedia/affixes', icon: mdiTagOutline },
+      ],
+    },
+    {
+      id: 'guides',
+      labelKey: 'nav.guides',
+      icon: mdiCompass,
+      children: [
+        { id: 'guide-character', labelKey: 'nav.guideCharacter', path: '/guides/character', icon: mdiBookAccount },
+        { id: 'guide-qibo', labelKey: 'nav.guideQibo', path: '/guides/qibo', icon: mdiPawOutline },
+        { id: 'guide-farm', labelKey: 'nav.guideFarm', path: '/guides/farm', icon: mdiBarn },
+        { id: 'guide-puzzle', labelKey: 'nav.guidePuzzle', path: '/guides/puzzle', icon: mdiPuzzleOutline },
+        { id: 'guide-event', labelKey: 'nav.guideEvent', path: '/guides/event', icon: mdiCalendarStar },
+      ],
+    },
+    {
+      id: 'story',
+      labelKey: 'nav.story',
+      icon: mdiScriptTextOutline,
+      children: [
+        { id: 'story-main', labelKey: 'nav.storyMain', path: '/story/main', icon: mdiBookOpenVariant },
+        { id: 'story-side', labelKey: 'nav.storySide', path: '/story/side', icon: mdiBookOpenOutline },
+      ],
+    },
+    {
+      id: 'tools',
+      labelKey: 'nav.tools',
+      icon: mdiGamepadVariant,
+      children: [
+        { id: 'character-rank', labelKey: 'nav.characterRank', path: '/tools/rank', icon: mdiChartBar },
+        { id: 'gacha', labelKey: 'nav.gacha', path: '/tools/gacha', icon: mdiCardsPlayingOutline },
+        { id: 'team-calc', labelKey: 'nav.teamCalc', path: '/tools/team', icon: mdiCalculatorVariant },
+        { id: 'map-tool', labelKey: 'nav.mapTool', path: '/tools/map', icon: mdiMapOutline },
+      ],
+    },
+    {
+      id: 'contribute',
+      labelKey: 'nav.contribute',
+      icon: mdiHandHeartOutline,
+      children: [{ id: 'contribute', labelKey: 'nav.contribute', path: '/contribute', icon: mdiHeartOutline }],
+    },
+  ]
+}
+
+export const navSections = buildNavSections()
 
 export const footerLinks = [
   {

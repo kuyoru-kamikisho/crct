@@ -1,16 +1,25 @@
 <script setup>
 import { computed, nextTick, reactive, watch } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { getQiboById, qibos } from '@/data/qibos'
+import { useCatalogStore } from '@/stores/catalog'
 import SkillDesc from '@/components/common/SkillDesc.vue'
 import AppBreadcrumb from '@/components/common/AppBreadcrumb.vue'
 import { replaceRp } from '@/utils/replaceRp'
 
 const route = useRoute()
 const { t } = useI18n()
+const catalog = useCatalogStore()
+const { currentQibo: qibo, currentQiboPrev: prevQibo, currentQiboNext: nextQibo, loading, error } = storeToRefs(catalog)
 
-const qibo = computed(() => getQiboById(route.params.id))
+watch(
+  () => route.params.id,
+  (id) => {
+    if (id) catalog.loadQibo(id).catch(() => {})
+  },
+  { immediate: true },
+)
 const crumbs = computed(() => [
   { to: '/', label: t('nav.home') },
   { to: '/encyclopedia/qibo', label: t('nav.qibo') },
@@ -27,11 +36,7 @@ const pixelFrames = computed(() => {
 })
 const frameSize = computed(() => Number(qibo.value?.imageHeight) || 96)
 
-const qiboIndex = computed(() => qibos.findIndex((item) => item.id === qibo.value?.id))
-const prevQibo = computed(() => (qiboIndex.value > 0 ? qibos[qiboIndex.value - 1] : null))
-const nextQibo = computed(() =>
-  qiboIndex.value >= 0 && qiboIndex.value < qibos.length - 1 ? qibos[qiboIndex.value + 1] : null,
-)
+const evolutionChain = computed(() => qibo.value?.evolutions || [])
 
 const metaRows = computed(() => {
   const item = qibo.value
@@ -47,25 +52,6 @@ const metaRows = computed(() => {
     [t('common.location'), item.location],
     [t('common.captureRate'), item.captureRate],
   ].filter(([, value]) => value)
-})
-
-const evolutionChain = computed(() => {
-  const item = qibo.value
-  const list = item?.evolutions
-  if (!list?.length) return []
-  return list.map((evo) => {
-    const matched =
-      qibos.find((entry) => entry.wikiSlug === evo.wikiSlug) ||
-      qibos.find((entry) => entry.name === evo.name && String(entry.no) === String(evo.no)) ||
-      qibos.find((entry) => entry.name === evo.name) ||
-      null
-    return {
-      ...evo,
-      id: matched?.id,
-      image: matched?.image,
-      current: matched ? matched.id === item.id : evo.name === item.name,
-    }
-  })
 })
 
 const skillLevelMap = reactive({})
@@ -113,7 +99,8 @@ function onPixelError(event) {
 </script>
 
 <template>
-  <article v-if="qibo" class="detail" aria-labelledby="qibo-heading">
+  <p v-if="loading.qibo" class="missing">{{ t('common.catalogLoading') }}</p>
+  <article v-else-if="qibo" class="detail" aria-labelledby="qibo-heading">
     <AppBreadcrumb :items="crumbs" :label="t('header.breadcrumb')" />
 
     <header class="hero">
@@ -232,7 +219,7 @@ function onPixelError(event) {
     </nav>
   </article>
   <div v-else class="missing">
-    <p>{{ t('common.empty') }}</p>
+    <p>{{ error.qibo === 'OFFLINE' ? t('common.catalogError') : t('common.empty') }}</p>
     <router-link to="/encyclopedia/qibo">{{ t('nav.qibo') }}</router-link>
   </div>
 </template>
