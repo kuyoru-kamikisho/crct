@@ -42,6 +42,7 @@ class AppController extends ChangeNotifier {
   String? currentFilePath;
   bool dirty = false;
   String statusMessage = '就绪';
+  String _lastEditorText = '';
 
   Map<String, String> get activeEnv {
     final name = settings.selectedEnv;
@@ -81,12 +82,15 @@ class AppController extends ChangeNotifier {
       text = await rootBundle.loadString('assets/examples.http');
     }
     editorController.text = text;
+    _lastEditorText = text;
     _reparse();
     editorController.addListener(_onEditorChanged);
     notifyListeners();
   }
 
   void _onEditorChanged() {
+    if (editorController.text == _lastEditorText) return;
+    _lastEditorText = editorController.text;
     dirty = true;
     _reparse();
     _autosave?.cancel();

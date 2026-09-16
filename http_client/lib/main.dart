@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 
+import 'services/system_paste.dart';
 import 'state/app_controller.dart';
 import 'theme/app_theme.dart';
 import 'widgets/home_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemPaste.init();
   final controller = AppController();
   await controller.init();
   runApp(HttpClientApp(controller: controller));

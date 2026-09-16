@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 
 import '../models/models.dart';
+import '../services/system_paste.dart';
 import '../state/app_controller.dart';
 import '../theme/app_theme.dart';
 import '../utils/helpers.dart';
@@ -19,17 +20,24 @@ class ResponsePanel extends StatefulWidget {
 class _ResponsePanelState extends State<ResponsePanel> with SingleTickerProviderStateMixin {
   late final TabController _tabs;
   final TextEditingController _wsInput = TextEditingController();
+  final FocusNode _wsFocus = FocusNode();
 
   @override
   void initState() {
     super.initState();
     _tabs = TabController(length: 4, vsync: this);
+    _wsFocus.addListener(() {
+      if (_wsFocus.hasFocus) {
+        SystemPaste.remember(_wsInput, _wsFocus);
+      }
+    });
   }
 
   @override
   void dispose() {
     _tabs.dispose();
     _wsInput.dispose();
+    _wsFocus.dispose();
     super.dispose();
   }
 
@@ -96,6 +104,7 @@ class _ResponsePanelState extends State<ResponsePanel> with SingleTickerProvider
                 _WsTab(
                   controller: c,
                   input: _wsInput,
+                  focusNode: _wsFocus,
                 ),
                 _ResultsTab(controller: c),
               ],
@@ -238,9 +247,10 @@ class _HeadersTab extends StatelessWidget {
 }
 
 class _WsTab extends StatelessWidget {
-  const _WsTab({required this.controller, required this.input});
+  const _WsTab({required this.controller, required this.input, required this.focusNode});
   final AppController controller;
   final TextEditingController input;
+  final FocusNode focusNode;
 
   @override
   Widget build(BuildContext context) {
@@ -304,6 +314,7 @@ class _WsTab extends StatelessWidget {
               Expanded(
                 child: TextField(
                   controller: input,
+                  focusNode: focusNode,
                   enabled: connected,
                   decoration: InputDecoration(
                     hintText: connected ? '输入要发送的 WebSocket 文本…' : '请先运行 WEBSOCKET 请求并保持连接',

@@ -19,12 +19,15 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   AppController get c => widget.controller;
+  final GlobalKey<HttpCodeEditorState> _editorKey = GlobalKey<HttpCodeEditorState>();
 
   int _caretLine() {
     final text = c.editorController.text;
     final offset = c.editorController.selection.baseOffset.clamp(0, text.length);
     return '\n'.allMatches(text.substring(0, offset)).length;
   }
+
+  HttpCodeEditorState? get _editor => _editorKey.currentState;
 
   @override
   Widget build(BuildContext context) {
@@ -44,12 +47,22 @@ class _HomePageState extends State<HomePage> {
               const SingleActivator(LogicalKeyboardKey.enter, control: true): () => c.runAtLine(_caretLine()),
               const SingleActivator(LogicalKeyboardKey.enter, control: true, shift: true): () => c.runAll(),
               const SingleActivator(LogicalKeyboardKey.keyF, control: true, alt: true): c.formatDocument,
+              const SingleActivator(LogicalKeyboardKey.keyF, control: true): () => _editor?.openFind(),
+              const SingleActivator(LogicalKeyboardKey.keyH, control: true): () =>
+                  _editor?.openFind(replace: true),
+              const SingleActivator(LogicalKeyboardKey.f3): () => _editor?.findNext(),
+              const SingleActivator(LogicalKeyboardKey.f3, shift: true): () => _editor?.findPrevious(),
             },
-            child: Focus(
+            child: FocusScope(
               autofocus: true,
               child: Column(
                 children: [
-                  _Toolbar(controller: c, fileTitle: title, onRunCaret: () => c.runAtLine(_caretLine())),
+                  _Toolbar(
+                    controller: c,
+                    fileTitle: title,
+                    onRunCaret: () => c.runAtLine(_caretLine()),
+                    onFind: () => _editor?.openFind(),
+                  ),
                   Divider(height: 1, color: colors.border),
                   Expanded(
                     child: LayoutBuilder(
@@ -61,6 +74,7 @@ class _HomePageState extends State<HomePage> {
                             SizedBox(
                               height: top,
                               child: HttpCodeEditor(
+                                key: _editorKey,
                                 controller: c.editorController,
                                 document: c.document,
                                 lineStatus: c.lineStatus,
@@ -121,10 +135,12 @@ class _Toolbar extends StatelessWidget {
     required this.controller,
     required this.fileTitle,
     required this.onRunCaret,
+    required this.onFind,
   });
   final AppController controller;
   final String fileTitle;
   final VoidCallback onRunCaret;
+  final VoidCallback onFind;
 
   @override
   Widget build(BuildContext context) {
@@ -178,6 +194,11 @@ class _Toolbar extends StatelessWidget {
             icon: Icons.format_align_left,
             tip: '格式化 (Ctrl+Alt+F)',
             onTap: c.formatDocument,
+          ),
+          _IconAction(
+            icon: Icons.search,
+            tip: '查找 / 替换 (Ctrl+F / Ctrl+H)',
+            onTap: onFind,
           ),
           _VSep(colors),
           _IconAction(

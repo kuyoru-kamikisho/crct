@@ -15,6 +15,9 @@ class FlutterWindow : public Win32Window {
   explicit FlutterWindow(const flutter::DartProject& project);
   virtual ~FlutterWindow();
 
+  void NotifyPaste();
+  void NotifyFocus();
+
  protected:
   // Win32Window:
   bool OnCreate() override;
@@ -23,11 +26,17 @@ class FlutterWindow : public Win32Window {
                          LPARAM const lparam) noexcept override;
 
  private:
+  void InvokeDartMethod(const char* method);
+  bool IsWinV(WPARAM wparam) const;
+
   // The project to run.
   flutter::DartProject project_;
 
   // The Flutter instance hosted by this window.
   std::unique_ptr<flutter::FlutterViewController> flutter_controller_;
+
+  HWND view_hwnd_ = nullptr;
+  WNDPROC original_view_proc_ = nullptr;
 };
 
 #endif  // RUNNER_FLUTTER_WINDOW_H_
