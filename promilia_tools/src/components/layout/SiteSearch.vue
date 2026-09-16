@@ -13,7 +13,8 @@ import {
   mdiPaw,
 } from '@mdi/js'
 import { useSettingsStore } from '@/stores/settings'
-import { searchSite, splitHighlight } from '@/utils/siteSearch'
+import { searchSite } from '@/utils/siteSearch'
+import { splitHighlight } from '@/utils/textHighlight'
 import { replaceRp } from '@/utils/replaceRp'
 
 const KIND_ICONS = {
@@ -32,10 +33,13 @@ const root = ref(null)
 const inputEl = ref(null)
 const query = ref('')
 const results = ref([])
+const searching = ref(false)
 const expanded = ref(false)
 const focused = ref(false)
 const composing = ref(false)
 const activeIndex = ref(0)
+let searchSeq = 0
+let searchTimer = 0
 
 const isNarrow = computed(() => settings.isNarrow)
 const panelOpen = computed(() => !isNarrow.value || expanded.value)
@@ -66,6 +70,8 @@ function displaySubtitle(item) {
 function clearQuery() {
   query.value = ''
   results.value = []
+  searching.value = false
+  searchSeq += 1
 }
 
 function clearOrClose() {
@@ -78,9 +84,31 @@ function onCompositionEnd() {
   runSearch()
 }
 
-function runSearch() {
-  results.value = searchSite(query.value)
-  activeIndex.value = 0
+async function runSearch() {
+  const q = query.value.trim()
+  const my = ++searchSeq
+  window.clearTimeout(searchTimer)
+  if (!q) {
+    results.value = []
+    searching.value = false
+    return
+  }
+  searching.value = true
+  await new Promise((resolve) => {
+    searchTimer = window.setTimeout(resolve, 160)
+  })
+  if (my !== searchSeq) return
+  try {
+    const hits = await searchSite(query.value)
+    if (my !== searchSeq) return
+    results.value = hits
+    activeIndex.value = 0
+  } catch {
+    if (my !== searchSeq) return
+    results.value = []
+  } finally {
+    if (my === searchSeq) searching.value = false
+  }
 }
 
 watch(query, () => {
@@ -103,6 +131,8 @@ function closeSearch({ clear = false } = {}) {
   focused.value = false
   inputEl.value?.blur()
   if (clear) {
+    searchSeq += 1
+    searching.value = false
     query.value = ''
     results.value = []
   }
@@ -175,6 +205,8 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  searchSeq += 1
+  window.clearTimeout(searchTimer)
   window.removeEventListener('keydown', onGlobalKey)
   document.removeEventListener('pointerdown', onPointerDown)
 })
@@ -244,7 +276,10 @@ onUnmounted(() => {
       </p>
 
       <ul v-if="dropdownOpen" id="site-search-list" class="results" role="listbox">
-        <li v-if="!results.length" class="empty" role="presentation">
+        <li v-if="searching && !results.length" class="empty" role="presentation">
+          {{ t('header.searchLoading') }}
+        </li>
+        <li v-else-if="!results.length" class="empty" role="presentation">
           {{ replaceRp(t('header.searchNoResult'), query.trim()) }}
         </li>
         <li

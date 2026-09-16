@@ -51,6 +51,7 @@ export default {
     searchPlaceholder: '캐릭터, 스킬, 키보, 아이템 검색…',
     searchHint: '키워드로 사이트 전체를 검색합니다',
     searchNoResult: '「$rp」에 해당하는 결과가 없습니다',
+    searchLoading: '검색 결과를 불러오는 중…',
     openSearch: '검색 열기',
     clearSearch: '검색 지우기',
     closeSearch: '검색 닫기',
@@ -80,6 +81,7 @@ export default {
     itemCount: '아이템',
     catalog: '자료 목록',
     catalogLead: '캐릭터, 키보, 아이템 상세 페이지로 이동합니다.',
+    viewAll: '전체 보기',
   },
   seo: {
     titleSuffix: '아주르 프로밀리아 Wiki',

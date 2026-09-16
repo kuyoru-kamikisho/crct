@@ -51,6 +51,7 @@ export default {
     searchPlaceholder: 'キャラ・スキル・奇波・アイテムを検索…',
     searchHint: 'キーワードでサイト内を検索',
     searchNoResult: '「$rp」に一致する結果はありません',
+    searchLoading: '検索結果を読み込み中…',
     openSearch: '検索を開く',
     clearSearch: '検索をクリア',
     closeSearch: '検索を閉じる',
@@ -80,6 +81,7 @@ export default {
     itemCount: 'アイテム',
     catalog: '資料ディレクトリ',
     catalogLead: 'キャラ、奇波、アイテムの詳細ページへ。',
+    viewAll: 'すべて見る',
   },
   seo: {
     titleSuffix: 'アズールプロミリア Wiki',

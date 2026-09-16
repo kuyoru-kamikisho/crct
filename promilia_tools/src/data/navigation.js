@@ -33,7 +33,8 @@ import {
   mdiTrophyOutline,
   mdiTshirtCrew,
 } from '@mdi/js'
-import { ALL_ITEMS_SOURCE_ID, itemSourceCatalog } from '@/data/items'
+import { ALL_ITEMS_SOURCE_ID } from '@/data/itemSources'
+import { itemSourceCatalog } from '@/data/encyclopediaMeta'
 
 const SOURCE_ICONS = {
   bag: mdiBagPersonal,

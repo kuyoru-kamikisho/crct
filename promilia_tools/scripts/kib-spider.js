@@ -554,6 +554,13 @@ async function main() {
   console.log(
     `[kib-spider] 完成：写入 ${stats.written}，未变 ${stats.unchanged}，下载图片 ${stats.images}，跳过图片 ${stats.imageSkip}，失败 ${stats.failed}`,
   )
+  try {
+    const { generateEncyclopediaMeta } = await import('./generate-encyclopedia-meta.js')
+    await generateEncyclopediaMeta(ROOT, { force: true })
+    console.log('[kib-spider] 已刷新 encyclopediaMeta')
+  } catch (error) {
+    console.warn('[kib-spider] 刷新 encyclopediaMeta 失败:', error.message)
+  }
   if (stats.failed) process.exitCode = 1
 }
 

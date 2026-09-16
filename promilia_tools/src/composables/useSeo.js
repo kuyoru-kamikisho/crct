@@ -1,9 +1,7 @@
 import { watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useI18n } from 'vue-i18n'
-import { characters, getCharacterById } from '@/data/characters'
-import { qibos, getQiboById } from '@/data/qibos'
-import { items, getItemById, getItemSource, itemSourceCatalog } from '@/data/items'
+import { characterSummaries, itemSourceCatalog, qiboSummaries } from '@/data/encyclopediaMeta'
 import { buildSeo } from '@/seo/meta'
 import { DEFAULT_LOCALE, SITE_NAME, THEME_COLOR, getSiteUrl } from '@/seo/site'
 import { ogLocaleOf } from '@/i18n'
@@ -83,42 +81,77 @@ function applySeo(payload, siteUrl, locale) {
   void siteUrl
 }
 
+function lightEntities() {
+  return {
+    character: null,
+    characters: characterSummaries,
+    qibo: null,
+    qibos: qiboSummaries,
+    item: null,
+    items: [],
+    itemSource: null,
+    itemSources: itemSourceCatalog,
+  }
+}
+
+async function loadRouteEntities(route) {
+  const name = route.name
+  if (name === 'characters' || name === 'character-detail' || name === 'character-rank') {
+    const { characters, getCharacterById } = await import('@/data/characters')
+    return {
+      ...lightEntities(),
+      characters,
+      character: name === 'character-detail' ? getCharacterById(route.params.id) : null,
+    }
+  }
+  if (name === 'qibo' || name === 'qibo-detail') {
+    const { qibos, getQiboById } = await import('@/data/qibos')
+    return {
+      ...lightEntities(),
+      qibos,
+      qibo: name === 'qibo-detail' ? getQiboById(route.params.id) : null,
+    }
+  }
+  if (name === 'items' || name === 'item-source' || name === 'item-detail') {
+    const { items, getItemById, getItemSource, itemSourceCatalog: catalog } = await import('@/data/items')
+    return {
+      ...lightEntities(),
+      items,
+      item: name === 'item-detail' ? getItemById(route.params.id) : null,
+      itemSources: catalog,
+      itemSource: name === 'item-source' ? getItemSource(route.params.source) : null,
+    }
+  }
+  return lightEntities()
+}
+
 /**
  * 随路由与语言更新 title / description / Open Graph / JSON-LD。
  */
 export function useSeo() {
   const route = useRoute()
   const { locale, messages } = useI18n()
+  let seq = 0
 
   watch(
     () => [route.fullPath, locale.value],
-    () => {
+    async () => {
+      const my = ++seq
       const pack = messages.value?.[locale.value] || messages.value?.[DEFAULT_LOCALE]
-      const character =
-        route.name === 'character-detail' ? getCharacterById(route.params.id) : null
-      const qibo = route.name === 'qibo-detail' ? getQiboById(route.params.id) : null
-      const item = route.name === 'item-detail' ? getItemById(route.params.id) : null
-      const itemSource =
-        route.name === 'item-source' ? getItemSource(route.params.source) : null
+      const entities = await loadRouteEntities(route)
+      if (my !== seq) return
       const payload = buildSeo({
         path: route.path,
         routeName: route.name,
         siteUrl: getSiteUrl(),
         messages: pack,
-        character,
-        characters,
-        qibo,
-        qibos,
-        item,
-        items,
-        itemSource,
-        itemSources: itemSourceCatalog,
+        ...entities,
         noindex:
           Boolean(route.meta?.noindex) ||
-          (route.name === 'character-detail' && !character) ||
-          (route.name === 'qibo-detail' && !qibo) ||
-          (route.name === 'item-detail' && !item) ||
-          (route.name === 'item-source' && !itemSource),
+          (route.name === 'character-detail' && !entities.character) ||
+          (route.name === 'qibo-detail' && !entities.qibo) ||
+          (route.name === 'item-detail' && !entities.item) ||
+          (route.name === 'item-source' && !entities.itemSource),
       })
       applySeo(payload, getSiteUrl(), locale.value)
     },

@@ -28,6 +28,11 @@ from pathlib import Path
 from urllib.parse import parse_qs, urlparse
 
 ROOT = Path(__file__).resolve().parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from wiki_index import SEARCH_DB_PATH, ensure_index as ensure_search_index, health_payload as search_health, nav_payload, search_docs
+
 DATA_DIR = ROOT / "data"
 DB_PATH = DATA_DIR / "votes.db"
 CHAR_DIR = ROOT.parent / "promilia_tools" / "src" / "data" / "characters"
@@ -458,9 +463,11 @@ INDEX_HTML = """<!doctype html>
   </style>
 </head>
 <body>
-  <h1>Promilia 角色投票服务</h1>
-  <p>服务已启动。前端页面请打开 Wiki 的「角色排名」。</p>
+  <h1>Promilia Wiki 服务</h1>
+  <p>服务已启动。提供角色投票与站内搜索 / 导航索引。</p>
   <p>健康检查：<a href="/api/health">/api/health</a></p>
+  <p>站内搜索：<a href="/api/search?q=%E6%9C%AB%E9%9F%B3">/api/search?q=末音</a></p>
+  <p>导航目录：<a href="/api/nav">/api/nav</a></p>
 </body>
 </html>
 """
@@ -504,6 +511,7 @@ class VoteHandler(BaseHTTPRequestHandler):
                 "ALREADY_VOTED": 409,
                 "DEVICE_ALREADY_VOTED": 409,
                 "NOT_FOUND": 404,
+                "QUERY_TOO_LONG": 400,
             }
             code = mapping.get(payload.get("code"), 400)
         self._send(code, body, "application/json; charset=utf-8")
@@ -524,13 +532,15 @@ class VoteHandler(BaseHTTPRequestHandler):
             return self._html(INDEX_HTML)
         if path == "/api/health":
             ids = load_character_ids()
+            search = search_health()
             return self._json(
                 {
                     "ok": True,
-                    "service": "promilia-vote",
+                    "service": "promilia-wiki",
                     "date": today_str(),
                     "characters": len(ids),
                     "db": str(DB_PATH),
+                    "search": search,
                 }
             )
         if path == "/api/meta":
@@ -542,6 +552,26 @@ class VoteHandler(BaseHTTPRequestHandler):
                     "characters": sorted(load_character_ids()),
                 }
             )
+
+        if path == "/api/search":
+            ip = client_ip(self)
+            if RATE and not RATE.allow(f"search:{ip}", 120, 60):
+                return self._json(fail("RATE_LIMITED", "too many requests"))
+            query = (qs.get("q") or [""])[0]
+            if len(query) > 80:
+                return self._json(fail("QUERY_TOO_LONG", "query too long"))
+            try:
+                limit = int((qs.get("limit") or ["12"])[0])
+            except ValueError:
+                limit = 12
+            try:
+                results = search_docs(query, limit)
+            except Exception as exc:
+                sys.stderr.write(f"search error: {exc}\n")
+                return self._json({"ok": False, "code": "FAIL", "message": "search unavailable"}, 500)
+            return self._json({"ok": True, "query": query.strip(), "results": results})
+        if path == "/api/nav":
+            return self._json(nav_payload())
 
         category = (qs.get("category") or ["favorite"])[0]
         if path == "/api/rank":
@@ -615,13 +645,23 @@ def main() -> None:
     init_db()
     load_character_ids()
     seeded = seed_demo_counts()
+    search_stats = {"docs": 0}
+    try:
+        search_stats = ensure_search_index(force=True) or search_health()
+    except Exception as exc:
+        sys.stderr.write(f"search index error: {exc}\n")
     RATE = RateLimiter()
 
     httpd = ThreadingHTTPServer((args.host, args.port), VoteHandler)
     n_chars = len(CHAR_CACHE["ids"])
-    print(f"Promilia vote service  http://{args.host}:{args.port}", flush=True)
-    print(f"SQLite  {DB_PATH}", flush=True)
+    print(f"Promilia wiki service  http://{args.host}:{args.port}", flush=True)
+    print(f"Votes SQLite   {DB_PATH}", flush=True)
+    print(f"Search SQLite  {SEARCH_DB_PATH}", flush=True)
     print(f"Characters  {n_chars} from {CHAR_DIR}", flush=True)
+    print(
+        f"Search index  docs={search_stats.get('docs')} items={search_stats.get('items')} qibos={search_stats.get('qibos')}",
+        flush=True,
+    )
     if seeded:
         print(f"Demo votes  seeded {seeded} daily rows (7 days, 0-{DEMO_DAILY_MAX} per character)", flush=True)
     print("Ctrl+C to stop", flush=True)

@@ -1,24 +1,41 @@
 <script setup>
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { characters } from '@/data/characters'
-import { qibos } from '@/data/qibos'
-import { items, itemSourceCatalog } from '@/data/items'
+import {
+  characterSummaries,
+  encyclopediaStats,
+  featuredItemNames,
+  itemSourceCatalog,
+  qiboSummaries,
+} from '@/data/encyclopediaMeta'
 
 const { t } = useI18n()
 
-const sourceEntries = computed(() => itemSourceCatalog.slice(0, 8))
+const sourceEntries = computed(() => itemSourceCatalog.filter((src) => src.kind === 'source').slice(0, 8))
 
 const entries = computed(() => [
-  { to: '/encyclopedia/characters', label: t('nav.characters'), desc: characters.slice(0, 3).map((c) => c.name).join('、') },
-  { to: '/encyclopedia/qibo', label: t('nav.qibo'), desc: qibos.slice(0, 3).map((q) => q.name).join('、') },
-  { to: '/encyclopedia/items', label: t('nav.items'), desc: items.slice(0, 3).map((item) => item.name).join('、') },
-  ...sourceEntries.value
-    .filter((src) => src.kind === 'source')
-    .slice(0, 3)
-    .map((src) => ({ to: src.path, label: src.name, desc: `${src.count}` })),
+  {
+    to: '/encyclopedia/characters',
+    label: t('nav.characters'),
+    desc: characterSummaries.slice(0, 3).map((c) => c.name).join('、'),
+  },
+  {
+    to: '/encyclopedia/qibo',
+    label: t('nav.qibo'),
+    desc: qiboSummaries.slice(0, 3).map((q) => q.name).join('、'),
+  },
+  {
+    to: '/encyclopedia/items',
+    label: t('nav.items'),
+    desc: featuredItemNames.join('、'),
+  },
+  ...sourceEntries.value.slice(0, 3).map((src) => ({ to: src.path, label: src.name, desc: `${src.count}` })),
   { to: '/contribute', label: t('nav.contribute'), desc: '' },
 ])
+
+const featuredCharacters = characterSummaries.slice(0, 8)
+const featuredQibos = qiboSummaries.slice(0, 8)
+const catalogSources = computed(() => itemSourceCatalog)
 </script>
 
 <template>
@@ -35,15 +52,15 @@ const entries = computed(() => [
       <h2>{{ t('home.quickStats') }}</h2>
       <div class="stat-grid">
         <div class="stat">
-          <strong>{{ characters.length }}</strong>
+          <strong>{{ encyclopediaStats.characters }}</strong>
           <span>{{ t('home.characterCount') }}</span>
         </div>
         <div class="stat">
-          <strong>{{ qibos.length }}</strong>
+          <strong>{{ encyclopediaStats.qibos }}</strong>
           <span>{{ t('home.qiboCount') }}</span>
         </div>
         <div class="stat">
-          <strong>{{ items.length }}</strong>
+          <strong>{{ encyclopediaStats.items }}</strong>
           <span>{{ t('home.itemCount') }}</span>
         </div>
       </div>
@@ -64,19 +81,25 @@ const entries = computed(() => [
       <p class="catalog-lead">{{ t('home.catalogLead') }}</p>
       <h3>{{ t('nav.characters') }}</h3>
       <ul class="name-list">
-        <li v-for="c in characters" :key="c.id">
+        <li v-for="c in featuredCharacters" :key="c.id">
           <router-link :to="`/encyclopedia/characters/${c.id}`">{{ c.name }}</router-link>
+        </li>
+        <li>
+          <router-link class="view-all" to="/encyclopedia/characters">{{ t('home.viewAll') }}</router-link>
         </li>
       </ul>
       <h3>{{ t('nav.qibo') }}</h3>
       <ul class="name-list">
-        <li v-for="qibo in qibos" :key="qibo.id">
+        <li v-for="qibo in featuredQibos" :key="qibo.id">
           <router-link :to="{ name: 'qibo-detail', params: { id: qibo.id } }">{{ qibo.name }}</router-link>
+        </li>
+        <li>
+          <router-link class="view-all" :to="{ name: 'qibo' }">{{ t('home.viewAll') }}</router-link>
         </li>
       </ul>
       <h3>{{ t('nav.items') }}</h3>
       <ul class="name-list">
-        <li v-for="src in itemSourceCatalog" :key="src.id">
+        <li v-for="src in catalogSources" :key="src.id">
           <router-link :to="src.path">{{ src.name }}（{{ src.count }}）</router-link>
         </li>
       </ul>
@@ -239,6 +262,10 @@ h2 {
     &:hover {
       color: var(--c-accent);
     }
+  }
+
+  .view-all {
+    font-weight: 650;
   }
 }
 

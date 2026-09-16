@@ -51,6 +51,7 @@ export default {
     searchPlaceholder: 'Search characters, skills, Qibo, items…',
     searchHint: 'Type to search site content',
     searchNoResult: 'No results for “$rp”',
+    searchLoading: 'Loading search results…',
     openSearch: 'Open search',
     clearSearch: 'Clear search',
     closeSearch: 'Close search',
@@ -80,6 +81,7 @@ export default {
     itemCount: 'Items',
     catalog: 'Directory',
     catalogLead: 'Browse character, Qibo, and item entries.',
+    viewAll: 'View all',
   },
   seo: {
     titleSuffix: 'Azur Promilia Wiki',

@@ -31,8 +31,8 @@ function getPath(obj, path) {
 }
 
 /**
- * 构建全站搜索文档。角色/技能/奇波来自图鉴数据；页面标题可并入多语言文案。
- * @param {object[]} [locales]
+ * 构建全站搜索文档（离线参考 / 预渲染可复用）。
+ * 运行时站内搜索走后端 search.db，请勿在布局或首页同步 import 本文件。
  */
 export function buildSearchDocuments(locales = [zhCN]) {
   const packs = locales.length ? locales : [zhCN]

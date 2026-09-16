@@ -51,6 +51,7 @@ export default {
     searchPlaceholder: '搜索角色、技能、奇波、物品…',
     searchHint: '输入关键词搜索全站文本',
     searchNoResult: '没有找到「$rp」相关内容',
+    searchLoading: '正在加载搜索结果…',
     openSearch: '打开搜索',
     clearSearch: '清除搜索',
     closeSearch: '关闭搜索',
@@ -80,6 +81,7 @@ export default {
     itemCount: '物品',
     catalog: '资料目录',
     catalogLead: '从角色、奇波与物品入口进入详细资料。',
+    viewAll: '查看全部',
   },
   seo: {
     titleSuffix: '蓝色星原：旅谣 Wiki',

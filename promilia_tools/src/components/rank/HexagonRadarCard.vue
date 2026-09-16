@@ -148,7 +148,7 @@ watch(
   gap: 8px;
   align-items: center;
   min-height: 124px;
-  height: 132px;
+  height: 152px;
   padding: 8px 10px;
   border-radius: $radius-md;
   border: 1px solid var(--c-border);

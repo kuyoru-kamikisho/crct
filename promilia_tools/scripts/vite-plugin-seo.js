@@ -4,6 +4,7 @@ import { pathToFileURL } from 'node:url'
 import { buildSeo, INDEXABLE_STATIC_PATHS, PLACEHOLDER_PATHS } from '../src/seo/meta.js'
 import { CONFIGURED_SITE_URL } from '../src/seo/site.js'
 import { buildItemSourceCatalog } from '../src/data/itemSources.js'
+import { generateEncyclopediaMeta } from './generate-encyclopedia-meta.js'
 import zhCN from '../src/i18n/locales/zh-CN.js'
 
 function escapeAttr(text) {
@@ -225,6 +226,21 @@ export function seoPrerenderPlugin() {
       root = config.root
       outDir = join(config.root, config.build.outDir)
       siteUrl = String(config.env.VITE_SITE_URL || CONFIGURED_SITE_URL || '').replace(/\/+$/, '')
+    },
+    async configureServer() {
+      try {
+        const stats = await generateEncyclopediaMeta(root)
+        if (!stats?.skipped) {
+          console.info(
+            `[encyclopedia-meta] 已生成轻量目录：角色 ${stats.characters}，奇波 ${stats.qibos}，物品 ${stats.items}`,
+          )
+        }
+      } catch (error) {
+        console.warn('[encyclopedia-meta] 生成失败，沿用现有目录:', error.message)
+      }
+    },
+    async buildStart() {
+      await generateEncyclopediaMeta(root)
     },
     configurePreviewServer(server) {
       server.middlewares.use(extensionlessHtmlMiddleware(outDir || join(root, 'dist')))

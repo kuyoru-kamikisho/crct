@@ -2,6 +2,8 @@
  * 角色图鉴入口
  * 各角色数据拆分在 ./characters/{id}.js，新增角色只需添加文件即可自动收录
  */
+import { CHARACTER_ORDER } from './characterOrder'
+
 const modules = import.meta.glob('./characters/*.js', { eager: true, import: 'default' })
 
 const byId = Object.fromEntries(
@@ -9,31 +11,6 @@ const byId = Object.fromEntries(
     .filter((c) => c?.id)
     .map((c) => [c.id, c]),
 )
-
-/** 列表展示顺序；未登记的新角色会按名称追加在末尾 */
-const CHARACTER_ORDER = [
-  'moyin',
-  'lily',
-  'luoqing',
-  'metsa',
-  'shalle-ensys',
-  'pengpeng',
-  'abby',
-  'tushan-xiaoyu',
-  'symphoria-tarandelion',
-  'ruby',
-  'minamoto-chiyo',
-  'luruka',
-  'kataru',
-  'cathbelle',
-  'agnes',
-  'faridah',
-  'hanyouyou',
-  'terara',
-  'mitty',
-  'nono',
-  'starborn',
-]
 
 const ordered = CHARACTER_ORDER.map((id) => byId[id]).filter(Boolean)
 const extras = Object.values(byId)

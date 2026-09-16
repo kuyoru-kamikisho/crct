@@ -14,6 +14,11 @@ export default defineConfig({
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/vote-api/, ''),
       },
+      '/wiki-api': {
+        target: 'http://127.0.0.1:8787',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/wiki-api/, ''),
+      },
     },
   },
   resolve: {
@@ -42,6 +47,12 @@ export default defineConfig({
           }
           if (id.includes('node_modules/vue-i18n')) {
             return 'i18n'
+          }
+          if (id.includes('/src/data/items')) {
+            return 'items'
+          }
+          if (id.includes('/src/data/characters')) {
+            return 'characters'
           }
           if (id.includes('/src/data/qibos')) {
             return 'qibos'
