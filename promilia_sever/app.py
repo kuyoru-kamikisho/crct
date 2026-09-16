@@ -13,7 +13,6 @@ promilia_tools/src/data/characters/*.js，新增角色文件后无需改服务�
 from __future__ import annotations
 
 import argparse
-import hashlib
 import json
 import os
 import re
@@ -155,46 +154,6 @@ def init_db() -> None:
         CREATE INDEX IF NOT EXISTS idx_counts_cat_date ON daily_counts(category, vote_date);
         """
     )
-
-
-DEMO_DAYS = 7
-DEMO_DAILY_MAX = 10
-
-
-def demo_daily_votes(category: str, character_id: str, vote_date: str) -> int:
-    digest = hashlib.md5(f"promilia-demo|{category}|{character_id}|{vote_date}".encode("utf-8")).digest()
-    return digest[0] % (DEMO_DAILY_MAX + 1)
-
-
-def seed_demo_counts() -> int:
-    ids = sorted(load_character_ids())
-    if not ids:
-        return 0
-    today = datetime.now(TZ_SHANGHAI).date()
-    conn = connect()
-    inserted = 0
-    with WRITE_LOCK:
-        conn.execute("BEGIN IMMEDIATE")
-        try:
-            for offset in range(DEMO_DAYS):
-                day = (today - timedelta(days=DEMO_DAYS - 1 - offset)).isoformat()
-                for category in CATEGORIES:
-                    for cid in ids:
-                        votes = demo_daily_votes(category, cid, day)
-                        cur = conn.execute(
-                            """
-                            INSERT INTO daily_counts (category, character_id, vote_date, votes)
-                            VALUES (?, ?, ?, ?)
-                            ON CONFLICT(category, character_id, vote_date) DO NOTHING
-                            """,
-                            (category, cid, day, votes),
-                        )
-                        inserted += cur.rowcount or 0
-            conn.execute("COMMIT")
-        except Exception:
-            conn.execute("ROLLBACK")
-            raise
-    return inserted
 
 
 class RateLimiter:
@@ -644,7 +603,6 @@ def main() -> None:
 
     init_db()
     load_character_ids()
-    seeded = seed_demo_counts()
     search_stats = {"docs": 0}
     try:
         search_stats = ensure_search_index(force=True) or search_health()
@@ -662,8 +620,6 @@ def main() -> None:
         f"Search index  docs={search_stats.get('docs')} items={search_stats.get('items')} qibos={search_stats.get('qibos')}",
         flush=True,
     )
-    if seeded:
-        print(f"Demo votes  seeded {seeded} daily rows (7 days, 0-{DEMO_DAILY_MAX} per character)", flush=True)
     print("Ctrl+C to stop", flush=True)
     try:
         httpd.serve_forever(poll_interval=0.5)
