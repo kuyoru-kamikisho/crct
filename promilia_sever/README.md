@@ -39,6 +39,67 @@ python catalog.py import-js
 
 开发环境会把前端的 `/vote-api`、`/wiki-api` 都代理到本服务。生产环境把这两个前缀反代到 `8787` 即可。
 
+## 部署到服务器
+
+前端线上请求的是 `https://apwiki.kuyoru.com/wiki-api/api/nav`（投票是 `/vote-api/...`）。  
+nginx 必须去掉前缀再转到本服务的 `/api/...`，否则会落到静态站点的 `index.html`。
+
+### 1. 上传代码
+
+```bash
+sudo mkdir -p /opt/promilia_sever
+sudo rsync -av --exclude '__pycache__' --exclude '*.pyc' ./ /opt/promilia_sever/
+sudo chown -R www-data:www-data /opt/promilia_sever
+```
+
+需要图鉴数据时，把本机已经生成好的 `data/*.db` 一起拷上去。  
+若服务器上也有 `promilia_tools/src/data`，可以在服务器上导入：
+
+```bash
+cd /opt/promilia_sever
+sudo -u www-data python3 catalog.py import-js
+```
+
+### 2. 用 systemd 常驻运行
+
+```bash
+sudo cp /opt/promilia_sever/promilia-wiki.service /etc/systemd/system/
+sudo systemctl daemon-reload
+sudo systemctl enable --now promilia-wiki
+sudo systemctl status promilia-wiki --no-pager
+```
+
+本机先确认后端活着：
+
+```bash
+curl -sS http://127.0.0.1:8787/api/health
+curl -sS http://127.0.0.1:8787/api/nav
+```
+
+常用命令：
+
+```bash
+sudo systemctl restart promilia-wiki
+sudo journalctl -u promilia-wiki -f
+```
+
+### 3. 重载 nginx
+
+把仓库里 `nginx/conf.d/alone.conf` 同步到服务器 `/etc/nginx/conf.d/alone.conf` 后：
+
+```bash
+sudo nginx -t && sudo nginx -s reload
+```
+
+公网验证：
+
+```bash
+curl -sS https://apwiki.kuyoru.com/wiki-api/api/health
+curl -sS https://apwiki.kuyoru.com/wiki-api/api/nav
+```
+
+应返回 JSON（含 `"ok":true`），而不是前端 HTML。
+
 ## 图鉴接口
 
 | 接口 | 说明 |

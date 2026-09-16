@@ -1,0 +1,15 @@
+[Unit]
+Description=Promilia Wiki API
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/promilia_sever
+ExecStart=/usr/bin/python3 /opt/promilia_sever/app.py --host 127.0.0.1 --port 8787
+Restart=always
+RestartSec=3
+Environment=PYTHONUNBUFFERED=1
+
+[Install]
+WantedBy=multi-user.target
