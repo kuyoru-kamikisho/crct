@@ -18,7 +18,7 @@ const { currentCharacter: character, loading, error } = storeToRefs(catalog)
 watch(
   () => route.params.id,
   (id) => {
-    if (id) catalog.loadCharacter(id).catch(() => {})
+    if (id) catalog.loadCharacter(id).catch(() => { })
   },
   { immediate: true },
 )
@@ -56,21 +56,17 @@ function onPortraitError(event) {
 <template>
   <p v-if="loading.character" class="missing">{{ t('common.catalogLoading') }}</p>
   <article v-else-if="character" class="detail" aria-labelledby="character-heading">
-    <img
-      class="background"
-      :src="`/imgs/characters/${character.id}.png`"
-      :alt="portraitAlt"
-      width="960"
-      height="960"
-      decoding="async"
-      @error="onPortraitError"
-    />
+    <img class="background" :src="`/imgs/characters/${character.id}.png`" :alt="portraitAlt" width="960" height="960"
+      decoding="async" @error="onPortraitError" />
     <AppBreadcrumb :items="crumbs" :label="t('header.breadcrumb')" />
 
     <header class="hero">
       <div>
         <p class="rarity">★ {{ character.rarity }}</p>
-        <h1 id="character-heading">{{ character.name }}</h1>
+        <h1 id="character-heading">
+          {{ character.name }}
+          <a v-if="character.pvCN" :href="character.pvCN" class="pv-link" target="_blank">PV</a>
+        </h1>
         <p class="en">{{ character.nameEn }}</p>
         <p class="intro">{{ character.intro }}</p>
       </div>
@@ -105,12 +101,8 @@ function onPortraitError(event) {
     <section v-if="character.skills?.length">
       <h2>{{ t('common.skills') }}</h2>
       <ul class="skills">
-        <li
-          v-for="(sk, i) in character.skills"
-          :id="`skill-${i}`"
-          :key="i"
-          :class="{ 'is-focus': focusedSkillName === sk.name }"
-        >
+        <li v-for="(sk, i) in character.skills" :id="`skill-${i}`" :key="i"
+          :class="{ 'is-focus': focusedSkillName === sk.name }">
           <strong>{{ sk.name }}</strong>
           <span class="type">{{ sk.type }}</span>
           <div v-if="sk.cooldown" class="skill-energy">
@@ -327,5 +319,17 @@ section {
   svg {
     fill: currentColor;
   }
+}
+
+.pv-link {
+  display: inline-block;
+  border: 1px solid var(--c-star);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 12px;
+  color: var(--c-star);
+  margin-left: 8px;
+  position: relative;
+  transform: translate(0,-7px) scale(.8);
 }
 </style>
