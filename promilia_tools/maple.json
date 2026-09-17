@@ -1,0 +1,69 @@
+{
+    "id": "maple",
+    "name": "枫糖",
+    "nameEn": "Maple",
+    "rarity": 4,
+    "elements": [
+        "光",
+        "木"
+    ],
+    "profession": "增幅",
+    "faction": "弗利斯城邦",
+    "race": "兽人族",
+    "birthday": "?月?日",
+    "weapon": "猫爪锤",
+    "obtain": "恒序观测",
+    "role": "待补充",
+    "tags": [
+        "调谐超限",
+        "伤害增幅"
+    ],
+    "intro": "在弗利斯城邦，绝对不会错过的冒险公会看板娘——枫糖以她满满的活力，可爱的猫猫拳和过人的记忆力，为每位访客提供最热情专业的服务，如同不可或缺的一缕金色阳光。「另外，有任何关于奇波对决的问题，也都放心交给我吧!」",
+    "skills": [
+        {
+            "name": "",
+            "type": "普通攻击",
+            "desc": "【普攻】",
+            "skillSerect": "",
+            "cooldown": "",
+            "consumption": ""
+        },
+        {
+            "name": "",
+            "type": "星鸣技",
+            "desc": "【星鸣技】",
+            "skillSerect": "",
+            "cooldown": "24",
+            "consumption": ""
+        },
+        {
+            "name": "",
+            "type": "星决技",
+            "desc": "",
+            "skillSerect": "",
+            "cooldown": "20",
+            "consumption": "100"
+        },
+        {
+            "name": "",
+            "type": "星携技",
+            "desc": "【星携技】",
+            "skillSerect": "",
+            "cooldown": "",
+            "consumption": ""
+        },
+        {
+            "name": "",
+            "type": "星赐",
+            "desc": "",
+            "skillSerect": "",
+            "cooldown": "",
+            "consumption": ""
+        }
+    ],
+    "starGift": [],
+    "recommendedGear": [],
+    "review": "",
+    "pvCN": "https://www.bilibili.com/video/BV1L7ec6JE5v/",
+    "isNpc": false
+}

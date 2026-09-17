@@ -1,0 +1,69 @@
+{
+    "id": "lan-xiangzi",
+    "name": "兰香子",
+    "nameEn": "Lan Xiangzi",
+    "rarity": 5,
+    "elements": [
+        "暗",
+        "冰"
+    ],
+    "profession": "增幅",
+    "faction": "未知",
+    "race": "兽人族",
+    "birthday": "?月?日",
+    "weapon": "棺材",
+    "obtain": "恒常观测",
+    "role": "待补充",
+    "tags": [
+        "调谐超限",
+        "伤害增幅"
+    ],
+    "intro": "",
+    "skills": [
+        {
+            "name": "",
+            "type": "普通攻击",
+            "desc": "【普攻】",
+            "skillSerect": "",
+            "cooldown": "",
+            "consumption": ""
+        },
+        {
+            "name": "",
+            "type": "星鸣技",
+            "desc": "【星鸣技】",
+            "skillSerect": "",
+            "cooldown": "24",
+            "consumption": ""
+        },
+        {
+            "name": "",
+            "type": "星决技",
+            "desc": "",
+            "skillSerect": "",
+            "cooldown": "20",
+            "consumption": "100"
+        },
+        {
+            "name": "",
+            "type": "星携技",
+            "desc": "【星携技】",
+            "skillSerect": "",
+            "cooldown": "",
+            "consumption": ""
+        },
+        {
+            "name": "",
+            "type": "星赐",
+            "desc": "",
+            "skillSerect": "",
+            "cooldown": "",
+            "consumption": ""
+        }
+    ],
+    "starGift": [],
+    "recommendedGear": [],
+    "review": "",
+    "pvCN": "",
+    "isNpc": false
+}

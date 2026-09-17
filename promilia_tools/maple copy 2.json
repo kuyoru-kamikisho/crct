@@ -1,0 +1,69 @@
+{
+    "id": "peipei",
+    "name": "佩佩",
+    "nameEn": "Peipei",
+    "rarity": 5,
+    "elements": [
+        "地",
+        "光"
+    ],
+    "profession": "爆发",
+    "faction": "未知",
+    "race": "未知",
+    "birthday": "?月?日",
+    "weapon": "拳头",
+    "obtain": "恒常观测",
+    "role": "待补充",
+    "tags": [
+        "调谐超限",
+        "爆发输出"
+    ],
+    "intro": "",
+    "skills": [
+        {
+            "name": "",
+            "type": "普通攻击",
+            "desc": "【普攻】",
+            "skillSerect": "",
+            "cooldown": "",
+            "consumption": ""
+        },
+        {
+            "name": "",
+            "type": "星鸣技",
+            "desc": "【星鸣技】",
+            "skillSerect": "",
+            "cooldown": "24",
+            "consumption": ""
+        },
+        {
+            "name": "",
+            "type": "星决技",
+            "desc": "",
+            "skillSerect": "",
+            "cooldown": "20",
+            "consumption": "100"
+        },
+        {
+            "name": "",
+            "type": "星携技",
+            "desc": "【星携技】",
+            "skillSerect": "",
+            "cooldown": "",
+            "consumption": ""
+        },
+        {
+            "name": "",
+            "type": "星赐",
+            "desc": "",
+            "skillSerect": "",
+            "cooldown": "",
+            "consumption": ""
+        }
+    ],
+    "starGift": [],
+    "recommendedGear": [],
+    "review": "",
+    "pvCN": "",
+    "isNpc": false
+}
