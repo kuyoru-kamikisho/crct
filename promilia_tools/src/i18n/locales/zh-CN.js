@@ -375,7 +375,7 @@ export default {
       shieldbreak: '破盾',
       heal: '治疗',
       support: '辅助',
-      ecchi: '工口',
+      ecchi: '色气',
     },
     categories: {
       favorite: '最爱角色',
@@ -383,7 +383,7 @@ export default {
       shieldbreak: '破盾能力',
       heal: '治疗能力',
       support: '辅助能力',
-      ecchi: '工口程度',
+      ecchi: '色气程度',
     },
     errors: {
       ALREADY_VOTED: '今天已经投过票啦，明天再来吧',

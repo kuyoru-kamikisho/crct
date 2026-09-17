@@ -4,7 +4,7 @@ import { useI18n } from 'vue-i18n'
 import SvgIcon from '@jamescoyle/vue-icon'
 import { mdiFullscreen, mdiFullscreenExit } from '@mdi/js'
 import * as echarts from 'echarts/core'
-import { BarChart } from 'echarts/charts'
+import { BarChart, PictorialBarChart } from 'echarts/charts'
 import { GridComponent, TooltipComponent } from 'echarts/components'
 import { CanvasRenderer } from 'echarts/renderers'
 import { useSettingsStore } from '@/stores/settings'
@@ -15,7 +15,7 @@ import {
   requestChartFullscreen,
 } from '@/utils/chartTheme'
 
-echarts.use([BarChart, GridComponent, TooltipComponent, CanvasRenderer])
+echarts.use([BarChart, PictorialBarChart, GridComponent, TooltipComponent, CanvasRenderer])
 
 const props = defineProps({
   items: { type: Array, default: () => [] },
@@ -31,12 +31,23 @@ let chart = null
 let resizeObs = null
 
 function chartHeight() {
-  return Math.max(280, props.items.length * 42 + 64)
+  return Math.max(260, props.items.length * 34 + 52)
+}
+
+function maxVote() {
+  return Math.max(1, ...props.items.map((row) => Number(row.total) || 0))
 }
 
 function renderChart() {
   if (!chart) return
   const colors = readThemeColors()
+  const dataMax = maxVote()
+  const axisMax = dataMax * 1.1
+  const totals = props.items.map((row) => Number(row.total) || 0)
+  const barH = 14
+  const blockW = 5
+  const gapW = 3
+  const gapColor = fullscreen.value ? colors.bg : colors.surface
   chart.setOption(
     {
       backgroundColor: 'transparent',
@@ -50,14 +61,17 @@ function renderChart() {
         borderColor: colors.border,
         textStyle: { color: colors.text, fontSize: 12 },
         formatter(params) {
-          const item = Array.isArray(params) ? params[0] : params
+          const list = Array.isArray(params) ? params : [params]
+          const item = list.find((p) => p.seriesType === 'bar') || list[0]
           if (!item) return ''
           return `${item.name}<br/>${t('rank.votes')}：<b>${item.value}</b>`
         },
       },
-      grid: { top: 12, right: 40, bottom: 12, left: 8, containLabel: true },
+      grid: { top: 8, right: 40, bottom: 8, left: 8, containLabel: true },
       xAxis: {
         type: 'value',
+        min: 0,
+        max: axisMax,
         minInterval: 1,
         name: t('rank.votes'),
         nameTextStyle: { color: colors.muted, fontSize: 11 },
@@ -76,17 +90,20 @@ function renderChart() {
       series: [
         {
           type: 'bar',
-          data: props.items.map((row) => row.total),
-          barMaxWidth: 18,
+          name: t('rank.votes'),
+          data: totals,
+          barWidth: barH,
+          barGap: '-100%',
+          barCategoryGap: '32%',
           itemStyle: {
-            borderRadius: [0, 9, 9, 0],
+            borderRadius: 0,
             color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
               { offset: 0, color: colors.accent },
               { offset: 1, color: colors.star },
             ]),
           },
           emphasis: {
-            itemStyle: { shadowBlur: 12, shadowColor: 'rgba(62, 207, 207, 0.35)' },
+            itemStyle: { shadowBlur: 8, shadowColor: 'rgba(62, 207, 207, 0.4)' },
           },
           label: {
             show: true,
@@ -94,6 +111,25 @@ function renderChart() {
             color: colors.accentSoft,
             fontSize: 11,
           },
+          z: 1,
+        },
+        {
+          type: 'pictorialBar',
+          data: totals,
+          barGap: '-100%',
+          barCategoryGap: '32%',
+          symbol: 'rect',
+          symbolRepeat: 'fixed',
+          symbolClip: true,
+          symbolBoundingData: axisMax,
+          symbolSize: [gapW, barH + 2],
+          symbolMargin: blockW,
+          symbolOffset: [blockW, 0],
+          itemStyle: { color: gapColor },
+          silent: true,
+          tooltip: { show: false },
+          animation: false,
+          z: 2,
         },
       ],
     },
@@ -111,7 +147,7 @@ function toggleFullscreen() {
 
 function onFullscreenChange() {
   fullscreen.value = isChartFullscreen(panelRef.value)
-  requestAnimationFrame(() => chart?.resize())
+  requestAnimationFrame(() => renderChart())
 }
 
 onMounted(() => {
@@ -231,7 +267,7 @@ watch(
 
 .chart {
   width: 100%;
-  min-height: 280px;
+  min-height: 260px;
 }
 
 .empty {

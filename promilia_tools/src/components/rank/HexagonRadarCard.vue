@@ -21,6 +21,7 @@ const { t, locale } = useI18n()
 const settings = useSettingsStore()
 const chartRef = ref(null)
 let chart = null
+let resizeObs = null
 
 function indicators() {
   const max = Math.max(1, Number(props.maxScore) || 1)
@@ -31,11 +32,28 @@ function indicators() {
   }))
 }
 
+function radarMetrics() {
+  const size = Math.min(
+    chart?.getWidth() || chartRef.value?.clientWidth || 118,
+    chart?.getHeight() || chartRef.value?.clientHeight || 118,
+  )
+  const compact = size < 112
+  const nameReserve = compact ? 26 : 30
+  return {
+    center: ['50%', '50%'],
+    radius: Math.max(16, size / 2 - nameReserve),
+    axisNameGap: compact ? 3 : 4,
+    fontSize: compact ? 8 : 9,
+  }
+}
+
 function renderChart() {
   if (!chart) return
+  chart.resize()
   const colors = readThemeColors()
   const axes = indicators()
   const values = axes.map((axis) => Number(props.item.scores?.[axis.key]) || 0)
+  const layout = radarMetrics()
   chart.setOption(
     {
       backgroundColor: 'transparent',
@@ -49,13 +67,17 @@ function renderChart() {
       },
       radar: {
         indicator: axes.map(({ name, max }) => ({ name, max })),
-        center: ['50%', '54%'],
-        radius: '62%',
+        center: layout.center,
+        radius: layout.radius,
         startAngle: 90,
         splitNumber: 3,
+        axisNameGap: layout.axisNameGap,
         axisName: {
           color: colors.muted,
-          fontSize: 9,
+          fontSize: layout.fontSize,
+          lineHeight: layout.fontSize + 2,
+          padding: 0,
+          overflow: 'none',
           formatter(value) {
             return value
           },
@@ -82,7 +104,6 @@ function renderChart() {
     },
     { notMerge: true },
   )
-  chart.resize()
 }
 
 onMounted(async () => {
@@ -90,9 +111,13 @@ onMounted(async () => {
   if (!chartRef.value) return
   chart = echarts.init(chartRef.value, null, { renderer: 'canvas' })
   renderChart()
+  resizeObs = new ResizeObserver(() => renderChart())
+  resizeObs.observe(chartRef.value)
 })
 
 onUnmounted(() => {
+  resizeObs?.disconnect()
+  resizeObs = null
   chart?.dispose()
   chart = null
 })
@@ -109,23 +134,12 @@ watch(
     <div class="avatar-wrap">
       <div class="avatar">
         <span class="fallback">{{ (item.nameZh || item.name || '?').slice(0, 1) }}</span>
-        <img
-          v-if="item.icon"
-          :src="item.icon"
-          :alt="item.name"
-          width="48"
-          height="48"
-          loading="lazy"
-          decoding="async"
-          @error="$event.target.style.display = 'none'"
-        />
+        <img v-if="item.icon" :src="item.icon" :alt="item.name" width="48" height="48" loading="lazy" decoding="async"
+          @error="$event.target.style.display = 'none'" />
       </div>
       <span v-if="item.place && item.place <= 3" class="crown" :class="`crown-${item.place}`" aria-hidden="true">
         <svg viewBox="0 0 24 24">
-          <path
-            d="M3.4 9.2 7.1 13l4.9-7.6 4.9 7.6 3.7-3.8V18H3.4V9.2Z"
-            fill="currentColor"
-          />
+          <path d="M3.4 9.2 7.1 13l4.9-7.6 4.9 7.6 3.7-3.8V18H3.4V9.2Z" fill="currentColor" />
         </svg>
       </span>
     </div>
@@ -142,9 +156,9 @@ watch(
 <style scoped lang="scss">
 .card {
   position: relative;
-  overflow: hidden;
+  overflow: visible;
   display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) 118px;
+  grid-template-columns: 48px minmax(0, 1fr) 128px;
   gap: 8px;
   align-items: center;
   min-height: 124px;
@@ -162,12 +176,10 @@ watch(
       position: absolute;
       inset: 0;
       pointer-events: none;
-      background: linear-gradient(
-        110deg,
-        transparent 20%,
-        color-mix(in srgb, var(--shine) 22%, transparent) 48%,
-        transparent 72%
-      );
+      background: linear-gradient(110deg,
+          transparent 20%,
+          color-mix(in srgb, var(--shine) 22%, transparent) 48%,
+          transparent 72%);
       background-size: 220% 100%;
       animation: hex-shine 4.8s ease-in-out infinite;
     }
@@ -197,9 +209,11 @@ watch(
     background-position: 120% 0;
     opacity: 0.45;
   }
+
   50% {
     opacity: 0.9;
   }
+
   100% {
     background-position: -120% 0;
     opacity: 0.45;
@@ -299,22 +313,23 @@ watch(
 }
 
 .radar {
-  width: 118px;
-  height: 118px;
+  width: 128px;
+  height: 128px;
   position: relative;
   z-index: 1;
+  overflow: visible;
 }
 
 @media (max-width: 479px) {
   .card {
-    grid-template-columns: 44px minmax(0, 1fr) 104px;
+    grid-template-columns: 44px minmax(0, 1fr) 108px;
     height: 124px;
     min-height: 124px;
   }
 
   .radar {
-    width: 104px;
-    height: 104px;
+    width: 108px;
+    height: 108px;
   }
 }
 </style>
