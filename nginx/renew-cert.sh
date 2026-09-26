@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 重新签发 / 续期 kuyoru.com 通配符证书（*.kuyoru.com），并安装到 v2ray-agent / nginx。
+# 重新签发 / 续期 kuyoru.top 通配符证书（*.kuyoru.top），并安装到 v2ray-agent / nginx。
 #
 # 在 Ubuntu 服务器上以 root 执行：
 #   chmod +x renew-cert.sh
@@ -12,14 +12,14 @@
 
 set -euo pipefail
 
-DOMAIN="kuyoru.com"
+DOMAIN="kuyoru.top"
 WILDCARD="*.${DOMAIN}"
 TLS_DIR="/etc/v2ray-agent/tls"
 INSTALLED_CERT="${TLS_DIR}/${DOMAIN}.crt"
 INSTALLED_KEY="${TLS_DIR}/${DOMAIN}.key"
 # Xray / nginx subscribe.conf 仍读取这对文件名
-LEGACY_CERT="${TLS_DIR}/anime.kuyoru.com.crt"
-LEGACY_KEY="${TLS_DIR}/anime.kuyoru.com.key"
+LEGACY_CERT="${TLS_DIR}/anime.kuyoru.top.crt"
+LEGACY_KEY="${TLS_DIR}/anime.kuyoru.top.key"
 
 FORCE=0
 if [[ "${1:-}" == "--force" || "${1:-}" == "-f" ]]; then
