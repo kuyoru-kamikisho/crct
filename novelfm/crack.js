@@ -1,3 +1,4 @@
+// 番茄音乐PC端控制台脚本：一键下载分享过来的音乐
 let playBtn = document.querySelector('.music-share-pc-control-play');
 playBtn.click();
 setTimeout(() => playBtn.click(), 1000);
