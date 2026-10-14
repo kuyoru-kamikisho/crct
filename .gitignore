@@ -52,6 +52,6 @@ app.*.map.json
 __pycache__/
 *.pyc
 # *.db
-# *.db-*
-# *.db-wal
+*.db-*
+*.db-wal
 *.db-shm
