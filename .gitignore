@@ -45,9 +45,9 @@ app.*.symbols
 app.*.map.json
 
 # Android Studio will place build artifacts here
-/android/app/debug
-/android/app/profile
-/android/app/release
+android/app/debug
+android/app/profile
+android/app/release
 
 __pycache__/
 *.pyc
@@ -55,3 +55,74 @@ __pycache__/
 *.db-*
 *.db-wal
 *.db-shm
+
+# Unity Library 缓存
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+
+# 包缓存
+!Packages/manifest.json
+!Packages/packages-lock.json
+Packages/*
+LocalPackages/~
+# Package Manager 缓存
+[Pp]ackages/packagecache/
+
+# Asset Store 缓存
+[Aa]ssets/AssetStoreTools*
+
+# 自动生成的资源元数据之外的缓存
+# URP/HDRP 烘焙、光照相关
+[Aa]ssets/**/*.bak
+[Aa]ssets/**/*.orig
+[Aa]ssets/Scenes/*.unity.meta~
+# 光照烘焙缓存
+[Ll]ightmapCache/
+[Aa]ssets/**/LightingData.asset
+[Aa]ssets/**/Lightmap-*.exr
+
+# Unity Crash 日志
+crash-*.log
+Editor.log
+Player.log
+
+# VS 与 Rider 缓存（你已有部分，补充unity相关）
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.meta~
+*.prefab~
+
+# 图片/资源导出临时文件
+*.psd.meta~
+*.png.tmp
+
+# 打包输出文件夹
+Export/
+Releases/
+BuildOutput/
+
+# 版本控制内部文件
+[Ss]yncCache/
+
+# Unity 2020+ Burst 缓存
+[Bb]urstDebugInformation/
+
+# URP ShaderGraph 缓存（Shader Graph 编译产物）
+[Aa]ssets/**/ShaderGraphCache/
+
+# Compute Shader 编译缓存
+[Aa]ssets/**/.compiled/
+
+# 本地编辑器配置（个人窗口布局，不要提交）
+UserSettings/
