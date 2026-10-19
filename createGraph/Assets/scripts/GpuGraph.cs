@@ -6,12 +6,11 @@ public class GpuGraph : MonoBehaviour
     [SerializeField] Transform pointPrefab;
     [SerializeField, Range(10, 200)] int resolution = 10;
     [SerializeField] FunctionLibrary.FunctionName function;
-
+    
     [SerializeField]
-	Material material;
-
-	[SerializeField]
-	Mesh mesh;
+    Material material;
+    [SerializeField]
+    Mesh mesh;
     
     [Header("自动切换设置")]
     [Tooltip("开启后自动循环切换所有波形")]
@@ -22,10 +21,10 @@ public class GpuGraph : MonoBehaviour
     
     [Tooltip("两个波形之间的过渡变形时长（秒）")]
     [SerializeField, Min(0.01f)] float transitionDuration = 1f;
-
+    
     [Header("GPU计算设置")]
     [SerializeField] ComputeShader computeShader;
-    [Tooltip("启用GPU计算，关闭则回退到CPU计算")]
+    [Tooltip("启用GPU计算，关闭则回退到CPU实例化点物体的旧模式")]
     [SerializeField] bool useGPUCompute = true;
 
     private Transform[] points;
@@ -42,7 +41,6 @@ public class GpuGraph : MonoBehaviour
 
     // Compute Shader 相关变量
     private ComputeBuffer positionsBuffer;
-    private Vector3[] positionCache; // 缓存GPU回读的位置数据
     private int kernelIndex;
     
     private static readonly int
@@ -53,19 +51,21 @@ public class GpuGraph : MonoBehaviour
     
     void Awake()
     {
-        float step = 2f / resolution;
-        var scale = Vector3.one * step;
-        points = new Transform[resolution * resolution];
-        positionCache = new Vector3[resolution * resolution];
-        
-        // 实例化所有点
-        for (int i = 0; i < points.Length; i++)
+        // ========= CPU模式才需要实例化points，GPU模式跳过 =========
+        if (!useGPUCompute)
         {
-            Transform point = points[i] = Instantiate(pointPrefab);
-            point.localScale = scale;
-            point.SetParent(transform, false);
+            float step = 2f / resolution;
+            var scale = Vector3.one * step;
+            points = new Transform[resolution * resolution];
+            
+            for (int i = 0; i < points.Length; i++)
+            {
+                Transform point = points[i] = Instantiate(pointPrefab);
+                point.localScale = scale;
+                point.SetParent(transform, false);
+            }
         }
-        
+
         // 初始化函数信息
         _functionCount = System.Enum.GetValues(typeof(FunctionLibrary.FunctionName)).Length;
         _currentIndex = (int)function;
@@ -74,7 +74,6 @@ public class GpuGraph : MonoBehaviour
         // 初始化ComputeBuffer
         if (useGPUCompute && computeShader != null)
         {
-            // 每个元素为float3，占 3 * 4 = 12 字节
             positionsBuffer = new ComputeBuffer(resolution * resolution, 3 * 4);
             kernelIndex = computeShader.FindKernel("FunctionKernel");
         }
@@ -82,7 +81,6 @@ public class GpuGraph : MonoBehaviour
 
     void OnEnable()
     {
-        // 组件重新启用时，若Buffer已释放则重建
         if (useGPUCompute && computeShader != null && positionsBuffer == null)
         {
             positionsBuffer = new ComputeBuffer(resolution * resolution, 3 * 4);
@@ -92,7 +90,6 @@ public class GpuGraph : MonoBehaviour
 
     void OnDisable()
     {
-        // 释放显存，避免内存泄漏
         if (positionsBuffer != null)
         {
             positionsBuffer.Release();
@@ -109,24 +106,20 @@ public class GpuGraph : MonoBehaviour
         }
         else
         {
-            // 手动模式：同步Inspector选择的函数
             _currentFunction = FunctionLibrary.GetFunction(function);
         }
 
         if (useGPUCompute && computeShader != null)
         {
-            UpdateFunctionOnGPU();    // GPU计算位置
-            ApplyGpuResultToPoints(); // 回读结果并应用到点
+            UpdateFunctionOnGPU();    
+            // ❗不再调用 ApplyGpuResultToPoints，不需要回读数据到CPU
         }
         else
         {
-            UpdatePointsPosition();   // 原CPU计算逻辑
+            UpdatePointsPosition();   
         }
     }
 
-    /// <summary>
-    /// 处理自动切换的计时与状态流转
-    /// </summary>
     void UpdateTransitionLogic()
     {
         _timer += Time.deltaTime;
@@ -150,9 +143,6 @@ public class GpuGraph : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 触发向下一个波形的过渡动画
-    /// </summary>
     void StartNextTransition()
     {
         _previousFunction = _currentFunction;
@@ -163,9 +153,6 @@ public class GpuGraph : MonoBehaviour
         _transitionProgress = 0f;
     }
 
-    /// <summary>
-    /// CPU计算：更新所有点的位置，过渡时自动混合两个波形
-    /// </summary>
     void UpdatePointsPosition()
     {
         float time = Time.time;
@@ -197,9 +184,6 @@ public class GpuGraph : MonoBehaviour
         }
     }
 
-    /// <summary>
-    /// 调用Compute Shader在GPU端计算所有点的位置
-    /// </summary>
     void UpdateFunctionOnGPU()
     {
         float step = 2f / resolution;
@@ -208,29 +192,15 @@ public class GpuGraph : MonoBehaviour
         computeShader.SetFloat(timeId, Time.time);
         computeShader.SetBuffer(kernelIndex, positionsId, positionsBuffer);
         
-        // 向上取整线程组，配合Shader内的边界判断避免越界
         int groups = Mathf.CeilToInt(resolution / 8f);
         computeShader.Dispatch(kernelIndex, groups, groups, 1);
-
-        // 让GPU使用一个网格一个材质绘制多次
-        var bounds = new Bounds(Vector3.zero, Vector3.one * (2f + 2f / resolution));
-		Graphics.DrawMeshInstancedProcedural(
-			mesh, 0, material, bounds, positionsBuffer.count
-		);
-    }
-
-    /// <summary>
-    /// 将GPU计算结果回读内存，并赋值给所有Transform点
-    /// </summary>
-    void ApplyGpuResultToPoints()
-    {
-        positionsBuffer.GetData(positionCache);
         
-        // 注意：当前Compute Shader仅实现单个Wave函数
-        // 多函数切换、过渡动画需扩展Shader后才能在GPU端生效
-        for (int i = 0; i < points.Length; i++)
-        {
-            points[i].localPosition = positionCache[i];
-        }
+        // Catlike Coding 教程：Procedural 实例化绘制，直接GPU拿Buffer位置
+        var bounds = new Bounds(Vector3.zero, Vector3.one * (2f + 2f / resolution));
+        Graphics.DrawMeshInstancedProcedural(
+            mesh, 0, material, bounds, positionsBuffer.count
+        );
     }
+
+    // ---------- 已完全删除 ApplyGpuResultToPoints，不再CPU回读Buffer ----------
 }
