@@ -9,7 +9,7 @@ public class WavePointGPU : MonoBehaviour
     [Header("点网格参数")]
     [Tooltip("网格边长，总数=GridSize*GridSize。GridSize=1024 → 104万点")]
     public int GridSize = 1024;
-    public float pointSize = 0.08f;
+    public float pointSize = 0.26f;
 
     [Header("波浪参数")]
     public float waveSpeed = 1.2f;
