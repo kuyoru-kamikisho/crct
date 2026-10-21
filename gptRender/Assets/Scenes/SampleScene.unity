@@ -461,7 +461,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1875556d51562b240b17d6b33848a234, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Fractal
-  depth: 3
+  depth: 4
   rotationSpeed: 45
   mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
   material: {fileID: 2100000, guid: f02eaa6272862de428f35abba4be8108, type: 2}
