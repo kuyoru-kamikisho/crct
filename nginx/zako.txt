@@ -1,0 +1,24 @@
+zako ALL=(root) /usr/sbin/nginx -t, \
+/usr/sbin/nginx -s reload, \
+/usr/sbin/nginx -s stop, \
+/usr/sbin/nginx -s start, \
+/usr/sbin/nginx -s quit, \
+/usr/bin/systemctl, \
+/usr/bin/journalctl, \
+/usr/bin/ss -tulnp, \
+/usr/bin/netstat -tulnp, \
+/usr/bin/cat, \
+/usr/bin/tail, \
+/usr/bin/curl, \
+/usr/bin/wget, \
+/usr/bin/apt update, \
+/usr/bin/apt list, \
+/usr/bin/apt show, \
+/usr/bin/apt search, \
+/usr/bin/apt install *, \
+/usr/bin/apt remove *, \
+/usr/bin/apt purge *, \
+/usr/bin/apt autoremove, \
+/usr/bin/docker, \
+/usr/bin/apt-get, \
+/usr/bin/install
