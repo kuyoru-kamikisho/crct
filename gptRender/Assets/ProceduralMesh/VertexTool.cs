@@ -15,6 +15,8 @@ namespace ProceduralMeshes
 
     public interface IMeshGenerator
     {
+        int Resolution { get; set; }
+        Bounds Bounds { get; }
         int VertexCount { get; }
         int IndexCount { get; }
         int JobLength { get; }
@@ -25,7 +27,7 @@ namespace ProceduralMeshes
     {
         void SetVertex(int index, VertexInfo data);
         void SetTriangle(int index, int3 triangle);
-        void Setup(Mesh.MeshData data, int vertexCount, int indexCount);
+        void Setup(Mesh.MeshData data, Bounds bounds, int vertexCount, int indexCount);
     }
 
     [BurstCompile(FloatPrecision.Standard, FloatMode.Fast, CompileSynchronously = true)]
@@ -40,12 +42,16 @@ namespace ProceduralMeshes
         public void Execute(int i) => generator.Execute(i, streams);
 
         public static JobHandle ScheduleParallel(
-            Mesh.MeshData meshData, JobHandle dependency
+            Mesh mesh, Mesh.MeshData meshData, int resolution, JobHandle dependency
         )
         {
             var job = new MeshJob<G, S>();
+            job.generator.Resolution = resolution;
             job.streams.Setup(
-                meshData, job.generator.VertexCount, job.generator.IndexCount
+                meshData, 
+                mesh.bounds = job.generator.Bounds,
+                job.generator.VertexCount,
+                job.generator.IndexCount
             );
             return job.ScheduleParallel(job.generator.JobLength, 1, dependency);
         }
