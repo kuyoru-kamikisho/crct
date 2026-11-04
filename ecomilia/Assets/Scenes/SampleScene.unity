@@ -273,11 +273,12 @@ MonoBehaviour:
   eyeAnchor: {fileID: 1214685757}
   thirdPersonDistance: 3.2
   heightOffset: 1.5
-  mouseSensitivity: 2.5
+  mouseSensitivity: 0.1
   minPitch: -30
   maxPitch: 70
   positionSmoothTime: 0.12
-  rotationSmoothTime: 0.08
+  rotationSpeed: 360
+  mouseDeadZone: 0.01
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
