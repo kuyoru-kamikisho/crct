@@ -21,12 +21,12 @@ public class CameraController : MonoBehaviour
     public float positionSmoothTime = 0.12f;
 
     [Tooltip("摄像机每秒最大旋转角度")]
-    public float rotationSpeed = 360f;
+    public float rotationSpeed = 720f;
 
     [Tooltip("忽略极小的鼠标输入")]
     public float mouseDeadZone = 0.01f;
 
-    private bool _isFirstPerson = false;
+    private bool _isFirstPerson;
 
     private float _yaw;
     private float _pitch;
@@ -36,15 +36,24 @@ public class CameraController : MonoBehaviour
     private Mouse _mouse;
     private Keyboard _keyboard;
 
-    private void Start()
+    private Transform _playerTransform;
+    private Transform _eyeTransform;
+
+    private void Awake()
     {
         _mouse = Mouse.current;
         _keyboard = Keyboard.current;
 
+        _playerTransform = player;
+        _eyeTransform = eyeAnchor;
+    }
+
+    private void Start()
+    {
         Vector3 angles = transform.eulerAngles;
 
         _yaw = angles.y;
-        _pitch = angles.x;
+        _pitch = Mathf.DeltaAngle(0f, angles.x);
 
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
@@ -52,44 +61,46 @@ public class CameraController : MonoBehaviour
 
     private void Update()
     {
-        _mouse = Mouse.current;
-        _keyboard = Keyboard.current;
+        // 输入设备可能在运行期间发生变化
+        if (_mouse == null)
+            _mouse = Mouse.current;
 
+        if (_keyboard == null)
+            _keyboard = Keyboard.current;
+
+        HandleInput();
+    }
+
+    private void HandleInput()
+    {
         // V 键切换人称
         if (_keyboard != null && _keyboard.vKey.wasPressedThisFrame)
         {
             _isFirstPerson = !_isFirstPerson;
         }
 
-        // 鼠标视角控制 
-        if (_mouse != null &&
-            Cursor.lockState == CursorLockMode.Locked)
+        // 鼠标视角控制
+        if (_mouse != null && Cursor.lockState == CursorLockMode.Locked)
         {
-            Vector2 mouseDelta = _mouse.delta.ReadValue();
+            Vector2 delta = _mouse.delta.ReadValue();
 
-            // 过滤极小的鼠标输入
-            if (mouseDelta.sqrMagnitude > mouseDeadZone * mouseDeadZone)
+            if (delta.sqrMagnitude > mouseDeadZone * mouseDeadZone)
             {
-                _yaw += mouseDelta.x * mouseSensitivity;
-                _pitch -= mouseDelta.y * mouseSensitivity;
+                _yaw += delta.x * mouseSensitivity;
+                _pitch -= delta.y * mouseSensitivity;
 
-                _pitch = Mathf.Clamp(
-                    _pitch,
-                    minPitch,
-                    maxPitch
-                );
+                _pitch = Mathf.Clamp(_pitch, minPitch, maxPitch);
             }
         }
 
         // Esc 解锁鼠标
-        if (_keyboard != null &&
-            _keyboard.escapeKey.wasPressedThisFrame)
+        if (_keyboard != null && _keyboard.escapeKey.wasPressedThisFrame)
         {
             Cursor.lockState = CursorLockMode.None;
             Cursor.visible = true;
         }
 
-        // 左键点击重新锁定鼠标
+        // 左键重新锁定鼠标
         if (_mouse != null &&
             _mouse.leftButton.wasPressedThisFrame &&
             Cursor.lockState == CursorLockMode.None)
@@ -101,32 +112,33 @@ public class CameraController : MonoBehaviour
 
     private void LateUpdate()
     {
-        if (player == null) return;
+        if (_playerTransform == null)
+            return;
 
         Quaternion targetRotation = Quaternion.Euler(
             _pitch,
             _yaw,
-            0
+            0f
         );
 
         Vector3 targetPosition;
 
         if (_isFirstPerson)
         {
-            if (eyeAnchor == null) return;
+            if (_eyeTransform == null)
+                return;
 
-            targetPosition = eyeAnchor.position;
+            targetPosition = _eyeTransform.position;
         }
         else
         {
-            Vector3 offset = new Vector3(
-                0,
+            Vector3 offset = targetRotation * new Vector3(
+                0f,
                 heightOffset,
                 -thirdPersonDistance
             );
 
-            targetPosition =
-                player.position + targetRotation * offset;
+            targetPosition = _playerTransform.position + offset;
         }
 
         // 摄像机位置平滑跟随
@@ -137,7 +149,7 @@ public class CameraController : MonoBehaviour
             positionSmoothTime
         );
 
-        // 距离足够小时直接对齐，避免残余移动
+        // 消除极小的残余位置误差
         if ((transform.position - targetPosition).sqrMagnitude < 0.000001f)
         {
             transform.position = targetPosition;
@@ -150,5 +162,12 @@ public class CameraController : MonoBehaviour
             targetRotation,
             rotationSpeed * Time.deltaTime
         );
+    }
+
+    // 如果运行时更换目标，可以调用此方法更新引用
+    public void RefreshTargets()
+    {
+        _playerTransform = player;
+        _eyeTransform = eyeAnchor;
     }
 }

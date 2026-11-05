@@ -24,41 +24,56 @@ public class PlayerController : MonoBehaviour
     public float rotationSmoothTime = 0.1f;
 
     private CharacterController _cc;
+
     private Vector3 _verticalVelocity;
+
     private bool _isGrounded;
+
     private float _rotationVelocity;
 
-    private Camera _mainCam;
+    private Transform _cameraTransform;
+
     private Keyboard _keyboard;
 
     private void Awake()
     {
         _cc = GetComponent<CharacterController>();
-        _mainCam = Camera.main;
+
         _keyboard = Keyboard.current;
+
+        Camera mainCamera = Camera.main;
+
+        if (mainCamera != null)
+        {
+            _cameraTransform = mainCamera.transform;
+        }
     }
 
     private void Update()
     {
-        _keyboard = Keyboard.current;
+        if (_keyboard == null)
+            _keyboard = Keyboard.current;
 
+        // 1. 地面检测
         GroundCheck();
 
+        // 2. 跳跃处理
         HandleJump();
+
+        // 3. 重力处理
         HandleGravity();
 
+        // 4. 移动和转向
         HandleMovementAndRotation();
     }
 
     private void GroundCheck()
     {
-        // 获取角色胶囊体底部的世界坐标
         Vector3 feetPosition =
             transform.position +
             _cc.center -
-            Vector3.up * _cc.height * 0.5f;
+            Vector3.up * (_cc.height * 0.5f);
 
-        // 将检测点稍微向上移动，避免完全位于地面以下
         Vector3 checkPoint = feetPosition + Vector3.up * 0.05f;
 
         _isGrounded = Physics.CheckSphere(
@@ -69,31 +84,26 @@ public class PlayerController : MonoBehaviour
         );
     }
 
+    private void HandleJump()
+    {
+        if (_keyboard == null)
+            return;
+
+        if (_keyboard.spaceKey.wasPressedThisFrame && _isGrounded)
+        {
+            _verticalVelocity.y = jumpForce;
+        }
+    }
+
     private void HandleGravity()
     {
-        if (_isGrounded && _verticalVelocity.y < 0)
+        if (_isGrounded && _verticalVelocity.y < 0f)
         {
             _verticalVelocity.y = -2f;
         }
         else
         {
             _verticalVelocity.y += gravity * Time.deltaTime;
-        }
-    }
-
-    private void HandleJump()
-    {
-        if (_keyboard == null) return;
-
-        if (_keyboard.spaceKey.wasPressedThisFrame)
-        {
-            Debug.Log($"按下空格，是否接触地面：{_isGrounded}");
-
-            if (_isGrounded)
-            {
-                _verticalVelocity.y = jumpForce;
-                Debug.Log("触发跳跃");
-            }
         }
     }
 
@@ -109,26 +119,29 @@ public class PlayerController : MonoBehaviour
             if (_keyboard.aKey.isPressed) inputDir.x -= 1f;
         }
 
-        inputDir.Normalize();
+        // 避免斜向移动速度超过正常移动速度
+        inputDir = Vector2.ClampMagnitude(inputDir, 1f);
 
         Vector3 moveDir = Vector3.zero;
 
-        // 计算基于相机朝向的水平移动方向
-        if (inputDir.sqrMagnitude > 0.01f && _mainCam != null)
+        if (inputDir.sqrMagnitude > 0.001f &&
+            _cameraTransform != null)
         {
-            Vector3 camForward = _mainCam.transform.forward;
-            Vector3 camRight = _mainCam.transform.right;
+            Vector3 camForward = _cameraTransform.forward;
+            Vector3 camRight = _cameraTransform.right;
 
-            camForward.y = 0;
-            camRight.y = 0;
+            camForward.y = 0f;
+            camRight.y = 0f;
 
             camForward.Normalize();
             camRight.Normalize();
 
-            moveDir = camForward * inputDir.y + camRight * inputDir.x;
+            moveDir = camForward * inputDir.y +
+                      camRight * inputDir.x;
+
             moveDir.Normalize();
 
-            // 只有存在水平输入时才转向
+            // 计算角色目标朝向
             float targetAngle = Mathf.Atan2(
                 moveDir.x,
                 moveDir.z
@@ -141,24 +154,51 @@ public class PlayerController : MonoBehaviour
                 rotationSmoothTime
             );
 
-            transform.rotation = Quaternion.Euler(0, smoothAngle, 0);
+            transform.rotation = Quaternion.Euler(
+                0f,
+                smoothAngle,
+                0f
+            );
         }
 
         // 水平移动 + 垂直移动
-        // 关键：即使没有 WASD 输入，也必须执行 Move
-        Vector3 moveVelocity = moveDir * moveSpeed;
-        moveVelocity.y = _verticalVelocity.y;
+        Vector3 velocity = moveDir * moveSpeed;
 
-        _cc.Move(moveVelocity * Time.deltaTime);
+        velocity.y = _verticalVelocity.y;
+
+        // 即使没有水平输入，也必须执行 Move
+        _cc.Move(velocity * Time.deltaTime);
     }
 
     private void OnDrawGizmosSelected()
     {
+        CharacterController cc = GetComponent<CharacterController>();
+
+        if (cc == null)
+            return;
+
+        Vector3 feetPosition =
+            transform.position +
+            cc.center -
+            Vector3.up * (cc.height * 0.5f);
+
+        Vector3 checkPoint = feetPosition + Vector3.up * 0.05f;
+
         Gizmos.color = Color.yellow;
 
-        Vector3 checkPoint =
-            transform.position + Vector3.down * groundCheckOffset;
+        Gizmos.DrawWireSphere(
+            checkPoint,
+            groundCheckRadius
+        );
+    }
 
-        Gizmos.DrawWireSphere(checkPoint, groundCheckRadius);
+    // 运行时更换摄像机时调用
+    public void RefreshCamera()
+    {
+        Camera mainCamera = Camera.main;
+
+        _cameraTransform = mainCamera != null
+            ? mainCamera.transform
+            : null;
     }
 }
