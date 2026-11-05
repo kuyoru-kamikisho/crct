@@ -11,27 +11,24 @@ public class DebugOverlay : MonoBehaviour
     [Header("刷新间隔")]
     [SerializeField] private float fpsInterval = 2f;
     [SerializeField] private float uiInterval = 0.25f;
+    [SerializeField] private float pingInterval = 3f;
 
-    // FPS 统计
     private int frameCount;
     private float elapsedTime;
-
     private float currentFps;
-    private float currentFrameTime;
 
-    // UI 刷新
     private float uiTimer;
+    private float pingTimer;
 
-    // 网络状态：由网络模块主动更新
-    private bool isConnected;
-    private int ping = -1;
-    private float packetLoss = -1f;
+    private int currentPing = -1;
+    private UnityEngine.Ping networkPing;
 
-    private readonly StringBuilder stringBuilder = new(128);
+    private readonly StringBuilder stringBuilder = new(64);
 
     private void Update()
     {
         UpdateFPS();
+        UpdatePing();
 
         uiTimer += Time.unscaledDeltaTime;
 
@@ -47,15 +44,12 @@ public class DebugOverlay : MonoBehaviour
     /// </summary>
     private void UpdateFPS()
     {
-        float deltaTime = Time.unscaledDeltaTime;
-
-        elapsedTime += deltaTime;
+        elapsedTime += Time.unscaledDeltaTime;
         frameCount++;
 
         if (elapsedTime >= fpsInterval)
         {
             currentFps = frameCount / elapsedTime;
-            currentFrameTime = elapsedTime / frameCount * 1000f;
 
             frameCount = 0;
             elapsedTime = 0f;
@@ -63,17 +57,36 @@ public class DebugOverlay : MonoBehaviour
     }
 
     /// <summary>
-    /// 更新网络数据
-    /// 由实际网络模块调用，不需要每帧调用
+    /// 网络延迟检测
     /// </summary>
-    public void SetNetworkStats(
-        bool connected,
-        int pingMs,
-        float packetLossPercent)
+    private void UpdatePing()
     {
-        isConnected = connected;
-        ping = pingMs;
-        packetLoss = packetLossPercent;
+        if (networkPing != null)
+        {
+            if (!networkPing.isDone)
+                return;
+
+            currentPing = networkPing.time;
+
+            Debug.Log($"[DebugOverlay] Ping completed: {currentPing}ms");
+
+            if (currentPing < 0)
+                Debug.LogWarning("[DebugOverlay] Ping failed!");
+
+            networkPing = null;
+        }
+
+        pingTimer += Time.unscaledDeltaTime;
+
+        if (pingTimer >= pingInterval)
+        {
+            pingTimer = 0f;
+
+            Debug.Log("[DebugOverlay] Start Ping...");
+
+            // 使用IP作为目标
+            networkPing = new UnityEngine.Ping("59.82.121.163");
+        }
     }
 
     /// <summary>
@@ -91,10 +104,10 @@ public class DebugOverlay : MonoBehaviour
 
         stringBuilder.Append(" | Ping: ");
 
-        if (isConnected && ping >= 0)
-            stringBuilder.Append(ping).Append(" ms");
+        if (currentPing >= 0)
+            stringBuilder.Append(currentPing).Append(" ms");
         else
-            stringBuilder.Append("999ms");
+            stringBuilder.Append("--");
 
         infoText.SetText(stringBuilder);
     }
