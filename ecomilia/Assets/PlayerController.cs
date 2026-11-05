@@ -6,8 +6,11 @@ using UnityEngine.InputSystem;
 public class PlayerController : MonoBehaviour
 {
     [Header("移动参数")]
-    [Tooltip("水平移动速度，单位：米/秒")]
+    [Tooltip("正常移动速度，单位：米/秒")]
     public float moveSpeed = 5.5f;
+
+    [Tooltip("跑步速度倍率")]
+    public float sprintMultiplier = 2.2f;
 
     [Tooltip("跳跃初速度")]
     public float jumpForce = 8f;
@@ -15,9 +18,19 @@ public class PlayerController : MonoBehaviour
     [Tooltip("重力加速度")]
     public float gravity = -20f;
 
+    [Header("冲刺参数")]
+    [Tooltip("冲刺距离，单位：米")]
+    public float dashDistance = 3f;
+
+    [Tooltip("冲刺持续时间，单位：秒")]
+    public float dashDuration = 0.2f;
+
+    [Header("持续跑步参数")]
+    [Tooltip("按住 Shift 多久后进入持续跑步状态")]
+    public float sprintLockTime = 2f;
+
     [Header("地面检测")]
     public float groundCheckRadius = 0.2f;
-    public float groundCheckOffset = 0.95f;
     public LayerMask groundLayer;
 
     [Header("角色转向")]
@@ -34,6 +47,22 @@ public class PlayerController : MonoBehaviour
     private Transform _cameraTransform;
 
     private Keyboard _keyboard;
+
+    // Shift 状态
+    private bool _isShiftHeld;
+
+    // 是否已经进入持续跑步状态
+    private bool _isSprintLocked;
+
+    // Shift 按住时间
+    private float _sprintHoldTimer;
+
+    // 冲刺状态
+    private bool _isDashing;
+
+    private float _dashTimer;
+
+    private Vector3 _dashDirection;
 
     private void Awake()
     {
@@ -57,14 +86,176 @@ public class PlayerController : MonoBehaviour
         // 1. 地面检测
         GroundCheck();
 
-        // 2. 跳跃处理
+        // 2. 获取移动输入
+        Vector2 inputDir = GetMovementInput();
+
+        // 3. 计算移动方向
+        Vector3 moveDir = GetCameraRelativeDirection(inputDir);
+
+        bool isMoving = moveDir.sqrMagnitude > 0.001f;
+
+        // 4. 处理 Shift、跑步和冲刺
+        HandleSprint(isMoving, moveDir);
+
+        // 5. 跳跃
         HandleJump();
 
-        // 3. 重力处理
+        // 6. 重力
         HandleGravity();
 
-        // 4. 移动和转向
-        HandleMovementAndRotation();
+        // 7. 移动和转向
+        HandleMovement(moveDir, isMoving);
+    }
+
+    private Vector2 GetMovementInput()
+    {
+        Vector2 inputDir = Vector2.zero;
+
+        if (_keyboard == null)
+            return inputDir;
+
+        if (_keyboard.wKey.isPressed) inputDir.y += 1f;
+        if (_keyboard.sKey.isPressed) inputDir.y -= 1f;
+        if (_keyboard.dKey.isPressed) inputDir.x += 1f;
+        if (_keyboard.aKey.isPressed) inputDir.x -= 1f;
+
+        return Vector2.ClampMagnitude(inputDir, 1f);
+    }
+
+    private Vector3 GetCameraRelativeDirection(Vector2 inputDir)
+    {
+        if (inputDir.sqrMagnitude < 0.001f ||
+            _cameraTransform == null)
+        {
+            return Vector3.zero;
+        }
+
+        Vector3 camForward = _cameraTransform.forward;
+        Vector3 camRight = _cameraTransform.right;
+
+        camForward.y = 0f;
+        camRight.y = 0f;
+
+        camForward.Normalize();
+        camRight.Normalize();
+
+        Vector3 moveDir =
+            camForward * inputDir.y +
+            camRight * inputDir.x;
+
+        return moveDir.normalized;
+    }
+
+    private void HandleSprint(bool isMoving, Vector3 moveDir)
+    {
+        if (_keyboard == null)
+            return;
+
+        _isShiftHeld =
+            _keyboard.leftShiftKey.isPressed ||
+            _keyboard.rightShiftKey.isPressed;
+
+        // 停止移动后重置持续跑步状态
+        if (!isMoving)
+        {
+            _sprintHoldTimer = 0f;
+            _isSprintLocked = false;
+            _isDashing = false;
+
+            return;
+        }
+
+        // Shift 按下瞬间触发冲刺
+        if (_keyboard.leftShiftKey.wasPressedThisFrame ||
+            _keyboard.rightShiftKey.wasPressedThisFrame)
+        {
+            _isDashing = true;
+
+            _dashTimer = dashDuration;
+
+            // 锁定冲刺开始时的移动方向
+            _dashDirection = moveDir;
+        }
+
+        // 按住 Shift 且持续移动，累计跑步时间
+        if (_isShiftHeld)
+        {
+            _sprintHoldTimer += Time.deltaTime;
+
+            if (_sprintHoldTimer >= sprintLockTime)
+            {
+                _isSprintLocked = true;
+            }
+        }
+        else if (!_isSprintLocked)
+        {
+            // 未达到两秒就松开 Shift，取消累计时间
+            _sprintHoldTimer = 0f;
+        }
+    }
+
+    private float GetCurrentMoveSpeed()
+    {
+        // 按住 Shift 或进入持续跑步状态
+        if (_isShiftHeld || _isSprintLocked)
+        {
+            return moveSpeed * sprintMultiplier;
+        }
+
+        return moveSpeed;
+    }
+
+    private void HandleMovement(Vector3 moveDir, bool isMoving)
+    {
+        // 角色转向
+        if (isMoving)
+        {
+            float targetAngle = Mathf.Atan2(
+                moveDir.x,
+                moveDir.z
+            ) * Mathf.Rad2Deg;
+
+            float smoothAngle = Mathf.SmoothDampAngle(
+                transform.eulerAngles.y,
+                targetAngle,
+                ref _rotationVelocity,
+                rotationSmoothTime
+            );
+
+            transform.rotation = Quaternion.Euler(
+                0f,
+                smoothAngle,
+                0f
+            );
+        }
+
+        // 普通移动或跑步
+        float currentSpeed = GetCurrentMoveSpeed();
+
+        Vector3 horizontalVelocity = moveDir * currentSpeed;
+
+        // 冲刺期间覆盖普通水平速度
+        if (_isDashing)
+        {
+            if (dashDuration > 0f && _dashTimer > 0f)
+            {
+                float dashSpeed = dashDistance / dashDuration;
+
+                horizontalVelocity = _dashDirection * dashSpeed;
+
+                _dashTimer -= Time.deltaTime;
+            }
+            else
+            {
+                _isDashing = false;
+            }
+        }
+
+        // 合并垂直速度
+        horizontalVelocity.y = _verticalVelocity.y;
+
+        // 执行移动和碰撞检测
+        _cc.Move(horizontalVelocity * Time.deltaTime);
     }
 
     private void GroundCheck()
@@ -107,69 +298,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    private void HandleMovementAndRotation()
-    {
-        Vector2 inputDir = Vector2.zero;
-
-        if (_keyboard != null)
-        {
-            if (_keyboard.wKey.isPressed) inputDir.y += 1f;
-            if (_keyboard.sKey.isPressed) inputDir.y -= 1f;
-            if (_keyboard.dKey.isPressed) inputDir.x += 1f;
-            if (_keyboard.aKey.isPressed) inputDir.x -= 1f;
-        }
-
-        // 避免斜向移动速度超过正常移动速度
-        inputDir = Vector2.ClampMagnitude(inputDir, 1f);
-
-        Vector3 moveDir = Vector3.zero;
-
-        if (inputDir.sqrMagnitude > 0.001f &&
-            _cameraTransform != null)
-        {
-            Vector3 camForward = _cameraTransform.forward;
-            Vector3 camRight = _cameraTransform.right;
-
-            camForward.y = 0f;
-            camRight.y = 0f;
-
-            camForward.Normalize();
-            camRight.Normalize();
-
-            moveDir = camForward * inputDir.y +
-                      camRight * inputDir.x;
-
-            moveDir.Normalize();
-
-            // 计算角色目标朝向
-            float targetAngle = Mathf.Atan2(
-                moveDir.x,
-                moveDir.z
-            ) * Mathf.Rad2Deg;
-
-            float smoothAngle = Mathf.SmoothDampAngle(
-                transform.eulerAngles.y,
-                targetAngle,
-                ref _rotationVelocity,
-                rotationSmoothTime
-            );
-
-            transform.rotation = Quaternion.Euler(
-                0f,
-                smoothAngle,
-                0f
-            );
-        }
-
-        // 水平移动 + 垂直移动
-        Vector3 velocity = moveDir * moveSpeed;
-
-        velocity.y = _verticalVelocity.y;
-
-        // 即使没有水平输入，也必须执行 Move
-        _cc.Move(velocity * Time.deltaTime);
-    }
-
     private void OnDrawGizmosSelected()
     {
         CharacterController cc = GetComponent<CharacterController>();
@@ -180,7 +308,7 @@ public class PlayerController : MonoBehaviour
         Vector3 feetPosition =
             transform.position +
             cc.center -
-            Vector3.up * cc.height * 0.5f;
+            Vector3.up * (cc.height * 0.5f);
 
         Vector3 checkPoint = feetPosition + Vector3.up * 0.05f;
 
@@ -192,7 +320,6 @@ public class PlayerController : MonoBehaviour
         );
     }
 
-    // 运行时更换摄像机时调用
     public void RefreshCamera()
     {
         Camera mainCamera = Camera.main;
