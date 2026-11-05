@@ -20,7 +20,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("冲刺参数")]
     [Tooltip("冲刺距离，单位：米")]
-    public float dashDistance = 3f;
+    public float dashDistance = 5f;
 
     [Tooltip("冲刺持续时间，单位：秒")]
     public float dashDuration = 0.2f;
