@@ -56,7 +56,7 @@ public class PlayerController : MonoBehaviour
         Vector3 feetPosition =
             transform.position +
             _cc.center -
-            Vector3.up * (_cc.height * 0.5f);
+            Vector3.up * _cc.height * 0.5f;
 
         // 将检测点稍微向上移动，避免完全位于地面以下
         Vector3 checkPoint = feetPosition + Vector3.up * 0.05f;

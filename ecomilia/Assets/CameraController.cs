@@ -9,8 +9,8 @@ public class CameraController : MonoBehaviour
     public Transform eyeAnchor;
 
     [Header("第三人称轨道参数")]
-    public float thirdPersonDistance = 3.2f;
-    public float heightOffset = 1.5f;
+    public float thirdPersonDistance = 5.5f;
+    public float heightOffset = 0.36f;
 
     [Header("视角控制")]
     public float mouseSensitivity = 0.1f;
