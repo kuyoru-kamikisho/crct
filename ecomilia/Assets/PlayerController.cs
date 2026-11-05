@@ -180,7 +180,7 @@ public class PlayerController : MonoBehaviour
         Vector3 feetPosition =
             transform.position +
             cc.center -
-            Vector3.up * (cc.height * 0.5f);
+            Vector3.up * cc.height * 0.5f;
 
         Vector3 checkPoint = feetPosition + Vector3.up * 0.05f;
 
