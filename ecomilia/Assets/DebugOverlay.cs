@@ -99,15 +99,44 @@ public class DebugOverlay : MonoBehaviour
 
         stringBuilder.Clear();
 
-        stringBuilder.Append("FPS: ");
-        stringBuilder.Append(currentFps.ToString("F0"));
+        // FPS 颜色
+        string fpsColor = currentFps > 45 ? "#00FF00" : "#FFA500";
 
+        // Ping 颜色
+        string pingColor;
+
+        if (currentPing < 0)
+            pingColor = "#FFFFFF";
+        else if (currentPing < 50)
+            pingColor = "#00FF00";
+        else if (currentPing < 120)
+            pingColor = "#FFA500";
+        else
+            pingColor = "#FF0000";
+
+        // FPS
+        stringBuilder.Append("FPS: <color=");
+        stringBuilder.Append(fpsColor);
+        stringBuilder.Append(">");
+        stringBuilder.Append(currentFps.ToString("F0"));
+        stringBuilder.Append("</color>");
+
+        // 分隔符
         stringBuilder.Append(" | Ping: ");
 
+        // Ping
         if (currentPing >= 0)
-            stringBuilder.Append(currentPing).Append(" ms");
+        {
+            stringBuilder.Append("<color=");
+            stringBuilder.Append(pingColor);
+            stringBuilder.Append(">");
+            stringBuilder.Append(currentPing);
+            stringBuilder.Append(" ms</color>");
+        }
         else
+        {
             stringBuilder.Append("--");
+        }
 
         infoText.SetText(stringBuilder);
     }
