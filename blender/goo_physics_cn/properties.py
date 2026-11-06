@@ -453,36 +453,36 @@ class GooPhysicsPreferences(AddonPreferences):
         default=1,
         min=0,
         max=10,
-        name="Bone Resolution",
-        description="Number of extra vertices to add to each bone segment. Can help to add detail and extra points to calculate collisions.",
+        name="骨骼分段精度",
+        description="为每段骨骼额外添加的顶点数量。增加顶点可以提升细节，并提供更多用于计算碰撞的采样点。",
     )
 
     gp_physics_type: bpy.props.EnumProperty(
         items=(
-            ("GEO_NODES", "Geo Nodes Chain", "Collision Physics using custom Geometry Nodes Simulation"),
-            ("SIMP_SOFTBODY", "Soft Body Chain", "Chain Physics using builtin  Soft Body Simulation"),
-            ("CLOTH", "Cloth Chain", "Chain Physics using builtin  Cloth Simulation"),
-            ("JIGGLE", "Jiggle Physics", "Jiggle Physics using builtin Soft Body Simulation"),
+            ("GEO_NODES", "几何节点骨骼链", "使用自定义几何节点模拟实现碰撞物理效果"),
+            ("SIMP_SOFTBODY", "软体骨骼链", "使用 Blender 内置软体模拟实现骨骼链物理效果"),
+            ("CLOTH", "布料骨骼链", "使用 Blender 内置布料模拟实现骨骼链物理效果"),
+            ("JIGGLE", "弹性抖动物理", "弹性抖动物理 using builtin Soft Body Simulation"),
         )
     )
 
     cl_presets: bpy.props.EnumProperty(
-        name="Cloth Chain Presets",
+        name="布料骨骼链 Presets",
         items=get_cl_presets,
     )
 
     sb_presets: bpy.props.EnumProperty(
-        name="Soft Body Chain Presets",
+        name="软体骨骼链 Presets",
         items=get_sb_presets,
     )
 
     sp_presets: bpy.props.EnumProperty(
-        name="Jiggle Physics Presets",
+        name="弹性抖动物理 Presets",
         items=get_jg_presets,
     )
 
     gn_presets: bpy.props.EnumProperty(
-        name="Geo Nodes Chain Presets",
+        name="几何节点骨骼链 Presets",
         items=get_gn_presets,
     )
 
@@ -546,14 +546,14 @@ class GooPhysicsPreferences(AddonPreferences):
 
     apply_to_all_chains: bpy.props.BoolProperty(
         default=True,
-        name="Auto Update All Selected Chains",
-        description="Any physics settings change for the active chain will apply to all selected bone chains of the same physics mode",
+        name="自动更新所有选中的骨骼链",
+        description="当前活动骨骼链的物理设置发生变化时，会自动应用到所有选中且物理模式相同的骨骼链。",
     )
 
     apply_to_all_bones: bpy.props.BoolProperty(
         default=True,
-        name="Auto Update All Selected Bones",
-        description="Any physics settings change for the active bone will apply to all selected bones of the same physics mode",
+        name="自动更新所有选中的骨骼",
+        description="当前活动骨骼的物理设置发生变化时，会自动应用到所有选中且物理模式相同的骨骼。",
     )
 
     def draw(self, context):
@@ -562,7 +562,7 @@ class GooPhysicsPreferences(AddonPreferences):
         row = column.row(align=True)
         row.prop(self, "gp_divisions")
         row = column.row(align=True)
-        row.prop(self, "gp_physics_type", text="Phyics Type")
+        row.prop(self, "gp_physics_type", text="物理类型")
 
 
 #
@@ -585,7 +585,7 @@ def register():
         default=1.0,
         min=0.0,
         max=100.0,
-        description="Amplitude of the wind in the Z axis direction of the wind controller (the direction the arrow is pointing)",
+        description="风力控制器 Z 轴方向上的风力振幅（即箭头所指的方向）。",
         update=update_chain_wind_strength,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -595,7 +595,7 @@ def register():
         default=0.1,
         min=0.0,
         max=100.0,
-        description="Amplitude of the noise applied over time along the X/Y axis of the wind controller",
+        description="风力控制器 X/Y 轴方向上随时间变化的噪声振幅。",
         update=update_chain_wind_noise_strength,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -605,7 +605,7 @@ def register():
         default=1.0,
         min=-100.0,
         max=100.0,
-        description="Frequency or speed of the wind X/Y noise",
+        description="风力在 X/Y 轴方向上噪声变化的频率或速度。",
         update=update_chain_wind_noise_scale,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -615,7 +615,7 @@ def register():
         default=0.1,
         min=0.0,
         max=1.0,
-        description="The amount of slow down applied to the forces applied to the simulation chain",
+        description="施加于模拟骨骼链上的力的减速程度。",
         update=update_chain_dampening,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -625,7 +625,7 @@ def register():
         default=0.25,
         min=0.0,
         max=1.0,
-        description="0-1 factor for how much the base of the simulation chain follows the motion of its parent",
+        description="0 到 1 之间的系数，用于控制模拟骨骼链根部跟随父级运动的程度。",
         update=update_chain_root_falloff,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -635,7 +635,7 @@ def register():
         default=1.0,
         min=0.01,
         max=5.0,
-        description="Overall scaler for the simulation forces applied to the simulation chain",
+        description="作用于模拟骨骼链的整体物理力缩放系数。",
         update=update_chain_velocity,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -645,7 +645,7 @@ def register():
         default=0.02,
         min=0.0,
         max=5.0,
-        description="Strength of the gravity forces applied to the simulation",
+        description="应用于模拟的重力强度。",
         update=update_chain_gravity,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -655,7 +655,7 @@ def register():
         default=0.25,
         min=0.0,
         max=1.0,
-        description="The amount of stiffness or resistance to bending on the simulation chain",
+        description="模拟骨骼链的刚度，即骨骼链抵抗弯曲的程度。",
         update=update_chain_stiffness,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -665,7 +665,7 @@ def register():
         default=0.25,
         min=0.0,
         max=1.0,
-        description="An additional factor for stiffness applied to the last bone of the chain allowing for extra overlapping motion at the end",
+        description="额外施加于骨骼链末端骨骼的刚度系数，用于增强末端的跟随和重叠运动效果。",
         update=update_chain_stiff_end_fac,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -675,7 +675,7 @@ def register():
         default=0.2,
         min=0.0,
         max=1.0,
-        description="Scaling factor of chain's stiffness when moving at the max velocity. Lower value makes the chain less stiff during fast motion",
+        description="骨骼链达到最大速度时的刚度缩放系数。数值越低，骨骼链在快速运动时越柔软。",
         update=update_chain_velocity_fac,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -685,7 +685,7 @@ def register():
         default=0.1,
         min=0.0,
         max=10.0,
-        description="Minimum velocity the chain is moving to start scaling down stiffness",
+        description="开始降低骨骼链刚度时所需的最低运动速度。",
         update=update_chain_velocity_min,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -695,7 +695,7 @@ def register():
         default=1.0,
         min=0.0,
         max=10.0,
-        description="Maximum velocity the chain is moving to fully scale down stiffness",
+        description="使骨骼链刚度完全降低时对应的最高运动速度。",
         update=update_chain_velocity_max,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -703,7 +703,7 @@ def register():
 
     bpy.types.PoseBone.gp_chain_use_collision = BoolProperty(
         default=True,
-        description="Simulation tests collisions against the objects in the collision collection",
+        description="模拟过程中检测骨骼链与碰撞集合中物体之间的碰撞。",
         update=update_chain_use_collision,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -713,7 +713,7 @@ def register():
         default=0.01,
         min=0.0,
         max=10.0,
-        description="Distance to search for a collision",
+        description="用于检测碰撞的搜索距离。",
         update=update_chain_collision_dist,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -723,7 +723,7 @@ def register():
         default=0.25,
         min=0.0,
         max=1.0,
-        description="Scaler for the velocities applied to a chain point when it is colliding",
+        description="骨骼链上的点发生碰撞时，其速度所使用的缩放系数。",
         update=update_chain_friction,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -735,7 +735,7 @@ def register():
         default=2.0,
         min=0.01,
         max=5.0,
-        description="Simulation timescale of the chain",
+        description="骨骼链模拟的时间缩放比例。",
         update=update_chain_speed,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -745,7 +745,7 @@ def register():
         default=0.3,
         min=0.0,
         max=50000.0,
-        description="How heavy the chain of the simulation is",
+        description="模拟骨骼链的质量。",
         update=update_chain_mass,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -755,7 +755,7 @@ def register():
         default=0.5,
         min=0.0,
         max=10.0,
-        description="Air dampening slows down the chain physics as they fall downwards",
+        description="空气阻尼会在骨骼链向下运动时减缓其物理运动。",
         update=update_chain_air_dampening,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -765,7 +765,7 @@ def register():
         default=0.5,
         min=0.0,
         max=1000.0,
-        description="Amount of dampening applied to the bending of the chain",
+        description="施加于骨骼链弯曲运动的阻尼量。",
         update=update_chain_bend_damping,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -777,7 +777,7 @@ def register():
         default=0.8,
         min=0.01,
         max=5.0,
-        description="Simulation timescale of the bone",
+        description="骨骼模拟的时间缩放比例。",
         update=update_bones_speed,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -787,7 +787,7 @@ def register():
         default=5.0,
         min=0.0,
         max=50.0,
-        description="Friction of the bones simulation",
+        description="骨骼模拟的摩擦力。",
         update=update_bones_friction,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -797,7 +797,7 @@ def register():
         default=0.15,
         min=0.0,
         max=50000.0,
-        description="How heavy the bone of the simulation chain is",
+        description="模拟骨骼链中骨骼的质量。",
         update=update_bones_mass,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -807,7 +807,7 @@ def register():
         default=0.1,
         min=0.0,
         max=1.0,
-        description="Stiffness of the bones original shape spring during simulation",
+        description="模拟过程中，骨骼恢复至初始形状的弹簧刚度。",
         update=update_bones_stiffness,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -817,7 +817,7 @@ def register():
         default=8.0,
         min=0.0,
         max=50.0,
-        description="Amount of damping applied to the bones original shape strength",
+        description="作用于骨骼初始形状恢复力的阻尼量。",
         update=update_bones_damping,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -827,7 +827,7 @@ def register():
         default=0.95,
         min=0.0,
         max=1.0,
-        description="Strength of the bones original shape during simulation",
+        description="模拟过程中骨骼保持初始形状的强度。",
         update=update_bones_strength,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -837,7 +837,7 @@ def register():
         default=1.0,
         min=0.0,
         max=1.0,
-        description="0-1 influence of how much the bone follows the simulation",
+        description="0 到 1 之间的影响系数，用于控制骨骼跟随物理模拟的程度。",
         update=update_bones_influence,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -847,7 +847,7 @@ def register():
         default=1.0,
         min=0.0,
         max=10.0,
-        description="Air dampening slows down the bone physics as they fall downwards",
+        description="空气阻尼会在骨骼向下运动时减缓其物理运动。",
         update=update_bones_air_dampening,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},
@@ -857,7 +857,7 @@ def register():
         default=10.0,
         min=0.0,
         max=1000.0,
-        description="Amount of dampening applied to the bending of the chain",
+        description="施加于骨骼链弯曲运动的阻尼量。",
         update=update_bones_bend_damping,
         options={"LIBRARY_EDITABLE", "ANIMATABLE"},
         override={"LIBRARY_OVERRIDABLE"},

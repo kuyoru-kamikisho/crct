@@ -30,7 +30,7 @@ class GP_PT_physics_panel(Panel):
     """Creates a Panel in the scene context of the properties editor"""
 
     bl_idname = "OBJECT_PT_goophysics"
-    bl_label = "Tools"
+    bl_label = "工具"
     bl_space_type = "VIEW_3D"
     bl_region_type = "UI"
     bl_category = "Goo Physics"
@@ -45,7 +45,7 @@ class GP_PT_physics_panel(Panel):
             if (pb.gp_has_sb_physics or pb.gp_has_cl_physics or pb.gp_has_gn_physics or pb.gp_has_jg_physics) == False:
                 box = layout.box()
                 row = box.row(align=True)
-                row.label(text="Mode:")
+                row.label(text="模式：")
                 row = box.row(align=True)
                 row.prop(prefs, "gp_physics_type", text="")
 
@@ -53,7 +53,7 @@ class GP_PT_physics_panel(Panel):
                     row = box.row(align=True)
                     row.operator(
                         "goophys.add_geonodes_physics_to_selected",
-                        text="Add Physics",
+                        text="添加物理效果",
                     )
                     row.scale_y = 2.5
 
@@ -61,7 +61,7 @@ class GP_PT_physics_panel(Panel):
                     row = box.row(align=True)
                     row.operator(
                         "goophys.add_soft_physics_to_selected",
-                        text="Add Physics",
+                        text="添加物理效果",
                     )
                     row.scale_y = 2.5
 
@@ -69,7 +69,7 @@ class GP_PT_physics_panel(Panel):
                     row = box.row(align=True)
                     row.operator(
                         "goophys.add_cloth_physics_to_selected",
-                        text="Add Physics",
+                        text="添加物理效果",
                     )
                     row.scale_y = 2.5
 
@@ -77,7 +77,7 @@ class GP_PT_physics_panel(Panel):
                     row = box.row(align=True)
                     row.operator(
                         "goophys.add_jiggle_physics_to_selected",
-                        text="Add Physics",
+                        text="添加物理效果",
                     )
                     row.scale_y = 2.5
 
@@ -86,7 +86,7 @@ class GP_PT_physics_panel(Panel):
                 row = box.row(align=True)
                 row.operator(
                     "goophys.remove_physics_from_selected",
-                    text="Remove Physics from Selected Bones",
+                    text="移除所选骨骼上的物理效果",
                 )
                 row.scale_y = 1.5
 
@@ -94,126 +94,126 @@ class GP_PT_physics_panel(Panel):
 
                 box = layout.box()
                 row = box.row(align=True)
-                row.operator("goophys.bake_physics", text="Bake Bone Physics")
+                row.operator("goophys.bake_physics", text="烘焙骨骼物理效果")
                 row.scale_y = 2
 
                 box = layout.box()
                 row = box.row(align=True)
-                row.operator("goophys.select_dynamic_bones", text="Select Physics Bones")
+                row.operator("goophys.select_dynamic_bones", text="选择物理骨骼")
 
                 row = box.row(align=True)
-                row.operator("goophys.select_last_dynamic_bones", text="Select Last Bone in Chains")
+                row.operator("goophys.select_last_dynamic_bones", text="选择骨骼链末端骨骼")
 
                 #
 
                 box = layout.box()
 
                 if pb.gp_has_cl_physics:
-                    label = "Cloth Physics Settings"
+                    label = "布料物理设置"
                     icon = "MOD_CLOTH"
-                        
+
                     row = box.row(align=True)
-                    row.label(text="Presets:")
+                    row.label(text="预设：")
                     row = box.row(align=True)
                     row.prop(prefs, "cl_presets", text="")
                     row.operator("goophys.add_preset", text="", icon="ADD")
                     row.operator("goophys.delete_preset", text="", icon="REMOVE")
 
                     row = box.row(align=True)
-                    row.operator("goophys.apply_preset", text="Apply Preset")
+                    row.operator("goophys.apply_preset", text="应用预设")
 
                 if pb.gp_has_sb_physics:
-                    label = "Soft Body Physics Settings"
+                    label = "软体物理设置"
                     icon = "MOD_SOFT"
 
                     row = box.row(align=True)
-                    row.label(text="Presets:")
+                    row.label(text="预设：")
                     row = box.row(align=True)
                     row.prop(prefs, "sb_presets", text="")
                     row.operator("goophys.add_preset", text="", icon="ADD")
                     row.operator("goophys.delete_preset", text="", icon="REMOVE")
 
                     row = box.row(align=True)
-                    row.operator("goophys.apply_preset", text="Apply Preset")
+                    row.operator("goophys.apply_preset", text="应用预设")
 
                 if pb.gp_has_jg_physics:
-                    label = "Jiggle Physics Settings"
+                    label = "弹性物理设置"
                     icon = "MOD_SCREW"
 
                     row = box.row(align=True)
-                    row.label(text="Presets:")
+                    row.label(text="预设：")
                     row = box.row(align=True)
                     row.prop(prefs, "sp_presets", text="")
                     row.operator("goophys.add_preset", text="", icon="ADD")
                     row.operator("goophys.delete_preset", text="", icon="REMOVE")
 
                     row = box.row(align=True)
-                    row.operator("goophys.apply_preset", text="Apply Preset")
+                    row.operator("goophys.apply_preset", text="应用预设")
 
                 if pb.gp_has_gn_physics:
-                    label = "Geo Nodes Physics Settings"
+                    label = "几何节点物理设置"
                     icon = "GEOMETRY_NODES"
 
                     row = box.row(align=True)
-                    row.label(text="Presets:")
+                    row.label(text="预设：")
                     row = box.row(align=True)
                     row.prop(prefs, "gn_presets", text="")
                     row.operator("goophys.add_preset", text="", icon="ADD")
                     row.operator("goophys.delete_preset", text="", icon="REMOVE")
 
                     row = box.row(align=True)
-                    row.operator("goophys.apply_preset", text="Apply Preset")
+                    row.operator("goophys.apply_preset", text="应用预设")
 
                 boxx, expanded = draw_subpanel(box, prefs, "settings_menu", label, icon)
                 if expanded:
 
                     if pb.gp_has_cl_physics:
-                        
+
                         row = boxx.row(align=True)
                         row.prop(prefs, "apply_to_all_chains")
 
-                        boxxx, expanded = draw_subpanel(boxx, prefs, "chain_menu", "Chain Settings", "RESTRICT_INSTANCED_OFF")
+                        boxxx, expanded = draw_subpanel(boxx, prefs, "chain_menu", "骨骼链设置", "RESTRICT_INSTANCED_OFF")
                         if expanded:
 
-                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "cl_time_menu", "Time", "TIME")
+                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "cl_time_menu", "时间", "TIME")
                             if expanded:
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_chain_speed", text="Sim Speed")
+                                row.prop(pb, "gp_chain_speed", text="模拟速度")
 
-                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "cl_physical_menu", "Physical", "MOD_SOLIDIFY")
+                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "cl_physical_menu", "物理属性", "MOD_SOLIDIFY")
                             if expanded:
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_chain_mass", text="Sim Mass")
+                                row.prop(pb, "gp_chain_mass", text="模拟质量")
 
-                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "cl_structure_menu", "Structure", "SELECT_INTERSECT")
+                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "cl_structure_menu", "结构", "SELECT_INTERSECT")
                             if expanded:
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_chain_air_dampening", text="Sim Air Dampening")
+                                row.prop(pb, "gp_chain_air_dampening", text="模拟空气阻尼")
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_chain_bend_damping", text="Sim Bend Damping")
+                                row.prop(pb, "gp_chain_bend_damping", text="模拟弯曲阻尼")
 
                         row = boxx.row(align=True)
                         row.prop(prefs, "apply_to_all_bones")
 
-                        boxxx, expanded = draw_subpanel(boxx, prefs, "bone_menu", "Bone Settings", "BONE_DATA")
+                        boxxx, expanded = draw_subpanel(boxx, prefs, "bone_menu", "骨骼设置", "BONE_DATA")
                         if expanded:
 
                             row = boxxx.row(align=True)
-                            row.prop(pb, "gp_sim_influence", text="Sim Influence")
+                            row.prop(pb, "gp_sim_influence", text="模拟影响力")
 
                             row = boxxx.row(align=True)
                             row.operator(
                                 "goophys.apply_falloff_to_selected",
-                                text="Apply Linear Sim Influence Falloff",
+                                text="应用线性模拟影响力衰减",
                             ).type = 0
                             row = boxxx.row(align=True)
                             row.operator(
                                 "goophys.apply_falloff_to_selected",
-                                text="Apply Quadratic Sim Influence Falloff",
+                                text="应用二次模拟影响力衰减",
                             ).type = 1
 
                     if pb.gp_has_sb_physics:
@@ -221,48 +221,48 @@ class GP_PT_physics_panel(Panel):
                         row = boxx.row(align=True)
                         row.prop(prefs, "apply_to_all_bones")
 
-                        boxxx, expanded = draw_subpanel(boxx, prefs, "bone_menu", "Bone Settings", "BONE_DATA")
+                        boxxx, expanded = draw_subpanel(boxx, prefs, "bone_menu", "骨骼设置", "BONE_DATA")
                         if expanded:
 
-                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "sb_time_menu", "Time", "TIME")
+                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "sb_time_menu", "时间", "TIME")
                             if expanded:
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_sim_speed", text="Sim Speed")
+                                row.prop(pb, "gp_sim_speed", text="模拟速度")
 
-                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "sb_physical_menu", "Physical", "MOD_SOLIDIFY")
+                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "sb_physical_menu", "物理属性", "MOD_SOLIDIFY")
                             if expanded:
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_sim_friction", text="Sim Friction")
+                                row.prop(pb, "gp_sim_friction", text="模拟摩擦力")
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_sim_mass", text="Sim Mass")
+                                row.prop(pb, "gp_sim_mass", text="模拟质量")
 
-                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "sb_structure_menu", "Structure", "SELECT_INTERSECT")
+                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "sb_structure_menu", "结构", "SELECT_INTERSECT")
                             if expanded:
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_sim_stiffness", text="Sim Stiffness")
+                                row.prop(pb, "gp_sim_stiffness", text="模拟刚度")
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_sim_damping", text="Sim Damping")
+                                row.prop(pb, "gp_sim_damping", text="模拟阻尼")
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_sim_strength", text="Sim Strength")
+                                row.prop(pb, "gp_sim_strength", text="模拟强度")
 
                             row = boxxx.row(align=True)
-                            row.prop(pb, "gp_sim_influence", text="Sim Influence")
+                            row.prop(pb, "gp_sim_influence", text="模拟影响力")
 
                             row = boxxx.row(align=True)
                             row.operator(
                                 "goophys.apply_falloff_to_selected",
-                                text="Apply Linear Sim Influence Falloff",
+                                text="应用线性模拟影响力衰减",
                             ).type = 0
                             row = boxxx.row(align=True)
                             row.operator(
                                 "goophys.apply_falloff_to_selected",
-                                text="Apply Quadratic Sim Influence Falloff",
+                                text="应用二次模拟影响力衰减",
                             ).type = 1
 
                     if pb.gp_has_jg_physics:
@@ -270,89 +270,89 @@ class GP_PT_physics_panel(Panel):
                         row = boxx.row(align=True)
                         row.prop(prefs, "apply_to_all_bones")
 
-                        boxxx, expanded = draw_subpanel(boxx, prefs, "bone_menu", "Bone Settings", "BONE_DATA")
+                        boxxx, expanded = draw_subpanel(boxx, prefs, "bone_menu", "骨骼设置", "BONE_DATA")
                         if expanded:
 
-                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "sb_time_menu", "Time", "TIME")
+                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "sb_time_menu", "时间", "TIME")
                             if expanded:
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_sim_speed", text="Sim Speed")
+                                row.prop(pb, "gp_sim_speed", text="模拟速度")
 
-                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "sb_physical_menu", "Physical", "MOD_SOLIDIFY")
+                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "sb_physical_menu", "物理属性", "MOD_SOLIDIFY")
                             if expanded:
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_sim_friction", text="Sim Friction")
+                                row.prop(pb, "gp_sim_friction", text="模拟摩擦力")
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_sim_mass", text="Sim Mass")
+                                row.prop(pb, "gp_sim_mass", text="模拟质量")
 
-                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "sp_physical_menu", "Physical", "MOD_SOLIDIFY")
+                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "sp_physical_menu", "物理属性", "MOD_SOLIDIFY")
                             if expanded:
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_sim_stiffness", text="Sim Stiffness")
+                                row.prop(pb, "gp_sim_stiffness", text="模拟刚度")
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_sim_damping", text="Sim Damping")
+                                row.prop(pb, "gp_sim_damping", text="模拟阻尼")
 
                             row = boxxx.row(align=True)
-                            row.prop(pb, "gp_sim_influence", text="Sim Influence")
+                            row.prop(pb, "gp_sim_influence", text="模拟影响力")
 
                     if pb.gp_has_gn_physics:
 
                         row = boxx.row(align=True)
                         row.prop(prefs, "apply_to_all_chains")
-                    
-                        boxxx, expanded = draw_subpanel(boxx, prefs, "chain_menu", "Chain Settings", "RESTRICT_INSTANCED_OFF")
+
+                        boxxx, expanded = draw_subpanel(boxx, prefs, "chain_menu", "骨骼链设置", "RESTRICT_INSTANCED_OFF")
                         if expanded:
 
-                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "gn_general_menu", "General", "OUTLINER_DATA_GP_LAYER")
+                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "gn_general_menu", "常规", "OUTLINER_DATA_GP_LAYER")
                             if expanded:
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_chain_velocity", text="Velocity Scaler")
+                                row.prop(pb, "gp_chain_velocity", text="速度缩放")
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_chain_dampening", text="Velocity Dampening")
+                                row.prop(pb, "gp_chain_dampening", text="速度阻尼")
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_chain_gravity", text="Gravity")
+                                row.prop(pb, "gp_chain_gravity", text="重力")
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_chain_root_falloff", text="Root Falloff")
+                                row.prop(pb, "gp_chain_root_falloff", text="根部衰减")
 
-                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "gn_stiff_menu", "Stiffness", "AUTOMERGE_ON")
+                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "gn_stiff_menu", "刚度", "AUTOMERGE_ON")
                             if expanded:
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_chain_stiffness", text="Stiffness")
+                                row.prop(pb, "gp_chain_stiffness", text="刚度")
 
                                 row = boxxxx.row(align=True)
                                 row.prop(
-                                    pb, "gp_chain_stiff_end_fac", text="Tip Stiffness Factor"
+                                    pb, "gp_chain_stiff_end_fac", text="末端刚度系数"
                                 )
 
-                                boxxxxx, expanded = draw_subpanel(boxxxx, prefs, "gn_stiff_adv_menu", "Advanced Stiffness", "CON_TRANSLIKE")
+                                boxxxxx, expanded = draw_subpanel(boxxxx, prefs, "gn_stiff_adv_menu", "高级刚度设置", "CON_TRANSLIKE")
                                 if expanded:
 
                                     row = boxxxxx.row(align=True)
                                     row.prop(
-                                        pb, "gp_chain_stiff_vel_fac", text="Stiffness Velocity Factor"
+                                        pb, "gp_chain_stiff_vel_fac", text="刚度速度系数"
                                     )
 
                                     row = boxxxxx.row(align=True)
                                     row.prop(
-                                        pb, "gp_chain_stiff_vel_min", text="Stiffness Velocity Min"
+                                        pb, "gp_chain_stiff_vel_min", text="刚度速度下限"
                                     )
 
                                     row = boxxxxx.row(align=True)
                                     row.prop(
-                                        pb, "gp_chain_stiff_vel_max", text="Stiffness Velocity Max"
+                                        pb, "gp_chain_stiff_vel_max", text="刚度速度上限"
                                     )
 
-                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "gn_wind_menu", "Wind", "FORCE_WIND")
+                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "gn_wind_menu", "风力", "FORCE_WIND")
                             if expanded:
                                 has_wind = False
                                 ob = bpy.data.objects.get(pb.gp_sim_object)
@@ -367,77 +367,77 @@ class GP_PT_physics_panel(Panel):
 
                                     row = boxxxx.row(align=True)
                                     row.operator(
-                                        "goophys.add_wind_objects", text="Add Wind Controller to Chains"
+                                        "goophys.add_wind_objects", text="为骨骼链添加风力控制器"
                                     )
                                     row.scale_y = 2.0
-                                    
+
                                     boxxxx.separator()
 
                                     if mod is not None:
                                         row = boxxxx.row(align=True)
-                                        row.prop(mod, '["' + inputs["Wind Object"].identifier + '"]', text="Wind Controller")
+                                        row.prop(mod, '["' + inputs["Wind Object"].identifier + '"]', text="风力控制器")
 
                                 else:
 
                                     row = boxxxx.row(align=True)
-                                    row.prop(pb, "gp_chain_wind_strength", text="Wind Strength")
+                                    row.prop(pb, "gp_chain_wind_strength", text="风力强度")
 
                                     row = boxxxx.row(align=True)
-                                    row.prop(pb, "gp_chain_wind_noise_strength", text="Wind Noise Strength")
+                                    row.prop(pb, "gp_chain_wind_noise_strength", text="风力噪波强度")
 
                                     row = boxxxx.row(align=True)
-                                    row.prop(pb, "gp_chain_wind_noise_scale", text="Wind Noise Scale")
+                                    row.prop(pb, "gp_chain_wind_noise_scale", text="风力噪波缩放")
 
                                     boxxxx.separator()
 
                                     if mod is not None:
                                         row = boxxxx.row(align=True)
-                                        row.prop(mod, '["' + inputs["Wind Object"].identifier + '"]', text="Wind Controller")
+                                        row.prop(mod, '["' + inputs["Wind Object"].identifier + '"]', text="风力控制器")
 
                                     row = boxxxx.row(align=True)
                                     row.operator(
                                         "goophys.copy_active_wind_controller",
-                                        text="Copy Wind Controller to Selected Chains",
+                                        text="将风力控制器复制到所选骨骼链",
                                     )
                                     row.scale_y = 1.5
 
-                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "gn_collision_menu", "Collision", "MOD_PHYSICS")
+                            boxxxx, expanded = draw_subpanel(boxxx, prefs, "gn_collision_menu", "碰撞", "MOD_PHYSICS")
                             if expanded:
 
                                 row = boxxxx.row(align=True)
-                                row.prop(pb, "gp_chain_use_collision", text="Use Collision")
-                                
+                                row.prop(pb, "gp_chain_use_collision", text="启用碰撞")
+
                                 if pb.gp_chain_use_collision:
                                     row = boxxxx.row(align=True)
-                                    row.prop(pb, "gp_chain_collision_dist", text="Collision Distance")
+                                    row.prop(pb, "gp_chain_collision_dist", text="碰撞距离")
 
                                     row = boxxxx.row(align=True)
                                     row.prop(
-                                        pb, "gp_chain_collision_friction", text="Collision Friction"
+                                        pb, "gp_chain_collision_friction", text="碰撞摩擦力"
                                     )
 
                                 row = boxxxx.row(align=True)
                                 row.operator(
                                     "goophys.refresh_geonodes_collision",
-                                    text="Refresh Collision Objects")
+                                    text="刷新碰撞物体")
 
                         row = boxx.row(align=True)
                         row.prop(prefs, "apply_to_all_bones")
 
-                        boxxx, expanded = draw_subpanel(boxx, prefs, "bone_menu", "Bone Settings", "BONE_DATA")
+                        boxxx, expanded = draw_subpanel(boxx, prefs, "bone_menu", "骨骼设置", "BONE_DATA")
                         if expanded:
                             row = boxxx.row(align=True)
-                            row.prop(pb, "gp_sim_influence", text="Sim Influence")
+                            row.prop(pb, "gp_sim_influence", text="模拟影响力")
 
                             row = boxxx.row(align=True)
                             row.operator(
                                 "goophys.apply_falloff_to_selected",
-                                text="Apply Linear Sim Influence Falloff",
+                                text="应用线性模拟影响力衰减",
                             ).type = 0
                             row = boxxx.row(align=True)
                             row.operator(
                                 "goophys.apply_falloff_to_selected",
-                                text="Apply Quadratic Sim Influence Falloff",
+                                text="应用二次模拟影响力衰减",
                             ).type = 1
 
         #
@@ -445,25 +445,25 @@ class GP_PT_physics_panel(Panel):
         elif context.mode == "POSE":
             box = layout.box()
             row = box.row(align=True)
-            row.operator("goophys.select_dynamic_bones", text="Select Physics Bones")
+            row.operator("goophys.select_dynamic_bones", text="选择物理骨骼")
 
             row = box.row(align=True)
-            row.operator("goophys.select_last_dynamic_bones", text="Select Last Bone in Chains")
+            row.operator("goophys.select_last_dynamic_bones", text="选择骨骼链末端骨骼")
 
         box = layout.box()
         row = box.row(align=True)
         row.operator(
-            "goophys.add_collider", text="Collider From Selected Objects"
+            "goophys.add_collider", text="根据所选物体创建碰撞体"
         )
 
-        box, expanded = draw_subpanel(layout, prefs, "troubleshoot_menu", "Troubleshooting", "ERROR")
+        box, expanded = draw_subpanel(layout, prefs, "troubleshoot_menu", "故障排查", "ERROR")
         if expanded:
             row = box.row(align=True)
-            row.operator("goophys.sync_frame_range", text="Sync Frame Range")
+            row.operator("goophys.sync_frame_range", text="同步帧范围")
 
             row = box.row(align=True)
             row.operator(
-                "goophys.refresh_physics_status", text="Refresh Bone Physics Status"
+                "goophys.refresh_physics_status", text="刷新骨骼物理状态"
             )
 
 

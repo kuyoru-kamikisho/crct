@@ -9,9 +9,9 @@ from bpy_extras import anim_utils
 
 class GP_OT_refresh_geonodes_collision(Operator):
     bl_idname = "goophys.refresh_geonodes_collision"
-    bl_label = "Refresh Collision Objects"
+    bl_label = "刷新碰撞物体"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
-    bl_description = "Moves all collision enabled objects into the collection for geo nodes"
+    bl_description = "将所有启用了碰撞的物体移动到几何节点碰撞集合中"
 
     def execute(self, context):
         coll, collide_coll, control_coll, bake_coll = ensure_collections()
@@ -34,25 +34,25 @@ class GP_OT_refresh_geonodes_collision(Operator):
 
 class GP_OT_add_preset(Operator):
     bl_idname = "goophys.add_preset"
-    bl_label = "Add Preset"
+    bl_label = "添加预设"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
-    bl_description = "Adds a new preset from the active bones settings"
+    bl_description = "根据当前骨骼设置创建新预设"
 
     name: bpy.props.StringProperty(
-        name="Preset Name",
-        description="Name of the preset",
+        name="预设名称",
+        description="预设名称",
         default="",
     )
 
     description: bpy.props.StringProperty(
-        name="Preset Description",
-        description="Description of the preset",
+        name="预设描述",
+        description="预设描述",
         default="",
     )
 
     chain_preset: bpy.props.BoolProperty(
-        name="Chain Preset",
-        description="This preset will save the value profile of the who chain for the bone settings",
+        name="骨骼链预设",
+        description="此预设将保存整条骨骼链的骨骼设置参数曲线",
         default=True,
     )
 
@@ -61,7 +61,7 @@ class GP_OT_add_preset(Operator):
         if self.name == "":
             self.report(
                 {"ERROR"},
-                "You need to add a preset name to save the preset",
+                "请填写预设名称后再保存",
             )
             return {"CANCELLED"}
         
@@ -257,9 +257,9 @@ class GP_OT_add_preset(Operator):
 
 class GP_OT_delete_preset(Operator):
     bl_idname = "goophys.delete_preset"
-    bl_label = "Delete Preset"
+    bl_label = "删除预设"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
-    bl_description = "Deletes the active preset"
+    bl_description = "删除当前预设"
 
     def execute(self, context):
         prefs = context.preferences.addons["goo_physics"].preferences
@@ -337,18 +337,18 @@ class GP_OT_delete_preset(Operator):
                             "FLOPPYCLOTH",]:
             self.report(
                 {"ERROR"},
-                "Cannot delete the base presets",
+                "无法删除内置预设",
             )
             return {"CANCELLED"}
 
-        return context.window_manager.invoke_props_dialog(self, width=400, confirm_text="Delete Preset? Cannot be recovered")
+        return context.window_manager.invoke_props_dialog(self, width=400, confirm_text="删除预设? Cannot be recovered")
 
 
 class GP_OT_apply_preset(Operator):
     bl_idname = "goophys.apply_preset"
-    bl_label = "Apply Preset"
+    bl_label = "应用预设"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
-    bl_description = "Applys the active preset to the select bones/bone chains"
+    bl_description = "将当前预设应用到选中的骨骼/骨骼链"
 
     def execute(self, context):
         pb = context.active_pose_bone
@@ -357,7 +357,7 @@ class GP_OT_apply_preset(Operator):
         if preset_data is None:
             self.report(
                 {"ERROR"},
-                "Active Pose Bone has no physics",
+                "当前活动姿态骨骼尚未启用物理模拟",
             )
             return {"CANCELLED"}
     
@@ -368,9 +368,9 @@ class GP_OT_apply_preset(Operator):
 
 class GP_OT_select_dynamic_bones(Operator):
     bl_idname = "goophys.select_dynamic_bones"
-    bl_label = "Select Physics Bones"
+    bl_label = "选择物理骨骼"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
-    bl_description = "Selects all bones with physics currently on them"
+    bl_description = "选择所有已启用物理模拟的骨骼"
 
     def execute(self, context):
         for pb in context.visible_pose_bones:
@@ -385,9 +385,9 @@ class GP_OT_select_dynamic_bones(Operator):
 
 class GP_OT_select_last_dynamic_bone(Operator):
     bl_idname = "goophys.select_last_dynamic_bones"
-    bl_label = "Select Last In Chain"
+    bl_label = "选择骨骼链末端"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
-    bl_description = "Selects last bone in dynamic chain"
+    bl_description = "选择动态骨骼链中的最后一根骨骼"
 
     def execute(self, context):
         for pb in context.visible_pose_bones:
@@ -408,9 +408,9 @@ class GP_OT_select_last_dynamic_bone(Operator):
 
 class GP_OT_add_geonodes_physics_to_selected(Operator):
     bl_idname = "goophys.add_geonodes_physics_to_selected"
-    bl_label = "Add Physics to Selected Bones"
+    bl_label = "为选中骨骼添加物理模拟"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
-    bl_description = "Adds Geo Nodes dynamic meshes to selected bone chains"
+    bl_description = "为选中的骨骼链添加几何节点动态网格"
 
     def execute(self, context):
         prefs = context.preferences.addons["goo_physics"].preferences
@@ -422,7 +422,7 @@ class GP_OT_add_geonodes_physics_to_selected(Operator):
         if len(sim_chains) == 0:
             self.report(
                 {"ERROR"},
-                "None of the bones you selected can be simmed. The bones need a parent to work",
+                "所选骨骼均无法进行模拟。骨骼必须具有父级骨骼才能使用此功能",
             )
 
         # remove existing physics from selected bones
@@ -444,9 +444,9 @@ class GP_OT_add_geonodes_physics_to_selected(Operator):
 
 class GP_OT_add_soft_physics_to_selected(Operator):
     bl_idname = "goophys.add_soft_physics_to_selected"
-    bl_label = "Add Physics to Selected Bones"
+    bl_label = "为选中骨骼添加物理模拟"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
-    bl_description = "Adds Soft Body dynamic meshes to selected bone chains"
+    bl_description = "为选中的骨骼链添加软体动态网格"
 
     def execute(self, context):
         
@@ -457,7 +457,7 @@ class GP_OT_add_soft_physics_to_selected(Operator):
         if len(sim_chains) == 0:
             self.report(
                 {"ERROR"},
-                "None of the bones you selected can be simmed. The bones need a parent to work",
+                "所选骨骼均无法进行模拟。骨骼必须具有父级骨骼才能使用此功能",
             )
 
         # remove existing physics from selected bones
@@ -477,9 +477,9 @@ class GP_OT_add_soft_physics_to_selected(Operator):
 
 class GP_OT_add_cloth_physics_to_selected(Operator):
     bl_idname = "goophys.add_cloth_physics_to_selected"
-    bl_label = "Add Physics to Selected Bones"
+    bl_label = "为选中骨骼添加物理模拟"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
-    bl_description = "Adds Soft Body dynamic meshes to selected bone chains"
+    bl_description = "为选中的骨骼链添加软体动态网格"
 
     def execute(self, context):
         
@@ -490,7 +490,7 @@ class GP_OT_add_cloth_physics_to_selected(Operator):
         if len(sim_chains) == 0:
             self.report(
                 {"ERROR"},
-                "None of the bones you selected can be simmed. The bones need a parent to work",
+                "所选骨骼均无法进行模拟。骨骼必须具有父级骨骼才能使用此功能",
             )
 
         # remove existing physics from selected bones
@@ -510,9 +510,9 @@ class GP_OT_add_cloth_physics_to_selected(Operator):
 
 class GP_OT_add_jiggle_physics_to_selected(Operator):
     bl_idname = "goophys.add_jiggle_physics_to_selected"
-    bl_label = "Add Physics to Selected Bones"
+    bl_label = "为选中骨骼添加物理模拟"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
-    bl_description = "Adds Soft Body dynamic meshes to selected bone chains"
+    bl_description = "为选中的骨骼链添加软体动态网格"
 
     def execute(self, context):
         
@@ -526,7 +526,7 @@ class GP_OT_add_jiggle_physics_to_selected(Operator):
         if len(sim_chains) == 0:
             self.report(
                 {"ERROR"},
-                "None of the bones you selected can be simmed. The bones need a Disconnected Parent (Keep Offset) to work",
+                "所选骨骼均无法进行模拟。骨骼必须具有非连接的父级关系（保持偏移）才能使用此功能",
             )
 
         # remove existing physics from selected bones
@@ -546,9 +546,9 @@ class GP_OT_add_jiggle_physics_to_selected(Operator):
 
 class GP_OT_remove_physics_from_selected(Operator):
     bl_idname = "goophys.remove_physics_from_selected"
-    bl_label = "Remove Physics from Selected Bones"
+    bl_label = "移除选中骨骼的物理模拟"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
-    bl_description = "Removes Soft Body dynamic meshes assigned to the selected bones"
+    bl_description = "移除分配给选中骨骼的软体动态网格"
 
     def execute(self, context):
         sim_chains = get_bone_chains(context.selected_pose_bones)
@@ -563,9 +563,9 @@ class GP_OT_remove_physics_from_selected(Operator):
 
 class GP_OT_sync_frame_range(Operator):
     bl_idname = "goophys.sync_frame_range"
-    bl_label = "Sync Frame Range"
+    bl_label = "同步帧范围"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
-    bl_description = "Sync all soft body sim objects to the current frame range"
+    bl_description = "将所有软体模拟物体同步到当前帧范围"
 
     def execute(self, context):
 
@@ -611,9 +611,9 @@ class GP_OT_sync_frame_range(Operator):
 
 class GP_OT_refresh_physics_status(Operator):
     bl_idname = "goophys.refresh_physics_status"
-    bl_label = "Refresh Physics Status"
+    bl_label = "刷新物理状态"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
-    bl_description = "Sync all soft body sim objects to the current frame range"
+    bl_description = "将所有软体模拟物体同步到当前帧范围"
 
     def execute(self, context):
 
@@ -699,9 +699,9 @@ class GP_OT_refresh_physics_status(Operator):
 
 class GP_OT_apply_falloff_to_selected(Operator):
     bl_idname = "goophys.apply_falloff_to_selected"
-    bl_label = "Apply Falloff to Selected"
+    bl_label = "为选中骨骼应用衰减"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
-    bl_description = "Applies a linear or quadratic falloff to the sim influence of the selected dynamic chains. The tips of the chains will follow the simulation more and the roots will follow the animation more"
+    bl_description = "为选中的动态骨骼链应用线性或二次衰减。链条末端将更多地跟随模拟运动，根部则更多地跟随动画运动"
 
     type: bpy.props.IntProperty()
 
@@ -739,11 +739,11 @@ class GP_OT_apply_falloff_to_selected(Operator):
 
 class GP_OT_add_collider(Operator):
     bl_idname = "goophys.add_collider"
-    bl_label = "Add Collider from Selected"
+    bl_label = "根据选中物体创建碰撞体"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
-    bl_description = "Creates a new collider object and adds to the list"
+    bl_description = "创建新的碰撞体物体并将其添加到列表中"
 
-    convex_hull: bpy.props.BoolProperty(name="Convex Hull Colliders", default=False, description="Converts each collider object to a convex hull mesh for simpler collision meshes")
+    convex_hull: bpy.props.BoolProperty(name="凸包碰撞体", default=False, description="将每个碰撞物体转换为凸包网格，以简化碰撞网格")
 
     def execute(self, context):
         
@@ -793,9 +793,9 @@ class GP_OT_add_collider(Operator):
 
 class GP_OT_add_wind_object(Operator):
     bl_idname = "goophys.add_wind_objects"
-    bl_label = "Add Wind Controller to Chains"
+    bl_label = "为骨骼链添加风力控制器"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
-    bl_description = "Adds wind object to selected chains"
+    bl_description = "为选中的骨骼链添加风力物体"
 
     def execute(self, context):
         
@@ -832,9 +832,9 @@ class GP_OT_add_wind_object(Operator):
 
 class GP_OT_copy_active_wind_controller(Operator):
     bl_idname = "goophys.copy_active_wind_controller"
-    bl_label = "Copy Wind Controller to Selected Chains"
+    bl_label = "将风力控制器复制到选中的骨骼链"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
-    bl_description = "Adds the active chains wind object to the selected chains"
+    bl_description = "将当前活动骨骼链的风力物体应用到选中的骨骼链"
 
     def execute(self, context):
         coll = bpy.data.collections.get("Goo Physics Controllers")
@@ -867,14 +867,14 @@ class GP_OT_copy_active_wind_controller(Operator):
 
 class GP_OT_bake_physics(Operator):
     bl_idname = "goophys.bake_physics"
-    bl_label = "Bake Bone Physics"
+    bl_label = "烘焙骨骼物理"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
     bl_description = (
-        "Bake the bone physics to keyframes on the current armature action"
+        "将骨骼物理模拟烘焙为当前骨架动作中的关键帧"
     )
 
-    use_magic: bpy.props.BoolProperty(name="Use Magic Empties", default=False, description="Bake the physics of the bones using Magic Empties settings")
-    sep_action: bpy.props.BoolProperty(name="Bake to New Action", default=False, description="Bake the physics to keyframes in a new action instead of overwriting the existing action")
+    use_magic: bpy.props.BoolProperty(name="使用 Magic Empties", default=False, description="使用 Magic Empties 设置烘焙骨骼物理")
+    sep_action: bpy.props.BoolProperty(name="烘焙到新动作", default=False, description="将物理模拟烘焙为新动作中的关键帧，而不是覆盖现有动作")
 
     def execute(self, context):
         prefs = context.preferences.addons["goo_physics"].preferences
@@ -899,7 +899,7 @@ class GP_OT_bake_physics(Operator):
         if len(sim_chains) == 0:
             self.report(
                 {"ERROR"},
-                "Could not find any bone chains to bake. Try using Refresh Physics Status",
+                "Could not find any bone chains to bake. Try using 刷新物理状态",
             )
 
         skip_rigs = []
