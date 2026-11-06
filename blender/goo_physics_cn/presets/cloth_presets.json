@@ -1,0 +1,35 @@
+{
+ "DEFAULTCLOTH": {
+  "Name": "Default Cloth",
+  "Description": "Default settings for cloth physics",
+  "Settings": {
+   "gp_chain_speed": 2.0,
+   "gp_chain_mass": 0.3,
+   "gp_chain_air_dampening": 0.5,
+   "gp_chain_bend_damping": 0.5,
+   "gp_sim_influence": 1.0
+  }
+ },
+ "STIFFCLOTH": {
+  "Name": "Stiff Cloth",
+  "Description": "Best used for stiff chained rigs falling down, like a flag. First bone in the chain will not be simulated",
+  "Settings": {
+   "gp_chain_speed": 0.800000011920929,
+   "gp_chain_mass": 0.30000001192092896,
+   "gp_chain_air_dampening": 2.0,
+   "gp_chain_bend_damping": 10.0,
+   "gp_sim_influence": 1.0
+  }
+ },
+ "FLOPPYCLOTH": {
+  "Name": "Floppy Cloth",
+  "Description": "Best used for a heavy floppy chained rigs dangling down",
+  "Settings": {
+   "gp_chain_speed": 2.0,
+   "gp_chain_mass": 1.0,
+   "gp_chain_air_dampening": 2.0,
+   "gp_chain_bend_damping": 2.0,
+   "gp_sim_influence": 1.0
+  }
+ }
+}

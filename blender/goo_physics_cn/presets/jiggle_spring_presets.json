@@ -1,0 +1,38 @@
+{
+ "DEFAULTJIGGLE": {
+  "Name": "Default Jiggle",
+  "Description": "Default settings for jiggle physics",
+  "Settings": {
+   "gp_sim_speed": 0.8,
+   "gp_sim_friction": 5.0,
+   "gp_sim_mass": 0.15,
+   "gp_sim_stiffness": 0.1,
+   "gp_sim_damping": 8.0,
+   "gp_sim_influence": 1.0
+  }
+ },
+ "JIGGLELOOSE": {
+  "Name": "Jiggle Loose",
+  "Description": "Location based Jiggle offset for Secondary Animation",
+  "Settings": {
+   "gp_sim_speed": 0.7700000405311584,
+   "gp_sim_friction": 5.0,
+   "gp_sim_mass": 0.20000000298023224,
+   "gp_sim_stiffness": 0.10000000149011612,
+   "gp_sim_damping": 10.06399917602539,
+   "gp_sim_influence": 1.0
+  }
+ },
+ "JIGGLESTIFF": {
+  "Name": "Jiggle Stiff",
+  "Description": "Location based Jiggle offset for Secondary Animation with less bounce",
+  "Settings": {
+   "gp_sim_speed": 0.8299999833106995,
+   "gp_sim_friction": 5.0,
+   "gp_sim_mass": 0.15000000596046448,
+   "gp_sim_stiffness": 0.2979999780654907,
+   "gp_sim_damping": 10.06399917602539,
+   "gp_sim_influence": 1.0
+  }
+ }
+}

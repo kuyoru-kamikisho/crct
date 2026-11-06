@@ -1,0 +1,86 @@
+{
+ "DEFAULTGEONODES": {
+  "Name": "Default Geo Nodes",
+  "Description": "Default settings for geo nodes physics",
+  "Settings": {
+   "gp_chain_velocity": 1.0,
+   "gp_chain_dampening": 0.1,
+   "gp_chain_gravity": 0.02,
+   "gp_chain_root_falloff": 0.25,
+   "gp_chain_stiffness": 0.25,
+   "gp_chain_stiff_end_fac": 0.25,
+   "gp_chain_stiff_vel_fac": 0.2,
+   "gp_chain_stiff_vel_min": 0.1,
+   "gp_chain_stiff_vel_max": 1.0,
+   "gp_chain_wind_strength": 0.25,
+   "gp_chain_wind_noise_strength": 1.0,
+   "gp_chain_wind_noise_scale": 1.0,
+   "gp_chain_collision_dist": 0.01,
+   "gp_chain_collision_friction": 0.25,
+   "gp_sim_influence": 1.0
+  }
+ },
+ "HAIRFRINGE": {
+  "Name": "Hair Fringe",
+  "Description": "Used for Bangs/Fringe, where the base doesnt move much and theres slight movement at the tips to prevent the character going off model",
+  "Settings": {
+   "gp_chain_velocity": 1.0,
+   "gp_chain_dampening": 0.10000000149011612,
+   "gp_chain_gravity": 0.019999999552965164,
+   "gp_chain_root_falloff": 0.9200000166893005,
+   "gp_chain_stiffness": 0.5,
+   "gp_chain_stiff_end_fac": 0.20000000298023224,
+   "gp_chain_stiff_vel_fac": 0.20000000298023224,
+   "gp_chain_stiff_vel_min": 0.10000000149011612,
+   "gp_chain_stiff_vel_max": 1.0,
+   "gp_chain_wind_strength": 0.05999999865889549,
+   "gp_chain_wind_noise_strength": 2.0999999046325684,
+   "gp_chain_wind_noise_scale": 10.0,
+   "gp_chain_collision_dist": 0.009999999776482582,
+   "gp_chain_collision_friction": 0.25,
+   "gp_sim_influence": 1.0
+  }
+ },
+ "HAIRSIDE": {
+  "Name": "Hair Side",
+  "Description": "Medium length hair strands, usually for side burns longer than the bangs. Can also be used for skirts",
+  "Settings": {
+   "gp_chain_velocity": 1.0,
+   "gp_chain_dampening": 0.10000000149011612,
+   "gp_chain_gravity": 0.019999999552965164,
+   "gp_chain_root_falloff": 0.5,
+   "gp_chain_stiffness": 0.4099999964237213,
+   "gp_chain_stiff_end_fac": 0.20000000298023224,
+   "gp_chain_stiff_vel_fac": 0.20000000298023224,
+   "gp_chain_stiff_vel_min": 0.10000000149011612,
+   "gp_chain_stiff_vel_max": 1.0,
+   "gp_chain_wind_strength": 0.08000000566244125,
+   "gp_chain_wind_noise_strength": 2.0,
+   "gp_chain_wind_noise_scale": 5.0,
+   "gp_chain_collision_dist": 0.009999999776482582,
+   "gp_chain_collision_friction": 0.25,
+   "gp_sim_influence": 0.5
+  }
+ },
+ "HAIRPONYTAIL": {
+  "Name": "Hair Ponytail",
+  "Description": "Long length bone chains with lots of drag at the end. Can be used for dresses and capes as well",
+  "Settings": {
+   "gp_chain_velocity": 1.0,
+   "gp_chain_dampening": 0.10000000149011612,
+   "gp_chain_gravity": 0.019999999552965164,
+   "gp_chain_root_falloff": 0.41999998688697815,
+   "gp_chain_stiffness": 0.0,
+   "gp_chain_stiff_end_fac": 0.20000000298023224,
+   "gp_chain_stiff_vel_fac": 0.20000000298023224,
+   "gp_chain_stiff_vel_min": 0.10000000149011612,
+   "gp_chain_stiff_vel_max": 1.0,
+   "gp_chain_wind_strength": 0.125,
+   "gp_chain_wind_noise_strength": 2.0199999809265137,
+   "gp_chain_wind_noise_scale": 5.0,
+   "gp_chain_collision_dist": 0.009999999776482582,
+   "gp_chain_collision_friction": 0.25,
+   "gp_sim_influence": 0.5
+  }
+ }
+}
