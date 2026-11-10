@@ -410,6 +410,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5316820693925015571, guid: fdf678a7193c58346a367114b3da57ac, type: 3}
+      propertyPath: m_Controller
+      value: 
+      objectReference: {fileID: 9100000, guid: 9abaf7a03f04ecd41b1db87e6ddc77fd, type: 2}
+    - target: {fileID: 5316820693925015571, guid: fdf678a7193c58346a367114b3da57ac, type: 3}
+      propertyPath: m_ApplyRootMotion
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -669,18 +677,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 365dd96457e586e44bef34d751f9c80c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController
-  moveSpeed: 5.5
+  moveSpeed: 3
   sprintMultiplier: 2.2
   jumpForce: 8
   gravity: -20
-  dashDistance: 5
-  dashDuration: 0.2
+  dashDistance: 4
+  dashDuration: 0.3
   sprintLockTime: 2
   groundCheckRadius: 0.2
   groundLayer:
     serializedVersion: 2
     m_Bits: 8
   rotationSmoothTime: 0.1
+  walkAnimSpeed: 0.5
+  runAnimSpeed: 1
 --- !u!1 &792409594
 GameObject:
   m_ObjectHideFlags: 0

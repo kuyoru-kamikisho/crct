@@ -36,7 +36,16 @@ public class PlayerController : MonoBehaviour
     [Header("角色转向")]
     public float rotationSmoothTime = 0.1f;
 
+    [Header("动画参数阈值")]
+    [Tooltip("走路时传给 Animator 的 Speed，需大于 Idle→Walk 阈值(0.1)")]
+    public float walkAnimSpeed = 0.5f;
+
+    [Tooltip("跑步/冲刺时传给 Animator 的 Speed，需大于 Walk→Run 阈值(0.6)")]
+    public float runAnimSpeed = 1f;
+
     private CharacterController _cc;
+
+    private Animator _animator;
 
     private Vector3 _verticalVelocity;
 
@@ -64,9 +73,14 @@ public class PlayerController : MonoBehaviour
 
     private Vector3 _dashDirection;
 
+    private static readonly int SpeedHash = Animator.StringToHash("Speed");
+    private static readonly int IsGroundedHash = Animator.StringToHash("IsGrounded");
+    private static readonly int JumpHash = Animator.StringToHash("Jump");
+
     private void Awake()
     {
         _cc = GetComponent<CharacterController>();
+        _animator = GetComponentInChildren<Animator>();
 
         _keyboard = Keyboard.current;
 
@@ -105,6 +119,9 @@ public class PlayerController : MonoBehaviour
 
         // 7. 移动和转向
         HandleMovement(moveDir, isMoving);
+
+        // 8. 同步动画参数
+        UpdateAnimator(isMoving);
     }
 
     private Vector2 GetMovementInput()
@@ -283,6 +300,11 @@ public class PlayerController : MonoBehaviour
         if (_keyboard.spaceKey.wasPressedThisFrame && _isGrounded)
         {
             _verticalVelocity.y = jumpForce;
+
+            if (_animator != null)
+            {
+                _animator.SetTrigger(JumpHash);
+            }
         }
     }
 
@@ -296,6 +318,27 @@ public class PlayerController : MonoBehaviour
         {
             _verticalVelocity.y += gravity * Time.deltaTime;
         }
+    }
+
+    private void UpdateAnimator(bool isMoving)
+    {
+        if (_animator == null)
+            return;
+
+        float animSpeed = 0f;
+
+        if (isMoving || _isDashing)
+        {
+            bool isRunning =
+                _isDashing ||
+                _isShiftHeld ||
+                _isSprintLocked;
+
+            animSpeed = isRunning ? runAnimSpeed : walkAnimSpeed;
+        }
+
+        _animator.SetFloat(SpeedHash, animSpeed);
+        _animator.SetBool(IsGroundedHash, _isGrounded);
     }
 
     private void OnDrawGizmosSelected()
