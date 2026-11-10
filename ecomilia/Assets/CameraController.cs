@@ -91,6 +91,10 @@ public class CameraController : MonoBehaviour
 
     private void HandleInput()
     {
+        // 背包等 UI 打开时，不抢鼠标、不转视角
+        if (GameUIState.IsBlockingGameplay)
+            return;
+
         // V 键切换人称
         if (_keyboard != null && _keyboard.vKey.wasPressedThisFrame)
         {
@@ -120,14 +124,23 @@ public class CameraController : MonoBehaviour
             Cursor.visible = true;
         }
 
-        // 左键重新锁定鼠标
+        // 左键重新锁定鼠标（点在 UI 上时不锁定）
         if (_mouse != null &&
             _mouse.leftButton.wasPressedThisFrame &&
-            Cursor.lockState == CursorLockMode.None)
+            Cursor.lockState == CursorLockMode.None &&
+            !IsPointerOverUI())
         {
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
+    }
+
+    private static bool IsPointerOverUI()
+    {
+        var eventSystem = UnityEngine.EventSystems.EventSystem.current;
+
+        return eventSystem != null &&
+               eventSystem.IsPointerOverGameObject();
     }
 
     private void HandleZoom()

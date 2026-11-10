@@ -1094,6 +1094,7 @@ GameObject:
   - component: {fileID: 2023733161}
   - component: {fileID: 2023733160}
   - component: {fileID: 2023733164}
+  - component: {fileID: 2023733165}
   m_Layer: 5
   m_Name: Canvas
   m_TagString: Untagged
@@ -1201,6 +1202,23 @@ MonoBehaviour:
   fpsInterval: 2
   uiInterval: 0.25
   pingInterval: 3
+--- !u!114 &2023733165
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2023733159}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a1b2c3d4e5f6478910aabbccddeeff04, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryUI
+  inventory: {fileID: 0}
+  toggleKey: 16
+  gridColumns: 5
+  slotSize: {x: 72, y: 72}
+  slotSpacing: 8
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

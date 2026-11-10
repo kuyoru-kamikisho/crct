@@ -97,6 +97,10 @@ public class PlayerController : MonoBehaviour
         if (_keyboard == null)
             _keyboard = Keyboard.current;
 
+        // 背包等 UI 打开时暂停角色操控
+        if (GameUIState.IsBlockingGameplay)
+            return;
+
         // 1. 地面检测
         GroundCheck();
 
