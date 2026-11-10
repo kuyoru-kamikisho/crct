@@ -12,6 +12,16 @@ public class CameraController : MonoBehaviour
     public float thirdPersonDistance = 5.5f;
     public float heightOffset = 0.36f;
 
+    [Header("滚轮缩放")]
+    [Tooltip("滚轮灵敏度；Windows 上滚轮一步通常约 120")]
+    public float zoomSensitivity = 0.5f;
+
+    [Tooltip("第三人称最近距离")]
+    public float minDistance = 2f;
+
+    [Tooltip("第三人称最远距离")]
+    public float maxDistance = 12f;
+
     [Header("视角控制")]
     public float mouseSensitivity = 0.1f;
     public float minPitch = -30f;
@@ -31,6 +41,8 @@ public class CameraController : MonoBehaviour
     private float _yaw;
     private float _pitch;
 
+    private float _currentDistance;
+
     private Vector3 _positionVelocity;
 
     private Mouse _mouse;
@@ -46,6 +58,12 @@ public class CameraController : MonoBehaviour
 
         _playerTransform = player;
         _eyeTransform = eyeAnchor;
+
+        _currentDistance = Mathf.Clamp(
+            thirdPersonDistance,
+            minDistance,
+            maxDistance
+        );
     }
 
     private void Start()
@@ -93,6 +111,8 @@ public class CameraController : MonoBehaviour
             }
         }
 
+        HandleZoom();
+
         // Esc 解锁鼠标
         if (_keyboard != null && _keyboard.escapeKey.wasPressedThisFrame)
         {
@@ -108,6 +128,26 @@ public class CameraController : MonoBehaviour
             Cursor.lockState = CursorLockMode.Locked;
             Cursor.visible = false;
         }
+    }
+
+    private void HandleZoom()
+    {
+        // 第一人称不需要拉远近
+        if (_isFirstPerson || _mouse == null)
+            return;
+
+        float scroll = _mouse.scroll.ReadValue().y;
+
+        if (Mathf.Abs(scroll) < 0.01f)
+            return;
+
+        _currentDistance -= scroll * zoomSensitivity;
+        _currentDistance = Mathf.Clamp(
+            _currentDistance,
+            minDistance,
+            maxDistance
+        );
+        thirdPersonDistance = _currentDistance;
     }
 
     private void LateUpdate()
@@ -135,7 +175,7 @@ public class CameraController : MonoBehaviour
             Vector3 offset = targetRotation * new Vector3(
                 0f,
                 heightOffset,
-                -thirdPersonDistance
+                -_currentDistance
             );
 
             targetPosition = _playerTransform.position + offset;

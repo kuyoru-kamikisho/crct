@@ -352,6 +352,9 @@ MonoBehaviour:
   eyeAnchor: {fileID: 1214685757}
   thirdPersonDistance: 5.5
   heightOffset: 0.36
+  zoomSensitivity: 0.5
+  minDistance: 2
+  maxDistance: 12
   mouseSensitivity: 0.1
   minPitch: -30
   maxPitch: 70
