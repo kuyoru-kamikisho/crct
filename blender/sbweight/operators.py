@@ -78,7 +78,7 @@ def _create_proxy_for_bone(armature, pose_bone, shape: str):
         "weight_v7",
         "weight_v8",
     ):
-        setattr(props, attr, 0.2)
+        setattr(props, attr, 0.8)
     props.weight_offset = 0.0
     props.shape = shape
     empty.empty_display_type = "SPHERE" if shape == "SPHERE" else "CUBE"

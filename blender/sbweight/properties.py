@@ -83,14 +83,14 @@ class SBWeightProxyProps(PropertyGroup):
         max=1.0,
         update=_on_weight_prop_update,
     )
-    weight_v1: FloatProperty(name="V1", default=0.2, min=0.0, max=1.0, update=_on_weight_prop_update)
-    weight_v2: FloatProperty(name="V2", default=0.2, min=0.0, max=1.0, update=_on_weight_prop_update)
-    weight_v3: FloatProperty(name="V3", default=0.2, min=0.0, max=1.0, update=_on_weight_prop_update)
-    weight_v4: FloatProperty(name="V4", default=0.2, min=0.0, max=1.0, update=_on_weight_prop_update)
-    weight_v5: FloatProperty(name="V5", default=0.2, min=0.0, max=1.0, update=_on_weight_prop_update)
-    weight_v6: FloatProperty(name="V6", default=0.2, min=0.0, max=1.0, update=_on_weight_prop_update)
-    weight_v7: FloatProperty(name="V7", default=0.2, min=0.0, max=1.0, update=_on_weight_prop_update)
-    weight_v8: FloatProperty(name="V8", default=0.2, min=0.0, max=1.0, update=_on_weight_prop_update)
+    weight_v1: FloatProperty(name="V1", default=0.8, min=0.0, max=1.0, update=_on_weight_prop_update)
+    weight_v2: FloatProperty(name="V2", default=0.8, min=0.0, max=1.0, update=_on_weight_prop_update)
+    weight_v3: FloatProperty(name="V3", default=0.8, min=0.0, max=1.0, update=_on_weight_prop_update)
+    weight_v4: FloatProperty(name="V4", default=0.8, min=0.0, max=1.0, update=_on_weight_prop_update)
+    weight_v5: FloatProperty(name="V5", default=0.8, min=0.0, max=1.0, update=_on_weight_prop_update)
+    weight_v6: FloatProperty(name="V6", default=0.8, min=0.0, max=1.0, update=_on_weight_prop_update)
+    weight_v7: FloatProperty(name="V7", default=0.8, min=0.0, max=1.0, update=_on_weight_prop_update)
+    weight_v8: FloatProperty(name="V8", default=0.8, min=0.0, max=1.0, update=_on_weight_prop_update)
 
     weight_offset: FloatProperty(
         name="Offset",
