@@ -271,7 +271,8 @@ def choose_stem(directory: Path, title: str) -> tuple[str, bool]:
         candidate = answer
 
 
-def base_options(ffmpeg: str | None, cookiefile: str | None = None) -> dict:
+def base_options(cookiefile: str | None = None) -> dict:
+    """解析与下载共用的基础选项。注意：这里不限制 format，避免解析阶段因无合并轨失败。"""
     options = {
         "noplaylist": True,
         "retries": 5,
@@ -281,16 +282,63 @@ def base_options(ffmpeg: str | None, cookiefile: str | None = None) -> dict:
         "restrictfilenames": False,
         "continuedl": True,
         "noprogress": False,
+        # 解析时列出全部格式；真正下载时再按是否有 ffmpeg 选择
+        "format": "bv*+ba/b",
     }
     options.update(runtime_options())
     if cookiefile:
         options["cookiefile"] = cookiefile
+    return options
+
+
+def format_has_audio_and_video(fmt: dict) -> bool:
+    return (
+        fmt.get("vcodec") not in (None, "none")
+        and fmt.get("acodec") not in (None, "none")
+    )
+
+
+def has_combined_format(info: dict) -> bool:
+    if format_has_audio_and_video(info):
+        return True
+    return any(format_has_audio_and_video(fmt) for fmt in info.get("formats") or [])
+
+
+def has_separate_av(info: dict) -> bool:
+    has_v = False
+    has_a = False
+    for fmt in info.get("formats") or []:
+        v = fmt.get("vcodec") not in (None, "none")
+        a = fmt.get("acodec") not in (None, "none")
+        if v and not a:
+            has_v = True
+        if a and not v:
+            has_a = True
+    return has_v and has_a
+
+
+def download_format_options(ffmpeg: str | None, info: dict) -> dict:
+    """根据已解析到的格式与 ffmpeg 情况选择下载策略。"""
+    options: dict = {}
     if ffmpeg:
         options["ffmpeg_location"] = ffmpeg
         options["format"] = "bv*+ba/b"
         options["merge_output_format"] = "mp4"
-    else:
+        return options
+
+    if has_combined_format(info):
+        # 无 ffmpeg 时优先选已含声音的单文件
         options["format"] = "b"
+        return options
+
+    if has_separate_av(info):
+        raise VideoDownloaderError(
+            "视频已解析成功，但该站点只提供「画面 / 声音分离」的格式，"
+            "合并成完整视频需要 ffmpeg。\n"
+            "请安装 ffmpeg 并加入 PATH，或执行：python -m pip install imageio-ffmpeg"
+        )
+
+    options["format"] = "b"
     return options
 
 
@@ -308,17 +356,33 @@ class _QuietLogger:
         return
 
 
-def fetch_info(url: str, yt_dlp, ffmpeg: str | None, cookiefile: str | None = None) -> dict:
-    options = base_options(ffmpeg, cookiefile)
+def fetch_info(url: str, yt_dlp, cookiefile: str | None = None) -> dict:
+    """只负责解析视频元数据与可用格式，不因 ffmpeg 缺失而失败。"""
+    options = base_options(cookiefile)
     options.update({
         "quiet": True,
         "no_warnings": True,
         "skip_download": True,
         "logger": _QuietLogger(),
+        # 不强行选定最终下载格式，避免「Requested format is not available」打断解析
+        "format": "all",
     })
-    with yt_dlp.YoutubeDL(options) as ydl:
-        info = ydl.extract_info(url, download=False)
-    if not info:
+    last_error: Exception | None = None
+    info = None
+    for attempt in range(1, 4):
+        try:
+            with yt_dlp.YoutubeDL(options) as ydl:
+                info = ydl.extract_info(url, download=False)
+            break
+        except Exception as exc:  # noqa: BLE001 — 网络偶发 SSL 失败时重试
+            last_error = exc
+            if attempt < 3:
+                print(f"解析遇到网络问题，正在重试（{attempt}/3）…")
+            else:
+                raise
+    if info is None:
+        if last_error is not None:
+            raise last_error
         raise VideoDownloaderError("没有解析到视频信息。")
     info = unwrap_entry(info)
     if not has_video(info):
@@ -350,9 +414,11 @@ def download(
     overwrite: bool,
     yt_dlp,
     ffmpeg: str | None,
+    info: dict,
     cookiefile: str | None = None,
 ) -> Path:
-    options = base_options(ffmpeg, cookiefile)
+    options = base_options(cookiefile)
+    options.update(download_format_options(ffmpeg, info))
     options.update({
         "quiet": False,
         "no_warnings": False,
@@ -361,17 +427,17 @@ def download(
         "overwrites": overwrite,
         "continuedl": not overwrite,
     })
-    extension = "mp4" if ffmpeg else "视频格式对应的扩展名"
+    extension = "mp4" if ffmpeg or options.get("merge_output_format") == "mp4" else "视频格式对应的扩展名"
     print(f"将保存到：{directory}")
     print(f"文件名：{stem}.{extension}")
     print("开始下载…")
     with yt_dlp.YoutubeDL(options) as ydl:
-        info = ydl.extract_info(url, download=True)
-    if not info:
+        result = ydl.extract_info(url, download=True)
+    if not result:
         raise VideoDownloaderError("下载没有返回结果。")
-    path = saved_filepath(info, directory, stem)
-    if path is None and info.get("_type") in {"playlist", "multi_video"}:
-        path = saved_filepath(unwrap_entry(info), directory, stem)
+    path = saved_filepath(result, directory, stem)
+    if path is None and result.get("_type") in {"playlist", "multi_video"}:
+        path = saved_filepath(unwrap_entry(result), directory, stem)
     if path is None:
         raise VideoDownloaderError("下载结束，但没有在当前目录找到视频文件。")
     return path
@@ -389,8 +455,16 @@ def clean_message(exc: Exception) -> str:
             "导出 Netscape 格式的 cookies.txt 后重试：\n"
             "python videoDownloader.py --cookies cookies.txt <视频链接>"
         )
+    if "unable to download webpage" in lowered or "unexpected_eof" in lowered or "ssl" in lowered:
+        return (
+            "解析视频页面时网络/SSL 失败，请检查网络后重试。\n" + text
+        )
     if "requested format is not available" in lowered:
-        return "没有可直接下载的视频格式。画面和声音分开时需要 ffmpeg。\n请安装 ffmpeg，或执行：python -m pip install imageio-ffmpeg"
+        return (
+            "已解析到视频，但当前没有可用的下载格式。"
+            "若画面与声音是分开的，请安装 ffmpeg 后再下：\n"
+            "python -m pip install imageio-ffmpeg"
+        )
     if "ffmpeg" in lowered and ("not installed" in lowered or "not found" in lowered):
         return text + "\n请安装 ffmpeg，或执行：python -m pip install imageio-ffmpeg"
     return text or exc.__class__.__name__
@@ -404,17 +478,37 @@ def main(argv: list[str] | None = None) -> int:
         if url is None:
             url = prompt_url()
         yt_dlp = load_yt_dlp()
-        ffmpeg = find_ffmpeg()
-        if ffmpeg is None:
-            print("未检测到 ffmpeg，将下载已包含声音的单文件；高清分离轨可能无法合并。")
         print(f"正在解析：{url}")
-        info = fetch_info(url, yt_dlp, ffmpeg, cookies)
+        info = fetch_info(url, yt_dlp, cookies)
         title = (info.get("title") or "video").strip() or "video"
         print_summary(info)
+        formats = info.get("formats") or []
+        print(f"解析到 {len(formats)} 种格式"
+              f"（含声音单文件：{'有' if has_combined_format(info) else '无'}；"
+              f"分离音视频：{'有' if has_separate_av(info) else '无'}）")
         print()
+
+        ffmpeg = find_ffmpeg()
+        if ffmpeg is None and has_separate_av(info) and not has_combined_format(info):
+            print("该视频只有分离的画面/声音轨，需要 ffmpeg 才能合并下载。")
+            print("可先执行：python -m pip install imageio-ffmpeg")
+            answer = prompt_line("若已安装可直接回车继续，输入 n 取消：")
+            if answer.lower() in {"n", "no", "q"}:
+                raise VideoDownloaderError("已取消下载。")
+            ffmpeg = find_ffmpeg()
+            if ffmpeg is None:
+                raise VideoDownloaderError(
+                    "仍未检测到 ffmpeg。\n"
+                    "请安装后重试：python -m pip install imageio-ffmpeg\n"
+                    "或将系统 ffmpeg 加入 PATH。"
+                )
+            print(f"已找到 ffmpeg：{ffmpeg}")
+        elif ffmpeg is None:
+            print("未检测到 ffmpeg；将尝试下载已含声音的单文件。")
+
         directory = Path.cwd()
         stem, overwrite = choose_stem(directory, title)
-        saved = download(url, directory, stem, overwrite, yt_dlp, ffmpeg, cookies)
+        saved = download(url, directory, stem, overwrite, yt_dlp, ffmpeg, info, cookies)
         print(f"下载完成：{saved}")
         return 0
     except VideoDownloaderError as exc:
