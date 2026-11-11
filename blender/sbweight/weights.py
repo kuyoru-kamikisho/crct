@@ -210,6 +210,8 @@ def refresh_bone_on_meshes(armature, bone_name: str, meshes=None, normalize=True
 
 def refresh_proxies(proxies, normalize=True):
     """Refresh all bones referenced by the given proxies."""
+    from . import preview
+
     jobs = {}
     for proxy in proxies:
         if not is_proxy(proxy):
@@ -222,6 +224,14 @@ def refresh_proxies(proxies, normalize=True):
         if armature is None or armature.type != "ARMATURE":
             continue
         refresh_bone_on_meshes(armature, bone_name, normalize=normalize)
+
+    # Prefer the active proxy's bone for viewport heatmap.
+    active = bpy.context.view_layer.objects.active
+    if is_proxy(active):
+        preview.update_preview_for_proxy(active)
+    elif jobs:
+        arm_name, bone_name = next(iter(jobs))
+        preview.update_preview_for_bone(arm_name, bone_name)
 
 
 def refresh_all(scene=None, normalize=True):

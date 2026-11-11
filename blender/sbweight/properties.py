@@ -51,6 +51,12 @@ def _on_weight_prop_update(self, context):
     weights.refresh_proxies([obj], normalize=context.scene.sbweight.auto_normalize)
 
 
+def _on_weight_preview_update(self, context):
+    from . import preview
+
+    preview.on_preview_toggle(context.scene, self.weight_preview)
+
+
 class SBWeightProxyProps(PropertyGroup):
     is_proxy: BoolProperty(name="Is Proxy", default=False)
     armature_name: StringProperty(name="Armature", default="")
@@ -114,6 +120,12 @@ class SBWeightSceneProps(PropertyGroup):
     live_update: BoolProperty(
         name="Live Update",
         default=True,
+    )
+    weight_preview: BoolProperty(
+        name="Weight Preview",
+        description="Show weight heatmap on the mesh in Object mode via vertex colors",
+        default=True,
+        update=_on_weight_preview_update,
     )
 
 

@@ -31,6 +31,7 @@ class SBWEIGHT_PT_main(Panel):
         box.prop(scene_props, "shape", text=i18n.t("shape"))
         box.prop(scene_props, "auto_normalize", text=i18n.t("auto_normalize"))
         box.prop(scene_props, "live_update", text=i18n.t("live_update"))
+        box.prop(scene_props, "weight_preview", text=i18n.t("weight_preview"))
         box.operator("sbweight.create_bbox", text=i18n.t("create_bbox"), icon="CUBE")
 
         obj = context.active_object
