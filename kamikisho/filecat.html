@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="dark light">
+  <title>文本上下文收集器</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --panel: rgba(20, 28, 48, .88);
+      --panel-2: #151f35;
+      --line: rgba(148, 163, 184, .17);
+      --text: #e8edf7;
+      --muted: #93a1b8;
+      --accent: #8b9cff;
+      --accent-2: #6578f5;
+      --danger: #ff7b88;
+      --success: #65d6ad;
+      --shadow: 0 24px 70px rgba(0,0,0,.28);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0; min-height: 100vh; padding: 28px;
+      color: var(--text);
+      font: 14px/1.5 Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(ellipse at 12% 0%, rgba(101,120,245,.19), transparent 34%),
+        radial-gradient(ellipse at 92% 12%, rgba(76,190,180,.10), transparent 28%),
+        var(--bg);
+    }
+    .app { max-width: 1500px; margin: 0 auto; }
+    header { display:flex; align-items:flex-end; justify-content:space-between; gap:20px; margin-bottom:22px; }
+    .eyebrow { color:var(--accent); font-size:11px; font-weight:800; letter-spacing:.16em; text-transform:uppercase; }
+    h1 { margin:5px 0 4px; font-size:clamp(24px, 3vw, 34px); letter-spacing:-.04em; }
+    .subtitle { color:var(--muted); margin:0; }
+    .privacy { display:flex; align-items:center; gap:8px; color:var(--muted); font-size:12px; white-space:nowrap; }
+    .privacy-dot { width:7px; height:7px; border-radius:50%; background:var(--success); box-shadow:0 0 12px rgba(101,214,173,.65); }
+    .workspace { display:grid; grid-template-columns:minmax(270px, 340px) minmax(0, 1fr); gap:18px; min-height:min(76vh, 820px); }
+    .panel {
+      min-width:0; display:flex; flex-direction:column; overflow:hidden;
+      background:var(--panel); border:1px solid var(--line); border-radius:18px;
+      box-shadow:var(--shadow); backdrop-filter:blur(18px);
+    }
+    .panel-head { display:flex; justify-content:space-between; align-items:center; gap:12px; padding:18px 19px; border-bottom:1px solid var(--line); }
+    .panel-title { font-weight:750; font-size:14px; }
+    .count { color:var(--muted); font-size:12px; font-variant-numeric:tabular-nums; }
+    .drop-zone {
+      margin:16px; padding:25px 14px; text-align:center; border:1.5px dashed rgba(139,156,255,.42);
+      border-radius:14px; background:rgba(139,156,255,.055); cursor:pointer; transition:.18s ease;
+    }
+    .drop-zone:hover, .drop-zone.dragover { background:rgba(139,156,255,.13); border-color:var(--accent); transform:translateY(-1px); }
+    .drop-icon { width:38px; height:38px; display:grid; place-items:center; margin:0 auto 10px; border-radius:12px; background:rgba(139,156,255,.14); color:#b7c1ff; font-size:20px; }
+    .drop-main { font-weight:700; }
+    .drop-hint { margin-top:5px; color:var(--muted); font-size:12px; }
+    #fileInput { display:none; }
+    .file-list { flex:1; overflow:auto; padding:0 12px 12px; min-height:100px; }
+    .empty { color:var(--muted); text-align:center; padding:26px 12px; font-size:12px; }
+    .file-item { display:flex; align-items:center; gap:10px; padding:10px; margin:4px 0; border:1px solid transparent; border-radius:11px; background:rgba(255,255,255,.025); }
+    .file-item:hover { border-color:var(--line); background:rgba(255,255,255,.045); }
+    .file-icon { flex:none; width:32px; height:32px; display:grid; place-items:center; border-radius:9px; color:#b8c3ff; background:rgba(139,156,255,.12); font-size:11px; font-weight:800; }
+    .file-meta { min-width:0; flex:1; }
+    .file-name { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:650; font-size:12px; }
+    .file-size { color:var(--muted); font-size:11px; margin-top:2px; }
+    .remove-file { border:0; color:var(--muted); background:transparent; border-radius:7px; cursor:pointer; padding:5px 8px; font-size:17px; }
+    .remove-file:hover { color:var(--danger); background:rgba(255,123,136,.1); }
+    .left-foot { padding:12px 17px; border-top:1px solid var(--line); color:var(--muted); font-size:11px; }
+    .editor-panel { min-height:0; }
+    .editor-head { align-items:flex-start; }
+    .editor-info { min-width:0; }
+    .editor-desc { color:var(--muted); font-size:12px; margin-top:3px; }
+    .editor-wrap { position:relative; display:flex; flex:1; min-height:400px; padding:14px; }
+    textarea {
+      display:block; width:100%; min-height:100%; resize:vertical; border:1px solid var(--line);
+      border-radius:12px; outline:none; padding:17px; color:#dce5f5; background:rgba(5,10,22,.55);
+      font:13px/1.75 ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+      tab-size:2; transition:border-color .18s;
+    }
+    textarea:focus { border-color:rgba(139,156,255,.65); }
+    .editor-foot { display:flex; justify-content:space-between; align-items:center; gap:14px; padding:13px 16px; border-top:1px solid var(--line); }
+    .stats { color:var(--muted); font-size:11px; display:flex; gap:14px; flex-wrap:wrap; }
+    .actions { display:flex; justify-content:flex-end; gap:9px; flex-wrap:wrap; }
+    button { border:1px solid var(--line); border-radius:9px; padding:9px 13px; color:var(--text); background:rgba(255,255,255,.045); font:600 12px inherit; cursor:pointer; transition:.18s ease; }
+    button:hover { background:rgba(255,255,255,.09); border-color:rgba(148,163,184,.35); }
+    button.primary { color:white; border-color:transparent; background:linear-gradient(135deg,var(--accent-2),#8290ff); box-shadow:0 5px 18px rgba(101,120,245,.25); }
+    button.primary:hover { filter:brightness(1.1); transform:translateY(-1px); }
+    button.danger { color:#ff9ca6; }
+    .toast { position:fixed; left:50%; bottom:24px; transform:translate(-50%,12px); padding:10px 16px; border:1px solid var(--line); border-radius:10px; color:var(--text); background:#202b43; box-shadow:var(--shadow); opacity:0; pointer-events:none; transition:.2s; }
+    .toast.show { opacity:1; transform:translate(-50%,0); }
+    @media (max-width:800px) {
+      body { padding:16px; }
+      header { align-items:flex-start; flex-direction:column; }
+      .workspace { grid-template-columns:1fr; }
+      .panel:first-child { min-height:310px; }
+      .editor-wrap { min-height:52vh; }
+      .editor-foot { align-items:flex-start; flex-direction:column; }
+      .actions { width:100%; }
+      .actions button { flex:1; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <div>
+        <div class="eyebrow">AI Context Builder</div>
+        <h1>文本上下文收集器</h1>
+        <p class="subtitle">把多个代码文件汇总成一段文本，编辑后即可复制给 AI。</p>
+      </div>
+      <div class="privacy"><span class="privacy-dot"></span>本地处理 · 文件不会上传</div>
+    </header>
+
+    <section class="workspace">
+      <aside class="panel">
+        <div class="panel-head">
+          <span class="panel-title">文件列表</span>
+          <span class="count" id="fileCount">0 个文件</span>
+        </div>
+        <label class="drop-zone" id="dropZone" for="fileInput">
+          <div class="drop-icon">＋</div>
+          <div class="drop-main">点击选择文件，或拖拽到这里</div>
+          <div class="drop-hint">支持多选 · 不限制扩展名</div>
+        </label>
+        <input id="fileInput" type="file" multiple>
+        <div class="file-list" id="fileList">
+          <div class="empty">还没有添加文件<br>双击此区域也可以选择文件</div>
+        </div>
+        <div class="left-foot">文件按添加顺序合并；读取失败的文件会显示提示。</div>
+      </aside>
+
+      <section class="panel editor-panel">
+        <div class="panel-head editor-head">
+          <div class="editor-info">
+            <div class="panel-title">合并文本</div>
+            <div class="editor-desc">内容会自动生成，你也可以直接在下方编辑。</div>
+          </div>
+          <span class="count" id="readStatus">等待添加文件</span>
+        </div>
+        <div class="editor-wrap">
+          <textarea id="output" spellcheck="false" placeholder="添加文件后，文件内容会按文件名分段显示在这里……
+
+==========[A.cs]==========
+
+文件内容
+
+==========[B.hlsl]==========
+
+文件内容
+
+========================="></textarea>
+        </div>
+        <div class="editor-foot">
+          <div class="stats">
+            <span id="charCount">0 字符</span>
+            <span id="lineCount">0 行</span>
+            <span>可直接编辑</span>
+          </div>
+          <div class="actions">
+            <button class="danger" id="clearBtn" type="button">清除所有文件</button>
+            <button class="primary" id="copyBtn" type="button">复制文本内容</button>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      const fileInput = document.getElementById('fileInput');
+      const dropZone = document.getElementById('dropZone');
+      const fileList = document.getElementById('fileList');
+      const output = document.getElementById('output');
+      const fileCount = document.getElementById('fileCount');
+      const readStatus = document.getElementById('readStatus');
+      const charCount = document.getElementById('charCount');
+      const lineCount = document.getElementById('lineCount');
+      const toast = document.getElementById('toast');
+      const files = [];
+      let toastTimer;
+
+      function showToast(message) {
+        toast.textContent = message;
+        toast.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove('show'), 2200);
+      }
+
+      function formatSize(bytes) {
+        if (bytes < 1024) return bytes + ' B';
+        if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+        return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+      }
+
+      function updateStats() {
+        const value = output.value;
+        charCount.textContent = value.length.toLocaleString() + ' 字符';
+        lineCount.textContent = (value ? value.split(/\r\n|\r|\n/).length : 0).toLocaleString() + ' 行';
+      }
+
+      function renderFiles() {
+        fileCount.textContent = files.length + ' 个文件';
+        if (!files.length) {
+          fileList.innerHTML = '<div class="empty">还没有添加文件<br>双击此区域也可以选择文件</div>';
+          return;
+        }
+        fileList.replaceChildren();
+        files.forEach((item, index) => {
+          const row = document.createElement('div');
+          row.className = 'file-item';
+          const ext = item.file.name.includes('.') ? item.file.name.split('.').pop().slice(0, 4).toUpperCase() : 'FILE';
+          const icon = document.createElement('div');
+          icon.className = 'file-icon';
+          icon.textContent = ext || 'FILE';
+          const meta = document.createElement('div');
+          meta.className = 'file-meta';
+          const name = document.createElement('div');
+          name.className = 'file-name';
+          name.textContent = item.file.name;
+          name.title = item.file.name;
+          const size = document.createElement('div');
+          size.className = 'file-size';
+          size.textContent = item.error ? '读取失败' : formatSize(item.file.size);
+          meta.append(name, size);
+          const remove = document.createElement('button');
+          remove.className = 'remove-file';
+          remove.type = 'button';
+          remove.title = '移除此文件';
+          remove.setAttribute('aria-label', '移除 ' + item.file.name);
+          remove.textContent = '×';
+          remove.addEventListener('click', () => {
+            files.splice(index, 1);
+            renderFiles();
+            rebuildOutput();
+          });
+          row.append(icon, meta, remove);
+          fileList.append(row);
+        });
+      }
+
+      function rebuildOutput() {
+        const sections = files.map(item => {
+          const content = item.error ? '[读取失败：' + item.error + ']' : item.text;
+          return '==========[' + item.file.name + ']==========\n\n' + content;
+        });
+        output.value = sections.length ? sections.join('\n\n') + '\n\n=========================' : '';
+        updateStats();
+        const failed = files.filter(item => item.error).length;
+        readStatus.textContent = files.length ? (failed ? failed + ' 个文件读取失败' : '已生成合并文本') : '等待添加文件';
+      }
+
+      async function addFiles(fileCollection) {
+        const incoming = Array.from(fileCollection || []);
+        if (!incoming.length) return;
+        readStatus.textContent = '正在读取…';
+        for (const file of incoming) {
+          const entry = { file, text: '', error: '' };
+          files.push(entry);
+          try {
+            // 浏览器按文本方式解码文件；非文本/二进制文件可能出现乱码。
+            entry.text = await file.text();
+          } catch (error) {
+            entry.error = error && error.message ? error.message : '无法读取文件';
+          }
+        }
+        renderFiles();
+        rebuildOutput();
+        showToast('已添加 ' + incoming.length + ' 个文件');
+        fileInput.value = '';
+      }
+
+      fileInput.addEventListener('change', event => addFiles(event.target.files));
+      dropZone.addEventListener('dragover', event => {
+        event.preventDefault();
+        dropZone.classList.add('dragover');
+      });
+      dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+      dropZone.addEventListener('drop', event => {
+        event.preventDefault();
+        dropZone.classList.remove('dragover');
+        addFiles(event.dataTransfer.files);
+      });
+      fileList.addEventListener('dblclick', () => fileInput.click());
+      dropZone.addEventListener('dblclick', event => {
+        event.preventDefault();
+        fileInput.click();
+      });
+      output.addEventListener('input', updateStats);
+
+      document.getElementById('clearBtn').addEventListener('click', () => {
+        if (!files.length && !output.value) {
+          showToast('当前没有文件或文本');
+          return;
+        }
+        files.length = 0;
+        renderFiles();
+        output.value = '';
+        rebuildOutput();
+        showToast('已清除所有文件和文本');
+      });
+
+      document.getElementById('copyBtn').addEventListener('click', async () => {
+        const text = output.value;
+        if (!text) {
+          showToast('没有可复制的文本');
+          return;
+        }
+        try {
+          await navigator.clipboard.writeText(text);
+          showToast('文本已复制到剪贴板');
+        } catch (error) {
+          // 非安全上下文或浏览器权限受限时使用备用复制方式。
+          output.focus();
+          output.select();
+          const copied = document.execCommand('copy');
+          output.setSelectionRange(output.value.length, output.value.length);
+          showToast(copied ? '文本已复制到剪贴板' : '复制失败，请手动选择并复制');
+        }
+      });
+
+      updateStats();
+    })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+fileFormatVersion: 2
+guid: 5c6f31a5a80ebc04f8bcfdeed8327fe1
+ShaderImporter:
+  externalObjects: {}
+  defaultTextures: []
+  nonModifiableTextures: []
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+AssetOrigin:
+  serializedVersion: 1
+  productId: 84992
+  packageName: Haon SD series Free Bundle
+  packageVersion: 2026.8
+  assetPath: Assets/TextMesh Pro/Shaders/TMP_SDF SSD SpaceWarp.shader
+  uploadId: 998854
