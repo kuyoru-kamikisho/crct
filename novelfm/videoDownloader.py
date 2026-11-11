@@ -7,6 +7,7 @@
 
 from __future__ import annotations
 
+import os
 import re
 import shutil
 import sys
@@ -33,6 +34,9 @@ videoDownloader — 视频下载
 
 若哔哩哔哩、YouTube 或抖音要求登录或校验，请导出 Netscape 格式的 cookies.txt：
   python videoDownloader.py --cookies cookies.txt <视频链接>
+
+网络说明：
+  解析/下载连续网络失败 3 次后，会检测系统代理；若已启用则自动改用代理再试。
 """
 
 HELP_FLAGS = {"-h", "--help", "/?"}
@@ -271,6 +275,162 @@ def choose_stem(directory: Path, title: str) -> tuple[str, bool]:
         candidate = answer
 
 
+def normalize_proxy_url(value: str) -> str | None:
+    raw = (value or "").strip().strip("'\"")
+    if not raw:
+        return None
+    if "://" in raw:
+        return raw
+    return f"http://{raw}"
+
+
+def parse_windows_proxy_server(proxy_server: str) -> str | None:
+    """解析 Windows「代理服务器」字段，优先 https/http，其次 socks。"""
+    text = (proxy_server or "").strip()
+    if not text:
+        return None
+    if "=" not in text and ";" not in text:
+        return normalize_proxy_url(text)
+
+    mapping: dict[str, str] = {}
+    for part in text.split(";"):
+        part = part.strip()
+        if not part:
+            continue
+        if "=" in part:
+            key, value = part.split("=", 1)
+            mapping[key.strip().lower()] = value.strip()
+        else:
+            mapping.setdefault("all", part)
+
+    for key in ("https", "http", "all", "socks", "socks5", "socks4"):
+        if key not in mapping or not mapping[key]:
+            continue
+        value = mapping[key]
+        if key.startswith("socks") and "://" not in value:
+            scheme = "socks5" if key != "socks4" else "socks4"
+            return f"{scheme}://{value}"
+        return normalize_proxy_url(value)
+    return None
+
+
+def read_windows_system_proxy() -> str | None:
+    if sys.platform != "win32":
+        return None
+    try:
+        import winreg
+    except ImportError:
+        return None
+    try:
+        with winreg.OpenKey(
+            winreg.HKEY_CURRENT_USER,
+            r"Software\Microsoft\Windows\CurrentVersion\Internet Settings",
+        ) as key:
+            enable, _ = winreg.QueryValueEx(key, "ProxyEnable")
+            if not enable:
+                return None
+            server, _ = winreg.QueryValueEx(key, "ProxyServer")
+    except OSError:
+        return None
+    return parse_windows_proxy_server(str(server))
+
+
+def read_env_proxy() -> str | None:
+    for name in (
+        "HTTPS_PROXY",
+        "https_proxy",
+        "HTTP_PROXY",
+        "http_proxy",
+        "ALL_PROXY",
+        "all_proxy",
+    ):
+        value = os.environ.get(name)
+        normalized = normalize_proxy_url(value) if value else None
+        if normalized:
+            return normalized
+    return None
+
+
+def detect_system_proxy() -> str | None:
+    """检测当前可用的系统/环境代理。优先环境变量，其次 Windows 系统代理。"""
+    return read_env_proxy() or read_windows_system_proxy()
+
+
+def is_network_error(exc: BaseException) -> bool:
+    text = str(exc).lower()
+    keywords = (
+        "network",
+        "timeout",
+        "timed out",
+        "connection",
+        "temporarily unavailable",
+        "unable to download",
+        "urlopen error",
+        "ssl",
+        "eof occurred",
+        "name or service not known",
+        "getaddrinfo failed",
+        "proxy",
+        "remote end closed",
+        "connection reset",
+        "connection aborted",
+        "broken pipe",
+        "10054",
+        "10060",
+        "10061",
+    )
+    return any(word in text for word in keywords)
+
+
+def apply_proxy(options: dict, proxy: str | None) -> dict:
+    merged = dict(options)
+    if proxy:
+        merged["proxy"] = proxy
+    else:
+        merged.pop("proxy", None)
+    return merged
+
+
+def run_with_network_retry(
+    action_name: str,
+    runner,
+    initial_proxy: str | None = None,
+) -> tuple[object, str | None]:
+    """网络失败最多 3 次；仍失败则检测系统代理并再用代理重试一次。
+
+    返回 (结果, 实际使用的代理)；无代理时第二项为 None。
+    """
+    proxy = initial_proxy
+    last_error: BaseException | None = None
+    for attempt in range(1, 4):
+        try:
+            return runner(proxy), proxy
+        except Exception as exc:  # noqa: BLE001
+            last_error = exc
+            if not is_network_error(exc):
+                raise
+            if attempt < 3:
+                print(f"{action_name}遇到网络问题，正在重试（{attempt}/3）…")
+            else:
+                print(f"{action_name}连续网络失败 3 次。")
+
+    system_proxy = detect_system_proxy()
+    if not system_proxy:
+        print("未检测到已启用的系统代理。")
+        if last_error is not None:
+            raise last_error
+        raise VideoDownloaderError(f"{action_name}失败：网络错误。")
+
+    if proxy and proxy.rstrip("/") == system_proxy.rstrip("/"):
+        print(f"已在使用系统代理：{system_proxy}，不再重复尝试。")
+        if last_error is not None:
+            raise last_error
+        raise VideoDownloaderError(f"{action_name}失败：网络错误。")
+
+    print(f"检测到系统代理：{system_proxy}，改用代理再次尝试…")
+    return runner(system_proxy), system_proxy
+
+
 def base_options(cookiefile: str | None = None) -> dict:
     """解析与下载共用的基础选项。注意：这里不限制 format，避免解析阶段因无合并轨失败。"""
     options = {
@@ -356,8 +516,15 @@ class _QuietLogger:
         return
 
 
-def fetch_info(url: str, yt_dlp, cookiefile: str | None = None) -> dict:
-    """只负责解析视频元数据与可用格式，不因 ffmpeg 缺失而失败。"""
+def fetch_info(
+    url: str,
+    yt_dlp,
+    cookiefile: str | None = None,
+) -> tuple[dict, str | None]:
+    """只负责解析视频元数据与可用格式，不因 ffmpeg 缺失而失败。
+
+    返回 (info, 实际使用的代理)。
+    """
     options = base_options(cookiefile)
     options.update({
         "quiet": True,
@@ -367,27 +534,19 @@ def fetch_info(url: str, yt_dlp, cookiefile: str | None = None) -> dict:
         # 不强行选定最终下载格式，避免「Requested format is not available」打断解析
         "format": "all",
     })
-    last_error: Exception | None = None
-    info = None
-    for attempt in range(1, 4):
-        try:
-            with yt_dlp.YoutubeDL(options) as ydl:
-                info = ydl.extract_info(url, download=False)
-            break
-        except Exception as exc:  # noqa: BLE001 — 网络偶发 SSL 失败时重试
-            last_error = exc
-            if attempt < 3:
-                print(f"解析遇到网络问题，正在重试（{attempt}/3）…")
-            else:
-                raise
-    if info is None:
-        if last_error is not None:
-            raise last_error
+
+    def _extract(proxy: str | None):
+        opts = apply_proxy(options, proxy)
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            return ydl.extract_info(url, download=False)
+
+    info, used_proxy = run_with_network_retry("解析", _extract)
+    if not info:
         raise VideoDownloaderError("没有解析到视频信息。")
     info = unwrap_entry(info)
     if not has_video(info):
         raise VideoDownloaderError("这个链接不是可下载的视频（可能是图集或纯音频）。")
-    return info
+    return info, used_proxy
 
 
 def saved_filepath(info: dict, directory: Path, stem: str) -> Path | None:
@@ -416,6 +575,7 @@ def download(
     ffmpeg: str | None,
     info: dict,
     cookiefile: str | None = None,
+    preferred_proxy: str | None = None,
 ) -> Path:
     options = base_options(cookiefile)
     options.update(download_format_options(ffmpeg, info))
@@ -430,9 +590,17 @@ def download(
     extension = "mp4" if ffmpeg or options.get("merge_output_format") == "mp4" else "视频格式对应的扩展名"
     print(f"将保存到：{directory}")
     print(f"文件名：{stem}.{extension}")
+    if preferred_proxy:
+        print(f"使用代理：{preferred_proxy}")
     print("开始下载…")
-    with yt_dlp.YoutubeDL(options) as ydl:
-        result = ydl.extract_info(url, download=True)
+
+    def _download(proxy: str | None):
+        opts = apply_proxy(options, proxy)
+        with yt_dlp.YoutubeDL(opts) as ydl:
+            return ydl.extract_info(url, download=True)
+
+    # 解析阶段若已确认代理可用，下载直接从该代理开始，避免再空转直连
+    result, _ = run_with_network_retry("下载", _download, initial_proxy=preferred_proxy)
     if not result:
         raise VideoDownloaderError("下载没有返回结果。")
     path = saved_filepath(result, directory, stem)
@@ -479,13 +647,15 @@ def main(argv: list[str] | None = None) -> int:
             url = prompt_url()
         yt_dlp = load_yt_dlp()
         print(f"正在解析：{url}")
-        info = fetch_info(url, yt_dlp, cookies)
+        info, used_proxy = fetch_info(url, yt_dlp, cookies)
         title = (info.get("title") or "video").strip() or "video"
         print_summary(info)
         formats = info.get("formats") or []
         print(f"解析到 {len(formats)} 种格式"
               f"（含声音单文件：{'有' if has_combined_format(info) else '无'}；"
               f"分离音视频：{'有' if has_separate_av(info) else '无'}）")
+        if used_proxy:
+            print(f"当前网络通道：系统代理 {used_proxy}")
         print()
 
         ffmpeg = find_ffmpeg()
@@ -508,7 +678,17 @@ def main(argv: list[str] | None = None) -> int:
 
         directory = Path.cwd()
         stem, overwrite = choose_stem(directory, title)
-        saved = download(url, directory, stem, overwrite, yt_dlp, ffmpeg, info, cookies)
+        saved = download(
+            url,
+            directory,
+            stem,
+            overwrite,
+            yt_dlp,
+            ffmpeg,
+            info,
+            cookies,
+            preferred_proxy=used_proxy,
+        )
         print(f"下载完成：{saved}")
         return 0
     except VideoDownloaderError as exc:
