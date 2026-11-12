@@ -1,6 +1,10 @@
 <template>
   <div>
-    <h1>技能模拟</h1>
+    <div>
+        <button class="pugong"></button>
+        <button class="ejineng"></button>
+        <button class="rjineng"></button>
+    </div>
   </div>
 </template>
 
