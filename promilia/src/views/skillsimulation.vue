@@ -42,19 +42,14 @@
         <span class="skill-btn__key">左键</span>
       </button>
 
-      <RingCounter :count="ejinengMaxCharges" :now="ejinengCharges" :size="60" :stroke-width="3" :gap="12">
-        <button class="skill-btn ejineng" :class="{ disabled: !ejinengReady }" @click="onEjineng">
-          <!-- <span class="skill-btn__sub">
-            <template v-if="ejinengCooldown">{{ ejinengCooldown }}s</template>
-          </span> -->
+      <RingCounter :count="ejinengMaxCharges" :now="ejinengCharges" :size="64" :stroke-width="2" :gap="12">
+        <button class="skill-btn ejineng" @click="onEjineng">
           <span class="skill-btn__key">E</span>
-          <div v-if="ejinengCooldown && ejinengCharges < ejinengMaxCharges" class="cooldown">
-            {{ ejinengCooldown }}
-          </div>
+          <div v-if="ejinengCooling" class="cooldown-water" :style="{ height: ejinengCdProgress + '%' }" />
         </button>
       </RingCounter>
 
-      <button class="skill-btn rjineng" :class="{ disabled: !rjinengReady }" @click="onRjineng">
+      <button class="skill-btn rjineng" @click="onRjineng">
         <!-- <span class="skill-btn__name">星决技</span> -->
         <!-- <span class="skill-btn__sub">能量 {{ rjinengCost }}</span> -->
         <span class="skill-btn__key">R</span>
@@ -130,7 +125,18 @@ const canPugong = snap(() => canChase.value || !!character.pugong?.isReady)
 const ejinengReady = snap(() => !!character.ejineng?.isReady)
 const ejinengCharges = snap(() => character.ejineng?.charges ?? 0)
 const ejinengMaxCharges = snap(() => character.ejineng?.maxCharges ?? 0)
-const ejinengCooldown = snap(() => character.ejineng?.cooldownText || '')
+/** 正在回充：有冷却且充能未满 */
+const ejinengCooling = snap(() => {
+  const s = character.ejineng
+  return !!(s && s.cooldownTime > 0 && s.charges < s.maxCharges)
+})
+/** 冷却进度 0→100，水面随进度上浮 */
+const ejinengCdProgress = snap(() => {
+  const s = character.ejineng
+  if (!s || s.cooldownTime <= 0) return 100
+  const max = s.cooldown || 1
+  return Math.min(100, Math.max(0, (1 - s.cooldownTime / max) * 100))
+})
 const rjinengReady = snap(() => !!character.rjineng?.isReady)
 const rjinengCost = snap(() => character.rjineng?.energyCost ?? 100)
 const xjinengReady = snap(() => !!character.xjineng?.isReady)
@@ -347,17 +353,31 @@ function onKey(e) {
   white-space: nowrap;
 }
 
-.cooldown {
+/* 冷却水面：自下而上涨满，回充完成时消失 */
+.cooldown-water {
   position: absolute;
-  inset: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0, 0, 0, 0.45);
-  border-radius: 12px;
-  font-size: 1.2rem;
-  font-weight: 600;
+  left: 0;
+  right: 0;
+  bottom: 0;
   pointer-events: none;
+  background: linear-gradient(to top,
+      rgba(80, 141, 255, 0.27) 0%,
+      rgba(65, 141, 241, 0.27) 70%,
+      rgba(69, 126, 248, 0.27) 100%);
+  transition: height 0.05s linear;
+  z-index: 2;
+}
+
+@keyframes water-wave {
+
+  0%,
+  100% {
+    transform: translateX(-4%) scaleY(1);
+  }
+
+  50% {
+    transform: translateX(4%) scaleY(1.15);
+  }
 }
 
 .debug {
