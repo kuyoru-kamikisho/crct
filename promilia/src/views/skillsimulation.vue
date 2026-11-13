@@ -24,8 +24,16 @@
         <span class="stat__label">Buff</span>
         <div class="buff-row">
           <span v-if="!buffs.length" class="muted">无</span>
-          <span v-for="b in buffs" :key="b.id" class="buff" :class="{ cuican: b.id === 'cuican' }">
-            {{ b.name }} {{ b.remainText }}s
+          <span
+            v-for="b in buffs"
+            :key="b.id"
+            class="buff"
+            :class="{ cuican: b.id === 'cuican' }"
+          >
+            <span class="buff__name">{{ b.name }}</span>
+            <span class="buff__bar" aria-hidden="true">
+              <span class="buff__bar-fill" :style="{ width: b.progressPct + '%' }" />
+            </span>
           </span>
         </div>
       </div>
@@ -67,7 +75,7 @@
       <button type="button" @click="character.debugAddLei(1)">+雷印记</button>
       <button type="button" @click="character.debugAddFeng(1)">+风印记</button>
       <button type="button" @click="character.debugFillEnergy()">充满能量</button>
-      <button type="button" @click="character.debugCuican()">给璀璨</button>
+      <button type="button" @click="character.debugCuican()">璀璨</button>
       <button type="button" class="danger" @click="character.reset()">重置</button>
     </section>
 
@@ -116,7 +124,7 @@ const buffs = snap(() =>
   character.buffList.map((b) => ({
     id: b.id,
     name: b.name,
-    remainText: b.remainText,
+    progressPct: Math.round(b.progress * 1000) / 10,
   })),
 )
 const logs = snap(() => character.logs.map((l) => ({ id: l.id, msg: l.msg })))
@@ -252,10 +260,36 @@ function onKey(e) {
 
 .mark,
 .buff {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 4px 10px;
   border-radius: 999px;
   font-size: 0.85rem;
   background: rgba(255, 255, 255, 0.08);
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.buff__name {
+  flex-shrink: 0;
+  line-height: 1;
+}
+
+.buff__bar {
+  position: relative;
+  width: 56px;
+  height: 4px;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.35);
+}
+
+.buff__bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: rgba(255, 255, 255, 0.35);
+  transition: width 0.05s linear;
 }
 
 .mark.lei {
@@ -269,8 +303,17 @@ function onKey(e) {
 }
 
 .buff.cuican {
-  background: rgba(255, 200, 80, 0.22);
+  background: rgba(255, 200, 80, 0.18);
   color: #ffe09a;
+
+  .buff__bar {
+    background: rgba(80, 55, 10, 0.55);
+  }
+
+  .buff__bar-fill {
+    background: linear-gradient(90deg, #c9a04a, #ffe09a);
+    box-shadow: 0 0 6px rgba(255, 220, 120, 0.45);
+  }
 }
 
 .muted {

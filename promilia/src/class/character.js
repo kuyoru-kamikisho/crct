@@ -68,6 +68,7 @@ export class SetBuff {
     if (this.#timer) clearInterval(this.#timer)
     this.#timer = setInterval(() => {
       this.#remain -= FRAME
+      this.onTick?.(this)
       if (this.#remain <= 0) {
         this.#remain = 0
         clearInterval(this.#timer)
@@ -97,6 +98,12 @@ export class SetBuff {
 
   get remainText() {
     return this.#remain.toFixed(1)
+  }
+
+  /** 剩余比例 0~1，用于进度条 */
+  get progress() {
+    if (!this.duration) return 0
+    return Math.min(1, Math.max(0, this.#remain / this.duration))
   }
 }
 
@@ -404,9 +411,11 @@ export class Character {
 
     const exist = this.#buffs.get(buff.id)
     if (exist) {
+      exist.onTick = () => this.notify()
       exist.refresh(buff.duration)
       this.pushLog(`刷新「${buff.name}」 ${buff.duration}s`)
     } else {
+      buff.onTick = () => this.notify()
       buff.onExpire = () => {
         this.#buffs.delete(buff.id)
         this.pushLog(`「${buff.name}」结束`)
