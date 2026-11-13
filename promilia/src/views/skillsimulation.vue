@@ -42,20 +42,17 @@
         <span class="skill-btn__key">左键</span>
       </button>
 
-      <button class="skill-btn ejineng" :class="{ disabled: !ejinengReady }" @click="onEjineng">
-        <!-- <span class="skill-btn__name">星鸣技</span> -->
-        <span class="skill-btn__sub">
-          <!-- 充能 -->
-          <!-- {{ ejinengCharges }} -->
-          <!-- / -->
-          <!-- {{ ejinengMaxCharges }} -->
-          <template v-if="ejinengCooldown"> · CD {{ ejinengCooldown }}s</template>
-        </span>
-        <span class="skill-btn__key">E</span>
-        <div v-if="ejinengCooldown && ejinengCharges < ejinengMaxCharges" class="cooldown">
-          {{ ejinengCooldown }}
-        </div>
-      </button>
+      <RingCounter :count="ejinengMaxCharges" :now="ejinengCharges" :size="60" :stroke-width="3" :gap="12">
+        <button class="skill-btn ejineng" :class="{ disabled: !ejinengReady }" @click="onEjineng">
+          <!-- <span class="skill-btn__sub">
+            <template v-if="ejinengCooldown">{{ ejinengCooldown }}s</template>
+          </span> -->
+          <span class="skill-btn__key">E</span>
+          <div v-if="ejinengCooldown && ejinengCharges < ejinengMaxCharges" class="cooldown">
+            {{ ejinengCooldown }}
+          </div>
+        </button>
+      </RingCounter>
 
       <button class="skill-btn rjineng" :class="{ disabled: !rjinengReady }" @click="onRjineng">
         <!-- <span class="skill-btn__name">星决技</span> -->
@@ -79,7 +76,7 @@
       <button type="button" class="danger" @click="character.reset()">重置</button>
     </section>
 
-    <section class="panel log">
+    <section v-if="false" class="panel log">
       <div class="log__title">战斗日志</div>
       <ul>
         <li v-for="item in logs" :key="item.id">{{ item.msg }}</li>
@@ -89,6 +86,7 @@
 </template>
 
 <script setup>
+import RingCounter from '@/components/RingCounter.vue'
 import createMoyin from '@/class/moyin'
 import { computed, onMounted, onUnmounted, shallowRef } from 'vue'
 
@@ -276,14 +274,15 @@ function onKey(e) {
 .skills {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  align-items: center;
+  gap: 16px;
 }
 
 .skill-btn {
   position: relative;
   width: 60px;
   height: 60px;
-  padding: 14px 16px 12px;
+  padding: 0;
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 50%;
   background-color: rgba(255, 255, 255, 0.06);
@@ -292,12 +291,8 @@ function onKey(e) {
   color: inherit;
   cursor: pointer;
   text-align: left;
+  overflow: hidden;
   transition: transform 0.12s ease, border-color 0.12s ease, opacity 0.12s ease;
-
-  &:hover:not(.disabled) {
-    transform: translateY(-1px);
-    border-color: rgba(255, 255, 255, 0.28);
-  }
 
   &.disabled {
     opacity: 0.4;
@@ -341,7 +336,7 @@ function onKey(e) {
 
 .skill-btn__key {
   position: absolute;
-  top: 104%;
+  top: 109%;
   left: 50%;
   transform: translateX(-50%);
   font-size: 0.7rem;
