@@ -24,12 +24,7 @@
         <span class="stat__label">Buff</span>
         <div class="buff-row">
           <span v-if="!buffs.length" class="muted">无</span>
-          <span
-            v-for="b in buffs"
-            :key="b.id"
-            class="buff"
-            :class="{ cuican: b.id === 'cuican' }"
-          >
+          <span v-for="b in buffs" :key="b.id" class="buff" :class="{ cuican: b.id === 'cuican' }">
             {{ b.name }} {{ b.remainText }}s
           </span>
         </div>
@@ -41,52 +36,36 @@
     </section>
 
     <section class="panel skills">
-      <button
-        class="skill-btn pugong"
-        :class="{ disabled: !canPugong, derive: canChase }"
-        @click="onPugong"
-      >
-        <span class="skill-btn__name">{{ canChase ? '追击' : '普攻' }}</span>
-        <span class="skill-btn__sub">{{ canChase ? '派生' : `${character.pugongSegment}` }}</span>
-        <span class="skill-btn__key">A</span>
+      <button class="skill-btn pugong" :class="{ disabled: !canPugong, derive: canChase }" @click="onPugong">
+        <!-- <span class="skill-btn__name">{{ canChase ? '追击' : '普攻' }}</span> -->
+        <!-- <span class="skill-btn__sub">{{ canChase ? '派生' : `${character.pugongSegment}` }}</span> -->
+        <span class="skill-btn__key">左键</span>
       </button>
 
-      <button
-        class="skill-btn ejineng"
-        :class="{ disabled: !ejinengReady }"
-        @click="onEjineng"
-      >
-        <span class="skill-btn__name">星鸣技</span>
+      <button class="skill-btn ejineng" :class="{ disabled: !ejinengReady }" @click="onEjineng">
+        <!-- <span class="skill-btn__name">星鸣技</span> -->
         <span class="skill-btn__sub">
-          充能 {{ ejinengCharges }}/{{ ejinengMaxCharges }}
+          <!-- 充能 -->
+          <!-- {{ ejinengCharges }} -->
+          <!-- / -->
+          <!-- {{ ejinengMaxCharges }} -->
           <template v-if="ejinengCooldown"> · CD {{ ejinengCooldown }}s</template>
         </span>
         <span class="skill-btn__key">E</span>
-        <div
-          v-if="ejinengCooldown && ejinengCharges < ejinengMaxCharges"
-          class="cooldown"
-        >
+        <div v-if="ejinengCooldown && ejinengCharges < ejinengMaxCharges" class="cooldown">
           {{ ejinengCooldown }}
         </div>
       </button>
 
-      <button
-        class="skill-btn rjineng"
-        :class="{ disabled: !rjinengReady }"
-        @click="onRjineng"
-      >
-        <span class="skill-btn__name">星决技</span>
-        <span class="skill-btn__sub">能量 {{ rjinengCost }}</span>
+      <button class="skill-btn rjineng" :class="{ disabled: !rjinengReady }" @click="onRjineng">
+        <!-- <span class="skill-btn__name">星决技</span> -->
+        <!-- <span class="skill-btn__sub">能量 {{ rjinengCost }}</span> -->
         <span class="skill-btn__key">R</span>
       </button>
 
-      <button
-        class="skill-btn xjineng"
-        :class="{ disabled: !xjinengReady }"
-        @click="onXjineng"
-      >
-        <span class="skill-btn__name">星携技</span>
-        <span class="skill-btn__sub">入场</span>
+      <button class="skill-btn xjineng" :class="{ disabled: !xjinengReady }" @click="onXjineng">
+        <!-- <span class="skill-btn__name">星携技</span> -->
+        <!-- <span class="skill-btn__sub">入场</span> -->
         <span class="skill-btn__key">3</span>
       </button>
     </section>
@@ -196,6 +175,7 @@ function onKey(e) {
 
 .sim__header {
   margin-bottom: 20px;
+
   h1 {
     margin: 0 0 6px;
     font-size: 1.6rem;
@@ -203,6 +183,7 @@ function onKey(e) {
     letter-spacing: 0.04em;
   }
 }
+
 .sim__hint {
   margin: 0;
   opacity: 0.55;
@@ -222,6 +203,7 @@ function onKey(e) {
   gap: 12px;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 }
+
 .stat__label {
   display: block;
   font-size: 0.75rem;
@@ -238,13 +220,16 @@ function onKey(e) {
   background: rgba(0, 0, 0, 0.35);
   overflow: hidden;
 }
+
 .bar__fill {
   height: 100%;
   transition: width 0.15s linear;
+
   &.energy {
     background: linear-gradient(90deg, #5b8cff, #9b6bff);
   }
 }
+
 .bar__text {
   position: absolute;
   inset: 0;
@@ -260,6 +245,7 @@ function onKey(e) {
   gap: 8px;
   flex-wrap: wrap;
 }
+
 .mark,
 .buff {
   padding: 4px 10px;
@@ -267,18 +253,22 @@ function onKey(e) {
   font-size: 0.85rem;
   background: rgba(255, 255, 255, 0.08);
 }
+
 .mark.lei {
   background: rgba(160, 100, 255, 0.25);
   color: #d4b8ff;
 }
+
 .mark.feng {
   background: rgba(80, 200, 160, 0.22);
   color: #9fe8d0;
 }
+
 .buff.cuican {
   background: rgba(255, 200, 80, 0.22);
   color: #ffe09a;
 }
+
 .muted {
   opacity: 0.4;
 }
@@ -291,11 +281,14 @@ function onKey(e) {
 
 .skill-btn {
   position: relative;
-  min-width: 120px;
+  width: 60px;
+  height: 60px;
   padding: 14px 16px 12px;
   border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.06);
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.06);
+  background-size: 100% 100%;
+  background-position: center center;
   color: inherit;
   cursor: pointer;
   text-align: left;
@@ -305,48 +298,60 @@ function onKey(e) {
     transform: translateY(-1px);
     border-color: rgba(255, 255, 255, 0.28);
   }
+
   &.disabled {
     opacity: 0.4;
     cursor: not-allowed;
   }
+
   &.derive {
     border-color: rgba(255, 200, 80, 0.55);
     box-shadow: 0 0 0 1px rgba(255, 200, 80, 0.2);
   }
+
   &.pugong {
-    background: linear-gradient(160deg, rgba(90, 140, 255, 0.2), rgba(255, 255, 255, 0.04));
+    background-image: url('../assets//skill/moyin/a.png');
   }
+
   &.ejineng {
-    background: linear-gradient(160deg, rgba(160, 100, 255, 0.22), rgba(255, 255, 255, 0.04));
+    background-image: url('../assets//skill/moyin/b.png');
   }
+
   &.rjineng {
-    background: linear-gradient(160deg, rgba(255, 120, 160, 0.2), rgba(255, 255, 255, 0.04));
+    background-image: url('../assets//skill/moyin/c.png');
   }
+
   &.xjineng {
-    background: linear-gradient(160deg, rgba(80, 200, 160, 0.18), rgba(255, 255, 255, 0.04));
+    background-image: url('../assets//skill/moyin/d.png');
   }
 }
+
 .skill-btn__name {
   display: block;
   font-weight: 600;
   font-size: 1rem;
 }
+
 .skill-btn__sub {
   display: block;
   margin-top: 4px;
   font-size: 0.75rem;
   opacity: 0.65;
 }
+
 .skill-btn__key {
   position: absolute;
-  top: 8px;
-  right: 10px;
+  top: 104%;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 0.7rem;
   opacity: 0.45;
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
   padding: 1px 5px;
+  white-space: nowrap;
 }
+
 .cooldown {
   position: absolute;
   inset: 0;
@@ -374,9 +379,11 @@ function onKey(e) {
     padding: 6px 12px;
     cursor: pointer;
     font-size: 0.85rem;
+
     &:hover {
       background: rgba(255, 255, 255, 0.12);
     }
+
     &.danger {
       border-color: rgba(255, 100, 100, 0.35);
       color: #ffb0b0;
@@ -388,18 +395,21 @@ function onKey(e) {
   max-height: 320px;
   overflow: auto;
 }
+
 .log__title {
   font-size: 0.75rem;
   opacity: 0.55;
   margin-bottom: 8px;
   letter-spacing: 0.08em;
 }
+
 ul {
   list-style: none;
   margin: 0;
   padding: 0;
   font-size: 0.88rem;
   line-height: 1.55;
+
   li {
     padding: 3px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.04);
