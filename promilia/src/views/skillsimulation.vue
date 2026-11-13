@@ -14,12 +14,7 @@
         <span class="stat__label">Buff</span>
         <div class="buff-row">
           <span v-if="!buffs.length" class="muted">无</span>
-          <span
-            v-for="b in buffs"
-            :key="b.id"
-            class="buff"
-            :class="{ cuican: b.id === 'cuican' }"
-          >
+          <span v-for="b in buffs" :key="b.id" class="buff" :class="{ cuican: b.id === 'cuican' }">
             <span class="buff__name">{{ b.name }}</span>
             <span class="buff__bar" aria-hidden="true">
               <span class="buff__bar-fill" :style="{ width: b.progressPct + '%' }" />
@@ -71,6 +66,28 @@
         <li v-for="item in logs" :key="item.id">{{ item.msg }}</li>
       </ul>
     </section>
+
+    <section class="tree">
+      <div class="rows row1">
+        <button v-for="p in character._pugongList" class="skill-btn pugong"></button>
+      </div>
+
+      <div class="rows row2">
+        <RingCounter :count="ejinengMaxCharges" :now="ejinengCharges" :size="64" :stroke-width="2" :gap="12">
+          <button class="skill-btn ejineng"></button>
+        </RingCounter>
+      </div>
+
+      <div class="rows row3">
+        <RingProgress :value="energyPct" :size="64" :stroke-width="2">
+          <button class="skill-btn rjineng"></button>
+        </RingProgress>
+      </div>
+
+      <div class="rows row4">
+        <button class="skill-btn xjineng"></button>
+      </div>
+    </section>
   </div>
 </template>
 
@@ -88,6 +105,8 @@ const tick = shallowRef(0)
 let unsubscribe = null
 
 onMounted(() => {
+  console.log(character);
+
   unsubscribe = character.subscribe(() => {
     tick.value++
   })
@@ -449,6 +468,19 @@ ul {
     padding: 3px 0;
     border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     opacity: 0.85;
+  }
+}
+
+.tree {
+  width: 500px;
+
+  .rows {
+    padding: 20px 0;
+    display: flex;
+    flex-wrap: no-wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 20px;
   }
 }
 </style>
