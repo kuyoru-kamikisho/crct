@@ -2,7 +2,7 @@
   <div class="sim" :data-tick="tick">
     <header class="sim__header">
       <h1>{{ character.name }} · 技能模拟</h1>
-      <p class="sim__hint">A 普攻 / 追击 · S 星鸣技 · R 星决技 · F 星携技 · Esc 重置</p>
+      <p class="sim__hint">A 普攻 / 追击 · E 星鸣技 · R 星决技 · 3 星携技 · Esc 重置</p>
     </header>
 
     <section class="panel status">
@@ -47,7 +47,7 @@
         @click="onPugong"
       >
         <span class="skill-btn__name">{{ canChase ? '追击' : '普攻' }}</span>
-        <span class="skill-btn__sub">{{ canChase ? '派生' : `A${character.pugongSegment}` }}</span>
+        <span class="skill-btn__sub">{{ canChase ? '派生' : `${character.pugongSegment}` }}</span>
         <span class="skill-btn__key">A</span>
       </button>
 
@@ -61,7 +61,7 @@
           充能 {{ ejinengCharges }}/{{ ejinengMaxCharges }}
           <template v-if="ejinengCooldown"> · CD {{ ejinengCooldown }}s</template>
         </span>
-        <span class="skill-btn__key">S</span>
+        <span class="skill-btn__key">E</span>
         <div
           v-if="ejinengCooldown && ejinengCharges < ejinengMaxCharges"
           class="cooldown"
@@ -87,7 +87,7 @@
       >
         <span class="skill-btn__name">星携技</span>
         <span class="skill-btn__sub">入场</span>
-        <span class="skill-btn__key">F</span>
+        <span class="skill-btn__key">3</span>
       </button>
     </section>
 
@@ -174,10 +174,9 @@ function onXjineng() {
 function onKey(e) {
   if (e.repeat) return
   const k = e.key.toLowerCase()
-  if (k === 'a') onPugong()
-  else if (k === 's') onEjineng()
+  if (k === 'e') onEjineng()
   else if (k === 'r') onRjineng()
-  else if (k === 'f') onXjineng()
+  else if (k === '3') onXjineng()
   else if (k === 'escape') character.reset()
 }
 </script>

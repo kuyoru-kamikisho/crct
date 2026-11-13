@@ -71,7 +71,7 @@ export function createMoyin() {
       energyCost: 0,
       energyGain: 3,
       hasNextSkillId: 'pugong2',
-      animeDuration: 0.25,
+      animeDuration: 0.4,
       damage: 40,
       damageLabel: '风雷',
     }),
@@ -83,7 +83,7 @@ export function createMoyin() {
       energyCost: 0,
       energyGain: 3,
       hasNextSkillId: 'pugong3',
-      animeDuration: 0.35,
+      animeDuration: 0.6,
       damage: 50,
       damageLabel: '风雷',
     }),
@@ -95,7 +95,7 @@ export function createMoyin() {
       energyCost: 0,
       energyGain: 3,
       hasNextSkillId: 'pugong4',
-      animeDuration: 0.45,
+      animeDuration: 1,
       damage: 60,
       damageLabel: '风雷',
     }),
@@ -107,7 +107,7 @@ export function createMoyin() {
       energyCost: 0,
       energyGain: 6,
       hasNextSkillId: 'pugong5',
-      animeDuration: 0.55,
+      animeDuration: 1.6,
       damage: 80,
       damageLabel: '风雷',
       onHit: (skill, result) => {
@@ -123,7 +123,7 @@ export function createMoyin() {
       energyCost: 0,
       energyGain: 10,
       hasNextSkillId: 'pugong1',
-      animeDuration: 0.7,
+      animeDuration: 1.8,
       damage: 90,
       damageLabel: '风雷',
       onHit: (skill) => {
@@ -218,19 +218,28 @@ export function createMoyin() {
     extraSkills: [zhuiji],
   })
 
-  // 星鸣技动画结束仍保留短追击窗口（动画中 + 结束后 0.3s）
+  // 星鸣技：演出中可追击；演出结束后再沿用角色统一的 1s 窗口
   const rawAnimeEnd = c.onSkillAnimeEnd.bind(c)
   c.onSkillAnimeEnd = (skill) => {
     rawAnimeEnd(skill)
     if (skill?.id === 'ejineng1' && chaseFromE) {
-      // 动画结束后再给一点按键窗口
+      const waitMs = Math.round((c.comboWindow || 1) * 1000)
       setTimeout(() => {
         if (chaseFromE && eSkillRef === skill) {
           chaseFromE = false
           c.pushLog('追击窗口结束')
           c.notify()
         }
-      }, 400)
+      }, waitMs)
+    }
+  }
+
+  // 连段窗口到期时，若还开着追击窗也一并关掉
+  c.onComboWindowEnd = () => {
+    if (chaseFromE || chaseFromX) {
+      chaseFromE = false
+      chaseFromX = false
+      c.pushLog('追击窗口结束')
     }
   }
 

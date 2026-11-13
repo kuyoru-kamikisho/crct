@@ -293,7 +293,8 @@ export class CharacterSkill {
 export class Character {
   #skills = new Map()
   #buffs = new Map()
-  #comboWindow = 1.0
+  /** 技能演出结束后，等待再次触发的窗口（秒） */
+  #comboWindow = 1
   #comboRemain = 0
   #comboTimer = null
   #pugongIndex = 0
@@ -312,6 +313,8 @@ export class Character {
     }
     /** 单个印记种类上限 */
     this.markMax = option.markMax ?? 5
+    /** 演出结束后的连段 / 派生等待窗口 */
+    this.#comboWindow = option.comboWindow ?? 1
     this.logs = []
     this.tick = 0
 
@@ -483,10 +486,18 @@ export class Character {
     if (this.logs.length > 80) this.logs.length = 80
   }
 
-  /** 强制下一段普攻（派生） */
+  get comboRemain() {
+    return Math.max(0, this.#comboRemain)
+  }
+
+  get comboWindow() {
+    return this.#comboWindow
+  }
+
+  /** 强制下一段普攻（派生）；窗口在演出结束后再开启 */
   setNextPugong(skillId) {
     this.#pendingPugongId = skillId
-    this.#startComboWindow()
+    this.#clearComboTimer()
     this.notify()
   }
 
@@ -494,14 +505,22 @@ export class Character {
   resetCombo() {
     this.#pugongIndex = 0
     this.#pendingPugongId = null
+    this.#clearComboTimer()
+    this.notify()
+  }
+
+  #clearComboTimer() {
     this.#comboRemain = 0
     if (this.#comboTimer) {
       clearInterval(this.#comboTimer)
       this.#comboTimer = null
     }
-    this.notify()
   }
 
+  /**
+   * 演出结束后开启连段 / 派生等待窗口。
+   * 计时从动画结束起算，不再从施放瞬间扣时间。
+   */
   #startComboWindow() {
     this.#comboRemain = this.#comboWindow
     if (this.#comboTimer) clearInterval(this.#comboTimer)
@@ -513,11 +532,16 @@ export class Character {
         this.#comboTimer = null
         this.#pugongIndex = 0
         this.#pendingPugongId = null
+        this.onComboWindowEnd?.()
+        this.notify()
+      } else {
         this.notify()
       }
     }, FRAME * 1000)
+    this.notify()
   }
 
+  /** 仅推进下一段索引，不启动计时（等 onSkillAnimeEnd） */
   #advanceCombo(skill) {
     if (this.#pendingPugongId) {
       const idx = this._pugongList.findIndex((s) => s.id === this.#pendingPugongId)
@@ -531,7 +555,8 @@ export class Character {
     } else {
       this.#pugongIndex = 0
     }
-    this.#startComboWindow()
+    // 施放瞬间清掉旧窗口，避免动画期间误重置
+    this.#clearComboTimer()
   }
 
   /**
@@ -595,9 +620,16 @@ export class Character {
     return ret
   }
 
+  /**
+   * 任意技能演出结束：开启 1s 等待再次触发。
+   * 子类可覆写，请先调用 super / 保留此行为。
+   */
   onSkillAnimeEnd(_skill) {
-    // 子类可覆写
+    this.#startComboWindow()
   }
+
+  /** 连段窗口到期（回到普攻一段） */
+  onComboWindowEnd() {}
 
   onSkillExecuted(_skill, _result, _ctx) {
     // 子类可覆写
