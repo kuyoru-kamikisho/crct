@@ -67,27 +67,24 @@
       </ul>
     </section>
 
-    <section class="tree">
-      <div class="rows row1">
-        <button v-for="p in character._pugongList" class="skill-btn pugong"></button>
-      </div>
-
-      <div class="rows row2">
-        <RingCounter :count="ejinengMaxCharges" :now="ejinengCharges" :size="64" :stroke-width="2" :gap="12">
-          <button class="skill-btn ejineng"></button>
-        </RingCounter>
-      </div>
-
-      <div class="rows row3">
-        <RingProgress :value="energyPct" :size="64" :stroke-width="2">
-          <button class="skill-btn rjineng"></button>
-        </RingProgress>
-      </div>
-
-      <div class="rows row4">
-        <button class="skill-btn xjineng"></button>
-      </div>
-    </section>
+    <SkillFlowTree
+      :pugong-list="pugongList"
+      :pugong-segment="pugongSegment"
+      :can-chase="canChase"
+      :show-chase-path="canChase"
+      :energy-pct="energyPct"
+      :rjineng-ready="rjinengReady"
+      :ejineng-charges="ejinengCharges"
+      :ejineng-max-charges="ejinengMaxCharges"
+      :ejineng-cooling="ejinengCooling"
+      :ejineng-cd-progress="ejinengCdProgress"
+      :xjineng-ready="xjinengReady"
+      @pugong="onPugong"
+      @ejineng="onEjineng"
+      @rjineng="onRjineng"
+      @xjineng="onXjineng"
+      @chase="onPugong"
+    />
   </div>
 </template>
 
@@ -95,6 +92,7 @@
 import MarkOrbs from '@/components/MarkOrbs.vue'
 import RingCounter from '@/components/RingCounter.vue'
 import RingProgress from '@/components/RingProgress.vue'
+import SkillFlowTree from '@/components/SkillFlowTree.vue'
 import createMoyin from '@/class/moyin'
 import { computed, onMounted, onUnmounted, shallowRef } from 'vue'
 
@@ -105,8 +103,6 @@ const tick = shallowRef(0)
 let unsubscribe = null
 
 onMounted(() => {
-  console.log(character);
-
   unsubscribe = character.subscribe(() => {
     tick.value++
   })
@@ -136,6 +132,8 @@ const buffs = snap(() =>
   })),
 )
 const logs = snap(() => character.logs.map((l) => ({ id: l.id, msg: l.msg })))
+const pugongList = snap(() => character._pugongList || [])
+const pugongSegment = snap(() => character.pugongSegment)
 const canChase = snap(() => !!character.findDeriveChase())
 const canPugong = snap(() => canChase.value || !!character.pugong?.isReady)
 const ejinengReady = snap(() => !!character.ejineng?.isReady)
@@ -471,16 +469,4 @@ ul {
   }
 }
 
-.tree {
-  width: 500px;
-
-  .rows {
-    padding: 20px 0;
-    display: flex;
-    flex-wrap: no-wrap;
-    align-items: center;
-    justify-content: center;
-    gap: 20px;
-  }
-}
 </style>
