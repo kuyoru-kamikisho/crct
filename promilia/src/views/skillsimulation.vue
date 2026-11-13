@@ -6,19 +6,9 @@
     </header>
 
     <section class="panel status">
-      <div class="stat">
-        <span class="stat__label">星决蓄能</span>
-        <div class="bar">
-          <div class="bar__fill energy" :style="{ width: energyPct + '%' }" />
-          <span class="bar__text">{{ character.energy }} / {{ character.energyMax }}</span>
-        </div>
-      </div>
       <div class="stat marks">
         <span class="stat__label">印记</span>
-        <div class="mark-row">
-          <span class="mark lei">雷 ×{{ character.marks.lei }}/{{ character.markMax }}</span>
-          <span class="mark feng">风 ×{{ character.marks.feng }}/{{ character.markMax }}</span>
-        </div>
+        <MarkOrbs :orbs="markOrbs" />
       </div>
       <div class="stat">
         <span class="stat__label">Buff</span>
@@ -45,8 +35,6 @@
 
     <section class="panel skills">
       <button class="skill-btn pugong" :class="{ disabled: !canPugong, derive: canChase }" @click="onPugong">
-        <!-- <span class="skill-btn__name">{{ canChase ? '追击' : '普攻' }}</span> -->
-        <!-- <span class="skill-btn__sub">{{ canChase ? '派生' : `${character.pugongSegment}` }}</span> -->
         <span class="skill-btn__key">左键</span>
       </button>
 
@@ -57,15 +45,13 @@
         </button>
       </RingCounter>
 
-      <button class="skill-btn rjineng" @click="onRjineng">
-        <!-- <span class="skill-btn__name">星决技</span> -->
-        <!-- <span class="skill-btn__sub">能量 {{ rjinengCost }}</span> -->
-        <span class="skill-btn__key">R</span>
-      </button>
+      <RingProgress :value="energyPct" :size="64" :stroke-width="2">
+        <button class="skill-btn rjineng" :class="{ disabled: !rjinengReady }" @click="onRjineng">
+          <span class="skill-btn__key">R</span>
+        </button>
+      </RingProgress>
 
       <button class="skill-btn xjineng" :class="{ disabled: !xjinengReady }" @click="onXjineng">
-        <!-- <span class="skill-btn__name">星携技</span> -->
-        <!-- <span class="skill-btn__sub">入场</span> -->
         <span class="skill-btn__key">3</span>
       </button>
     </section>
@@ -89,7 +75,9 @@
 </template>
 
 <script setup>
+import MarkOrbs from '@/components/MarkOrbs.vue'
 import RingCounter from '@/components/RingCounter.vue'
+import RingProgress from '@/components/RingProgress.vue'
 import createMoyin from '@/class/moyin'
 import { computed, onMounted, onUnmounted, shallowRef } from 'vue'
 
@@ -120,6 +108,7 @@ function snap(fn) {
 }
 
 const energyPct = snap(() => (character.energy / character.energyMax) * 100)
+const markOrbs = snap(() => character.markOrbs)
 const buffs = snap(() =>
   character.buffList.map((b) => ({
     id: b.id,
@@ -251,14 +240,12 @@ function onKey(e) {
   font-size: 0.8rem;
 }
 
-.mark-row,
 .buff-row {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
 
-.mark,
 .buff {
   display: inline-flex;
   align-items: center;
@@ -290,16 +277,6 @@ function onKey(e) {
   border-radius: inherit;
   background: rgba(255, 255, 255, 0.35);
   transition: width 0.05s linear;
-}
-
-.mark.lei {
-  background: rgba(160, 100, 255, 0.25);
-  color: #d4b8ff;
-}
-
-.mark.feng {
-  background: rgba(80, 200, 160, 0.22);
-  color: #9fe8d0;
 }
 
 .buff.cuican {

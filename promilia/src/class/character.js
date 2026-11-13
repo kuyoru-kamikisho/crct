@@ -1,3 +1,10 @@
+import {
+  ELEMENT_ORDER,
+  createEmptyMarks,
+  getElement,
+  resolveElementId,
+} from './elements.js'
+
 /** 技能类型 */
 export const SkillTypes = {
   Pugong: 'pugong',
@@ -314,11 +321,9 @@ export class Character {
     this.name = option.name
     this.energyMax = option.energyMax ?? 100
     this.energy = option.energy ?? 0
-    this.marks = {
-      lei: option.marks?.lei ?? 0,
-      feng: option.marks?.feng ?? 0,
-    }
-    /** 单个印记种类上限 */
+    /** 各元素调谐印记（火风地木冰水雷光暗…） */
+    this.marks = createEmptyMarks(option.marks)
+    /** 单个印记种类上限（wiki：同属性最多五枚） */
     this.markMax = option.markMax ?? 5
     /** 演出结束后的连段 / 派生等待窗口 */
     this.#comboWindow = option.comboWindow ?? 1
@@ -443,19 +448,47 @@ export class Character {
     return Object.values(this.marks).reduce((sum, n) => sum + n, 0)
   }
 
+  /**
+   * 按 wiki 元素顺序展开为单枚列表，供 UI 渲染印记球
+   * @returns {{ id: string, key: string, name: string, index: number }[]}
+   */
+  get markOrbs() {
+    const list = []
+    for (const id of ELEMENT_ORDER) {
+      const el = getElement(id)
+      if (!el) continue
+      const count = this.marks[id] || 0
+      for (let i = 0; i < count; i++) {
+        list.push({
+          id: `${id}-${i}`,
+          key: id,
+          name: el.name,
+          index: i,
+        })
+      }
+    }
+    return list
+  }
+
   addMark(type, n = 1) {
-    const key = type === 'feng' || type === '风' ? 'feng' : 'lei'
-    const label = key === 'lei' ? '雷' : '风'
+    const key = resolveElementId(type)
+    const el = key ? getElement(key) : null
+    if (!key || !el) {
+      this.pushLog(`未知印记类型：${type}`)
+      this.notify()
+      return 0
+    }
+    if (this.marks[key] == null) this.marks[key] = 0
     const before = this.marks[key]
     const room = Math.max(0, this.markMax - before)
     const gained = Math.min(n, room)
     if (gained <= 0) {
-      this.pushLog(`${label}印记已满（${before}/${this.markMax}），无法再获得`)
+      this.pushLog(`${el.name}印记已满（${before}/${this.markMax}），无法再获得`)
       this.notify()
       return 0
     }
     this.marks[key] = before + gained
-    this.pushLog(`获得${label}印记 ×${gained}（当前 ${this.marks[key]}/${this.markMax}）`)
+    this.pushLog(`获得${el.name}印记 ×${gained}（当前 ${this.marks[key]}/${this.markMax}）`)
     this.notify()
     return gained
   }
@@ -465,11 +498,14 @@ export class Character {
    * @returns {number} 实际消耗数量
    */
   consumeMark(type, n = 1) {
-    const key = type === 'feng' || type === '风' ? 'feng' : 'lei'
+    const key = resolveElementId(type)
+    const el = key ? getElement(key) : null
+    if (!key || !el) return 0
+    if (this.marks[key] == null) this.marks[key] = 0
     const used = Math.min(this.marks[key], n)
     this.marks[key] -= used
     if (used > 0) {
-      this.pushLog(`消耗${key === 'lei' ? '雷' : '风'}印记 ×${used}（剩余 ${this.marks[key]}）`)
+      this.pushLog(`消耗${el.name}印记 ×${used}（剩余 ${this.marks[key]}）`)
     }
     this.notify()
     return used
@@ -648,8 +684,7 @@ export class Character {
   reset() {
     SkillSystem.clearAllLock()
     this.energy = 0
-    this.marks.lei = 0
-    this.marks.feng = 0
+    this.marks = createEmptyMarks()
     this.#buffs.forEach((b) => b.clear())
     this.#buffs.clear()
     this.resetCombo()
