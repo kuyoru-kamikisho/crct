@@ -565,46 +565,17 @@ class GP_OT_sync_frame_range(Operator):
     bl_idname = "goophys.sync_frame_range"
     bl_label = "同步帧范围"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
-    bl_description = "将所有软体模拟物体同步到当前帧范围"
+    bl_description = "将所有软体/布料/抖动模拟的点缓存同步到当前帧范围，并清除旧缓存"
 
     def execute(self, context):
 
         coll, collide_coll, control_coll, bake_coll = ensure_collections()
 
-        if coll:
-            for ob in coll.objects:
-                mod = ob.modifiers.get("GP_SoftBody Sim")
-                if mod:
-                    if context.scene.use_preview_range:
-                        mod.point_cache.frame_start = (
-                            bpy.context.scene.frame_preview_start
-                        )
-                        mod.point_cache.frame_end = bpy.context.scene.frame_preview_end
-                    else:
-                        mod.point_cache.frame_start = bpy.context.scene.frame_start
-                        mod.point_cache.frame_end = bpy.context.scene.frame_end
-
-                mod = ob.modifiers.get("GP_Jiggle Sim")
-                if mod:
-                    if context.scene.use_preview_range:
-                        mod.point_cache.frame_start = (
-                            bpy.context.scene.frame_preview_start
-                        )
-                        mod.point_cache.frame_end = bpy.context.scene.frame_preview_end
-                    else:
-                        mod.point_cache.frame_start = bpy.context.scene.frame_start
-                        mod.point_cache.frame_end = bpy.context.scene.frame_end
-
-                mod = ob.modifiers.get("GP_Cloth Sim")
-                if mod:
-                    if context.scene.use_preview_range:
-                        mod.point_cache.frame_start = (
-                            bpy.context.scene.frame_preview_start
-                        )
-                        mod.point_cache.frame_end = bpy.context.scene.frame_preview_end
-                    else:
-                        mod.point_cache.frame_start = bpy.context.scene.frame_start
-                        mod.point_cache.frame_end = bpy.context.scene.frame_end
+        cleared = clear_gp_point_caches(context, coll, jump_to_start=True)
+        self.report(
+            {"INFO"},
+            f"已同步帧范围并清除 {cleared} 个物理缓存，请从起始帧播放以重新模拟",
+        )
 
         return {"FINISHED"}
 
@@ -613,13 +584,20 @@ class GP_OT_refresh_physics_status(Operator):
     bl_idname = "goophys.refresh_physics_status"
     bl_label = "刷新物理状态"
     bl_options = {"REGISTER", "UNDO", "INTERNAL"}
-    bl_description = "将所有软体模拟物体同步到当前帧范围"
+    bl_description = (
+        "清除软体/布料/抖动点缓存、同步骨骼物理标记，并跳到起始帧。"
+        "切换动作后若模拟仍像旧动作，请点此按钮再从起始帧播放"
+    )
 
     def execute(self, context):
 
         coll, collide_coll, control_coll, bake_coll = ensure_collections()
+        cleared = 0
 
         if coll:
+            # Point caches keep the previous action's simulation until freed.
+            cleared = clear_gp_point_caches(context, coll, jump_to_start=True)
+
             skips = []
             for ob in coll.objects:
                 if len(ob.gp_bone_coll.coll) == 0:
@@ -665,24 +643,29 @@ class GP_OT_refresh_physics_status(Operator):
                             
                             if bpy.app.version[0] >= 5:
                                 act = rig.animation_data.action
-                                fcs = []
+                                channelbags = []
                                 for slot in act.slots:
-                                    fcs.append(anim_utils.action_get_channelbag_for_slot(act, slot))
+                                    bag = anim_utils.action_get_channelbag_for_slot(
+                                        act, slot
+                                    )
+                                    if bag is not None:
+                                        channelbags.append(bag)
                             else:
-                                fcs = [rig.animation_data.action]
+                                channelbags = [rig.animation_data.action]
 
-                            for slot in fcs:
+                            for bag in channelbags:
                                 rem_curves = []
-                                for fc in slot.fcurves:
+                                for fc in bag.fcurves:
                                     if (
                                         "gp_has_cl_physics" in fc.data_path
                                         or "gp_has_sb_physics" in fc.data_path
                                         or "gp_has_jg_physics" in fc.data_path
+                                        or "gp_has_gn_physics" in fc.data_path
                                     ):
                                         rem_curves.append(fc)
 
                                 for fc in rem_curves:
-                                    fcs.remove(fc)
+                                    bag.fcurves.remove(fc)
 
                     if c_ob.rig_bone not in rig.pose.bones:
                         continue
@@ -693,6 +676,11 @@ class GP_OT_refresh_physics_status(Operator):
                     bone.gp_has_jg_physics = has_jp
                     bone.gp_has_cl_physics = has_cl
                     bone.gp_has_gn_physics = has_gn
+
+        self.report(
+            {"INFO"},
+            f"已清除 {cleared} 个物理缓存并刷新骨骼状态，请从起始帧播放以按当前动作重新模拟",
+        )
 
         return {"FINISHED"}
 
@@ -823,7 +811,9 @@ class GP_OT_add_wind_object(Operator):
                     mod = ob.modifiers.get("GP_Nodes Sim")
                     if mod:
                         inputs = get_inputs_container(mod.node_group)
-                        mod[inputs["Wind Object"].identifier] = wind_emp
+                        set_nodes_mod_input(
+                            mod, inputs["Wind Object"].identifier, wind_emp
+                        )
 
                     ob.location = ob.location
 
@@ -846,7 +836,9 @@ class GP_OT_copy_active_wind_controller(Operator):
                     mod = ob.modifiers.get("GP_Nodes Sim")
                     if mod:
                         inputs = get_inputs_container(mod.node_group)
-                        wind_emp = mod[inputs["Wind Object"].identifier]
+                        wind_emp = get_nodes_mod_input(
+                            mod, inputs["Wind Object"].identifier
+                        )
 
                         ob.location = ob.location
 
@@ -858,7 +850,9 @@ class GP_OT_copy_active_wind_controller(Operator):
                             mod = ob.modifiers.get("GP_Nodes Sim")
                             if mod:
                                 inputs = get_inputs_container(mod.node_group)
-                                mod[inputs["Wind Object"].identifier] = wind_emp
+                                set_nodes_mod_input(
+                                    mod, inputs["Wind Object"].identifier, wind_emp
+                                )
 
                                 ob.location = ob.location
 

@@ -174,58 +174,30 @@ def update_chain_prop(self, attr_name, attr_value):
                             mod = ob.modifiers.get("GP_Nodes Sim")
                             if mod:
                                 inputs = get_inputs_container(mod.node_group)
-                                if attr_name == "gp_chain_wind_strength":
-                                    mod[inputs["Wind Strength"].identifier] = attr_value
-                                if attr_name == "gp_chain_wind_noise_scale":
-                                    mod[
-                                        inputs["Wind Noise Scale"].identifier
-                                    ] = attr_value
-                                if attr_name == "gp_chain_wind_noise_strength":
-                                    mod[
-                                        inputs["Wind Noise Strength"].identifier
-                                    ] = attr_value
-                                if attr_name == "gp_chain_dampening":
-                                    mod[
-                                        inputs["Velocity Dampening"].identifier
-                                    ] = attr_value
-                                if attr_name == "gp_chain_root_falloff":
-                                    mod[inputs["Root Pin Size"].identifier] = attr_value
-                                if attr_name == "gp_chain_velocity":
-                                    mod[
-                                        inputs["Velocity Scaler"].identifier
-                                    ] = attr_value
-                                if attr_name == "gp_chain_gravity":
-                                    mod[
-                                        inputs["Gravity Strength"].identifier
-                                    ] = attr_value
-                                if attr_name == "gp_chain_stiffness":
-                                    mod[inputs["Goal Strength"].identifier] = attr_value
-                                if attr_name == "gp_chain_stiff_end_fac":
-                                    mod[
-                                        inputs["Goal End Strength"].identifier
-                                    ] = attr_value
-                                if attr_name == "gp_chain_stiff_vel_fac":
-                                    mod[
-                                        inputs["Goal Velocity Factor"].identifier
-                                    ] = attr_value
-                                if attr_name == "gp_chain_stiff_vel_min":
-                                    mod[
-                                        inputs["Goal Velocity Min"].identifier
-                                    ] = attr_value
-                                if attr_name == "gp_chain_stiff_vel_max":
-                                    mod[
-                                        inputs["Goal Velocity Max"].identifier
-                                    ] = attr_value
-                                if attr_name == "gp_chain_use_collision":
-                                    mod[inputs["Use Collision"].identifier] = attr_value
-                                if attr_name == "gp_chain_collision_dist":
-                                    mod[
-                                        inputs["Collision Distance"].identifier
-                                    ] = attr_value
-                                if attr_name == "gp_chain_collision_friction":
-                                    mod[
-                                        inputs["Collision Friction"].identifier
-                                    ] = attr_value
+                                gn_input_map = {
+                                    "gp_chain_wind_strength": "Wind Strength",
+                                    "gp_chain_wind_noise_scale": "Wind Noise Scale",
+                                    "gp_chain_wind_noise_strength": "Wind Noise Strength",
+                                    "gp_chain_dampening": "Velocity Dampening",
+                                    "gp_chain_root_falloff": "Root Pin Size",
+                                    "gp_chain_velocity": "Velocity Scaler",
+                                    "gp_chain_gravity": "Gravity Strength",
+                                    "gp_chain_stiffness": "Goal Strength",
+                                    "gp_chain_stiff_end_fac": "Goal End Strength",
+                                    "gp_chain_stiff_vel_fac": "Goal Velocity Factor",
+                                    "gp_chain_stiff_vel_min": "Goal Velocity Min",
+                                    "gp_chain_stiff_vel_max": "Goal Velocity Max",
+                                    "gp_chain_use_collision": "Use Collision",
+                                    "gp_chain_collision_dist": "Collision Distance",
+                                    "gp_chain_collision_friction": "Collision Friction",
+                                }
+                                socket_name = gn_input_map.get(attr_name)
+                                if socket_name is not None:
+                                    set_nodes_mod_input(
+                                        mod,
+                                        inputs[socket_name].identifier,
+                                        attr_value,
+                                    )
 
                                 ob.location = ob.location
 

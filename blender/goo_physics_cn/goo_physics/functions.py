@@ -41,14 +41,16 @@ def create_collider_object(
     num = 0
     for ob in objects:
         inputs = get_inputs_container(mod.node_group)
-        mod[inputs["Object " + str((num % 20) + 1)].identifier] = ob
+        set_nodes_mod_input(
+            mod, inputs["Object " + str((num % 20) + 1)].identifier, ob
+        )
         num += 1
 
         if (num % 20) == 0:
             mod = collider_object.modifiers.new("GP_Nodes Combine Objects", "NODES")
             mod.node_group = combine_ob_ng
 
-    mod[inputs["Convex Hull"].identifier] = convex_hull
+    set_nodes_mod_input(mod, inputs["Convex Hull"].identifier, convex_hull)
 
     return collider_object
 
@@ -222,7 +224,11 @@ def clear_sim_chains(bone_chains):
                     mod = ob.modifiers.get("GP_Nodes Sim")
                     if mod:
                         inputs = get_inputs_container(mod.node_group)
-                        bpy.data.objects.remove(mod[inputs["Root Ref Object"].identifier])
+                        root_ref = get_nodes_mod_input(
+                            mod, inputs["Root Ref Object"].identifier
+                        )
+                        if root_ref is not None:
+                            bpy.data.objects.remove(root_ref)
                 except:
                     pass
                 bpy.data.objects.remove(ob)
@@ -413,14 +419,20 @@ def create_geonodes_chains(chains, coll, collide_coll, divisions):
         mod = chain_ob.modifiers.new("GP_Nodes Sim", "NODES")
         mod.node_group = simulation_ng
         inputs = get_inputs_container(mod.node_group)
-        mod[inputs["Root Ref Object"].identifier] = chain_root_ref
+        set_nodes_mod_input(
+            mod, inputs["Root Ref Object"].identifier, chain_root_ref
+        )
 
-        mod[inputs["Seed"].identifier] = random.randint(-5000, 5000)
-        
-        mod[inputs["Collision Collection"].identifier] = collide_coll
+        set_nodes_mod_input(
+            mod, inputs["Seed"].identifier, random.randint(-5000, 5000)
+        )
 
-        mod[inputs["Use Collision"].identifier] = True
-        
+        set_nodes_mod_input(
+            mod, inputs["Collision Collection"].identifier, collide_coll
+        )
+
+        set_nodes_mod_input(mod, inputs["Use Collision"].identifier, True)
+
         #
 
         for cc, c_dat in enumerate(chain[::-1]):
@@ -428,21 +440,71 @@ def create_geonodes_chains(chains, coll, collide_coll, divisions):
             bone = rig.pose.bones[c_dat[1]]
 
             if cc == 0:
-                
-                mod[inputs["Velocity Scaler"].identifier] = bone.gp_chain_velocity
-                mod[inputs["Velocity Dampening"].identifier] = bone.gp_chain_dampening
-                mod[inputs["Gravity Strength"].identifier] = bone.gp_chain_gravity
-                mod[inputs["Root Pin Size"].identifier] = bone.gp_chain_root_falloff
-                mod[inputs["Goal Strength"].identifier] = bone.gp_chain_stiffness
-                mod[inputs["Goal End Strength"].identifier] = bone.gp_chain_stiff_end_fac
-                mod[inputs["Goal Velocity Factor"].identifier] = bone.gp_chain_stiff_vel_fac
-                mod[inputs["Goal Velocity Min"].identifier] = bone.gp_chain_stiff_vel_min
-                mod[inputs["Goal Velocity Max"].identifier] = bone.gp_chain_stiff_vel_max
-                mod[inputs["Wind Strength"].identifier] = bone.gp_chain_wind_strength
-                mod[inputs["Wind Noise Strength"].identifier] = bone.gp_chain_wind_noise_strength
-                mod[inputs["Wind Noise Scale"].identifier] = bone.gp_chain_wind_noise_scale
-                mod[inputs["Collision Distance"].identifier] = bone.gp_chain_collision_dist
-                mod[inputs["Collision Friction"].identifier] = bone.gp_chain_collision_friction
+
+                set_nodes_mod_input(
+                    mod, inputs["Velocity Scaler"].identifier, bone.gp_chain_velocity
+                )
+                set_nodes_mod_input(
+                    mod,
+                    inputs["Velocity Dampening"].identifier,
+                    bone.gp_chain_dampening,
+                )
+                set_nodes_mod_input(
+                    mod, inputs["Gravity Strength"].identifier, bone.gp_chain_gravity
+                )
+                set_nodes_mod_input(
+                    mod,
+                    inputs["Root Pin Size"].identifier,
+                    bone.gp_chain_root_falloff,
+                )
+                set_nodes_mod_input(
+                    mod, inputs["Goal Strength"].identifier, bone.gp_chain_stiffness
+                )
+                set_nodes_mod_input(
+                    mod,
+                    inputs["Goal End Strength"].identifier,
+                    bone.gp_chain_stiff_end_fac,
+                )
+                set_nodes_mod_input(
+                    mod,
+                    inputs["Goal Velocity Factor"].identifier,
+                    bone.gp_chain_stiff_vel_fac,
+                )
+                set_nodes_mod_input(
+                    mod,
+                    inputs["Goal Velocity Min"].identifier,
+                    bone.gp_chain_stiff_vel_min,
+                )
+                set_nodes_mod_input(
+                    mod,
+                    inputs["Goal Velocity Max"].identifier,
+                    bone.gp_chain_stiff_vel_max,
+                )
+                set_nodes_mod_input(
+                    mod,
+                    inputs["Wind Strength"].identifier,
+                    bone.gp_chain_wind_strength,
+                )
+                set_nodes_mod_input(
+                    mod,
+                    inputs["Wind Noise Strength"].identifier,
+                    bone.gp_chain_wind_noise_strength,
+                )
+                set_nodes_mod_input(
+                    mod,
+                    inputs["Wind Noise Scale"].identifier,
+                    bone.gp_chain_wind_noise_scale,
+                )
+                set_nodes_mod_input(
+                    mod,
+                    inputs["Collision Distance"].identifier,
+                    bone.gp_chain_collision_dist,
+                )
+                set_nodes_mod_input(
+                    mod,
+                    inputs["Collision Friction"].identifier,
+                    bone.gp_chain_collision_friction,
+                )
 
 
                 # chain_root_ref.parent = rig
@@ -1007,6 +1069,35 @@ def get_inputs_container(node_group):
     return input_container
 
 
+def nodes_mod_uses_rna_properties(mod):
+    """Blender 5.2+ exposes Geometry Nodes inputs as RNA, not ID properties."""
+    props = getattr(mod, "properties", None)
+    return props is not None and hasattr(props, "inputs")
+
+
+def set_nodes_mod_input(mod, identifier, value):
+    """Set a Geometry Nodes modifier input by socket identifier (4.x–5.2+)."""
+    if nodes_mod_uses_rna_properties(mod):
+        getattr(mod.properties.inputs, identifier).value = value
+    else:
+        mod[identifier] = value
+
+
+def get_nodes_mod_input(mod, identifier):
+    """Read a Geometry Nodes modifier input by socket identifier (4.x–5.2+)."""
+    if nodes_mod_uses_rna_properties(mod):
+        return getattr(mod.properties.inputs, identifier).value
+    return mod[identifier]
+
+
+def draw_nodes_mod_input(layout, mod, identifier, text=""):
+    """Draw a Geometry Nodes modifier input in a layout (4.x–5.2+)."""
+    if nodes_mod_uses_rna_properties(mod):
+        layout.prop(getattr(mod.properties.inputs, identifier), "value", text=text)
+    else:
+        layout.prop(mod, '["' + identifier + '"]', text=text)
+
+
 def is_addon_enabled(addon_name):
     modules = addon_utils.modules()
     for module in modules:
@@ -1056,3 +1147,75 @@ def ensure_collections():
         coll.children.link(bake_coll)
 
     return coll, collide_coll, controller_coll, bake_coll
+
+
+GP_POINT_CACHE_MODIFIER_NAMES = (
+    "GP_SoftBody Sim",
+    "GP_Jiggle Sim",
+    "GP_Cloth Sim",
+)
+
+
+def get_sim_frame_range(scene=None):
+    """Return the frame range that Goo Physics simulations should use."""
+    if scene is None:
+        scene = bpy.context.scene
+    if scene.use_preview_range:
+        return scene.frame_preview_start, scene.frame_preview_end
+    return scene.frame_start, scene.frame_end
+
+
+def iter_gp_point_cache_modifiers(coll):
+    """Yield (object, modifier) pairs for Soft Body / Jiggle / Cloth sims."""
+    if coll is None:
+        return
+    for ob in coll.objects:
+        for mod_name in GP_POINT_CACHE_MODIFIER_NAMES:
+            mod = ob.modifiers.get(mod_name)
+            if mod is not None and hasattr(mod, "point_cache"):
+                yield ob, mod
+
+
+def clear_gp_point_caches(context, coll, jump_to_start=True):
+    """
+    Free Soft Body / Cloth / Jiggle point caches so they recalculate.
+
+    Blender keeps baked/memory point caches even after the armature action
+    changes, so playback can keep showing the previous action's simulation
+    until the cache is explicitly freed.
+    """
+    if coll is None:
+        return 0
+
+    scene = context.scene
+    fs, fe = get_sim_frame_range(scene)
+    cleared = 0
+
+    for ob, mod in iter_gp_point_cache_modifiers(coll):
+        pc = mod.point_cache
+
+        with context.temp_override(
+            scene=scene,
+            active_object=ob,
+            object=ob,
+            point_cache=pc,
+        ):
+            try:
+                bpy.ops.ptcache.free_bake()
+            except Exception:
+                pass
+
+        # Collapsing the range forces Blender to drop leftover memory cache
+        # that free_bake may leave behind when the cache was only partially baked.
+        pc.frame_start = fs
+        pc.frame_end = fs
+        ob.location = ob.location
+        pc.frame_end = fe
+
+        mod.show_viewport = True
+        cleared += 1
+
+    if jump_to_start:
+        scene.frame_set(fs)
+
+    return cleared

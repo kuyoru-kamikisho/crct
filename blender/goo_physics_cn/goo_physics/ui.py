@@ -361,7 +361,13 @@ class GP_PT_physics_panel(Panel):
                                     mod = ob.modifiers.get("GP_Nodes Sim")
                                     if mod:
                                         inputs = get_inputs_container(mod.node_group)
-                                        has_wind = mod[inputs["Wind Object"].identifier] != None
+                                        has_wind = (
+                                            get_nodes_mod_input(
+                                                mod,
+                                                inputs["Wind Object"].identifier,
+                                            )
+                                            is not None
+                                        )
 
                                 if has_wind == False:
 
@@ -375,7 +381,12 @@ class GP_PT_physics_panel(Panel):
 
                                     if mod is not None:
                                         row = boxxxx.row(align=True)
-                                        row.prop(mod, '["' + inputs["Wind Object"].identifier + '"]', text="风力控制器")
+                                        draw_nodes_mod_input(
+                                            row,
+                                            mod,
+                                            inputs["Wind Object"].identifier,
+                                            text="风力控制器",
+                                        )
 
                                 else:
 
@@ -392,7 +403,12 @@ class GP_PT_physics_panel(Panel):
 
                                     if mod is not None:
                                         row = boxxxx.row(align=True)
-                                        row.prop(mod, '["' + inputs["Wind Object"].identifier + '"]', text="风力控制器")
+                                        draw_nodes_mod_input(
+                                            row,
+                                            mod,
+                                            inputs["Wind Object"].identifier,
+                                            text="风力控制器",
+                                        )
 
                                     row = boxxxx.row(align=True)
                                     row.operator(
@@ -459,11 +475,12 @@ class GP_PT_physics_panel(Panel):
         box, expanded = draw_subpanel(layout, prefs, "troubleshoot_menu", "故障排查", "ERROR")
         if expanded:
             row = box.row(align=True)
-            row.operator("goophys.sync_frame_range", text="同步帧范围")
+            row.operator("goophys.sync_frame_range", text="同步帧范围并清缓存")
 
             row = box.row(align=True)
             row.operator(
-                "goophys.refresh_physics_status", text="刷新骨骼物理状态"
+                "goophys.refresh_physics_status",
+                text="清除物理缓存并刷新状态",
             )
 
 
