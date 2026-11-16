@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import bpy
+import numpy as np
 
 from . import weights
 
@@ -29,6 +30,42 @@ def weight_to_color(w: float) -> tuple[float, float, float, float]:
     return (1.0, 1.0 - t, 0.0, 1.0)
 
 
+def weights_to_colors_np(w: np.ndarray) -> np.ndarray:
+    """Vectorized blue→red weight heatmap; returns float32 Nx4."""
+    w = np.clip(w.astype(np.float64, copy=False), 0.0, 1.0)
+    n = w.shape[0]
+    rgba = np.empty((n, 4), dtype=np.float32)
+    rgba[:, 3] = 1.0
+
+    # Segment masks (same breakpoints as weight_to_color).
+    m0 = w < 0.25
+    m1 = (w >= 0.25) & (w < 0.5)
+    m2 = (w >= 0.5) & (w < 0.75)
+    m3 = w >= 0.75
+
+    if np.any(m0):
+        t = w[m0] / 0.25
+        rgba[m0, 0] = 0.0
+        rgba[m0, 1] = t
+        rgba[m0, 2] = 1.0
+    if np.any(m1):
+        t = (w[m1] - 0.25) / 0.25
+        rgba[m1, 0] = 0.0
+        rgba[m1, 1] = 1.0
+        rgba[m1, 2] = 1.0 - t
+    if np.any(m2):
+        t = (w[m2] - 0.5) / 0.25
+        rgba[m2, 0] = t
+        rgba[m2, 1] = 1.0
+        rgba[m2, 2] = 0.0
+    if np.any(m3):
+        t = (w[m3] - 0.75) / 0.25
+        rgba[m3, 0] = 1.0
+        rgba[m3, 1] = 1.0 - t
+        rgba[m3, 2] = 0.0
+    return rgba
+
+
 def _ensure_preview_attribute(mesh_data):
     attr = mesh_data.color_attributes.get(PREVIEW_ATTR)
     if attr is None:
@@ -48,13 +85,14 @@ def _ensure_preview_attribute(mesh_data):
     return attr
 
 
-def _vertex_group_weights(mesh_obj, bone_name: str) -> list[float]:
+def _vertex_group_weights_np(mesh_obj, bone_name: str) -> np.ndarray:
     n = len(mesh_obj.data.vertices)
-    out = [0.0] * n
+    out = np.zeros(n, dtype=np.float64)
     vg = mesh_obj.vertex_groups.get(bone_name)
     if vg is None:
         return out
     gi = vg.index
+    # VertexGroup membership is still per-vertex via bpy; keep a tight loop.
     for v in mesh_obj.data.vertices:
         for g in v.groups:
             if g.group == gi:
@@ -67,10 +105,16 @@ def write_weight_colors(mesh_obj, bone_name: str) -> None:
     if mesh_obj is None or mesh_obj.type != "MESH" or not bone_name:
         return
     attr = _ensure_preview_attribute(mesh_obj.data)
-    values = _vertex_group_weights(mesh_obj, bone_name)
-    data = attr.data
-    for i, w in enumerate(values):
-        data[i].color = weight_to_color(w)
+    values = _vertex_group_weights_np(mesh_obj, bone_name)
+    colors = weights_to_colors_np(values)
+    flat = np.ascontiguousarray(colors.reshape(-1), dtype=np.float32)
+    try:
+        attr.data.foreach_set("color", flat)
+    except Exception:
+        # Fallback for unusual attribute backends.
+        data = attr.data
+        for i in range(len(values)):
+            data[i].color = colors[i]
     # Keep Weight Paint mode aligned with the same group when user switches later.
     vg = mesh_obj.vertex_groups.get(bone_name)
     if vg is not None:
@@ -140,9 +184,18 @@ def clear_preview_colors(mesh_obj) -> None:
     attr = mesh_obj.data.color_attributes.get(PREVIEW_ATTR)
     if attr is None:
         return
-    zero = (0.2, 0.2, 0.2, 1.0)
-    for item in attr.data:
-        item.color = zero
+    n = len(mesh_obj.data.vertices)
+    flat = np.empty(n * 4, dtype=np.float32)
+    flat[0::4] = 0.2
+    flat[1::4] = 0.2
+    flat[2::4] = 0.2
+    flat[3::4] = 1.0
+    try:
+        attr.data.foreach_set("color", flat)
+    except Exception:
+        zero = (0.2, 0.2, 0.2, 1.0)
+        for item in attr.data:
+            item.color = zero
 
 
 def preview_enabled(scene=None) -> bool:
@@ -186,12 +239,7 @@ def update_preview_from_active(scene=None) -> None:
         return
     obj = bpy.context.view_layer.objects.active
     if weights.is_proxy(obj):
-        key = (obj.sbweight.armature_name, obj.sbweight.bone_name)
-        if key != _last_preview_key:
-            update_preview_for_proxy(obj, scene)
-        else:
-            # Same bone: still refresh colors after weight edits.
-            update_preview_for_proxy(obj, scene)
+        update_preview_for_proxy(obj, scene)
 
 
 def on_preview_toggle(scene, enabled: bool) -> None:

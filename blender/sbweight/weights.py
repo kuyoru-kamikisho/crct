@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 from __future__ import annotations
 
-from mathutils import Vector
-
 import bpy
-
+import numpy as np
+from mathutils import Vector
 
 PROXY_PREFIX = "SBW_"
 
@@ -45,7 +44,7 @@ def ensure_vertex_group(mesh_obj, bone_name: str):
 def _corner_weights(props) -> list[float]:
     # Order matches local corners:
     # 1 LUB (-x,-y,+z), 2 RUB (+x,-y,+z), 3 LUF (-x,+y,+z), 4 RUF (+x,+y,+z),
-    # 5 LDB (-x,-y,-z), 6 RDB (+x,-y,-z), 7 LDF (-x,+y,-z), 8 RDF (+x,+y,-z)
+    # 5 LDB (-x,-y,-z), 6 RDB (+x,-y,-z), 7 LDF (-x,+y,-z), 8 RDF (+x,+y,+z)
     return [
         props.weight_v1,
         props.weight_v2,
@@ -116,18 +115,112 @@ def _proxy_world_inv(proxy):
     return proxy.matrix_world.inverted()
 
 
+def _mesh_local_coords(mesh_obj, world_to_proxy) -> np.ndarray:
+    """Nx3 local coords in proxy space (numpy, vectorized)."""
+    mesh = mesh_obj.data
+    n = len(mesh.vertices)
+    if n == 0:
+        return np.empty((0, 3), dtype=np.float64)
+
+    coords = np.empty(n * 3, dtype=np.float64)
+    mesh.vertices.foreach_get("co", coords)
+    coords = coords.reshape(n, 3)
+
+    # Combined mesh-local -> proxy-local matrix
+    M = np.array(world_to_proxy @ mesh_obj.matrix_world, dtype=np.float64)
+    # local = M @ [x,y,z,1]  (row form: homog @ M.T)
+    ones = np.ones((n, 1), dtype=np.float64)
+    homog = np.concatenate((coords, ones), axis=1)
+    return (homog @ M.T)[:, :3]
+
+
+def _weights_sphere_np(
+    nx: np.ndarray,
+    ny: np.ndarray,
+    nz: np.ndarray,
+    center: float,
+    boundary: float,
+    offset: float,
+) -> np.ndarray:
+    r = np.sqrt(nx * nx + ny * ny + nz * nz)
+    inside = r <= 1.0 + 1e-6
+    r_clamped = np.clip(r, 0.0, 1.0)
+    w = center * (1.0 - r_clamped) + boundary * r_clamped + offset
+    w = np.clip(w, 0.0, 1.0)
+    w = np.where(inside, w, 0.0)
+    return w
+
+
+def _weights_cube_np(
+    nx: np.ndarray,
+    ny: np.ndarray,
+    nz: np.ndarray,
+    center: float,
+    corners: list[float],
+    offset: float,
+) -> np.ndarray:
+    ax = np.abs(nx)
+    ay = np.abs(ny)
+    az = np.abs(nz)
+    inside = (ax <= 1.0 + 1e-6) & (ay <= 1.0 + 1e-6) & (az <= 1.0 + 1e-6)
+    r = np.maximum(np.maximum(ax, ay), az)
+
+    u = (nx + 1.0) * 0.5
+    v = (ny + 1.0) * 0.5
+    ww = (nz + 1.0) * 0.5
+
+    c000, c100, c010, c110 = corners[4], corners[5], corners[6], corners[7]
+    c001, c101, c011, c111 = corners[0], corners[1], corners[2], corners[3]
+
+    c00 = c000 * (1.0 - u) + c100 * u
+    c01 = c001 * (1.0 - u) + c101 * u
+    c10 = c010 * (1.0 - u) + c110 * u
+    c11 = c011 * (1.0 - u) + c111 * u
+    c0 = c00 * (1.0 - v) + c10 * v
+    c1 = c01 * (1.0 - v) + c11 * v
+    boundary = c0 * (1.0 - ww) + c1 * ww
+
+    w = center * (1.0 - r) + boundary * r + offset
+    w = np.clip(w, 0.0, 1.0)
+    w = np.where(inside, w, 0.0)
+    return w
+
+
+def compute_proxy_weights_array(proxy, mesh_obj) -> np.ndarray:
+    """Return length-N float64 weight array (0 outside). Vectorized NumPy path."""
+    mesh = mesh_obj.data
+    n = len(mesh.vertices)
+    if n == 0:
+        return np.empty(0, dtype=np.float64)
+
+    inv = _proxy_world_inv(proxy)
+    local = _mesh_local_coords(mesh_obj, inv)
+    size = max(proxy.empty_display_size, 1e-8)
+    nx = local[:, 0] / size
+    ny = local[:, 1] / size
+    nz = local[:, 2] / size
+
+    props = proxy.sbweight
+    if props.shape == "SPHERE":
+        return _weights_sphere_np(
+            nx, ny, nz, props.weight_center, props.weight_boundary, props.weight_offset
+        )
+    return _weights_cube_np(
+        nx, ny, nz, props.weight_center, _corner_weights(props), props.weight_offset
+    )
+
+
 def compute_proxy_weights(proxy, mesh_obj) -> dict[int, float]:
     """Return {vertex_index: weight} for vertices inside the proxy."""
-    result = {}
-    inv = _proxy_world_inv(proxy)
-    mesh = mesh_obj.data
-    mat = mesh_obj.matrix_world
-    for i, vert in enumerate(mesh.vertices):
-        local = inv @ (mat @ vert.co)
-        w = weight_at_local(proxy, local)
-        if w > 0.0:
-            result[i] = w
-    return result
+    w = compute_proxy_weights_array(proxy, mesh_obj)
+    if w.size == 0:
+        return {}
+    mask = w > 0.0
+    if not np.any(mask):
+        return {}
+    indices = np.nonzero(mask)[0]
+    values = w[mask]
+    return {int(i): float(v) for i, v in zip(indices.tolist(), values.tolist())}
 
 
 def proxies_for_bone(armature_name: str, bone_name: str, scene=None) -> list:
@@ -152,19 +245,55 @@ def _group_member_indices(mesh_obj, bone_name: str) -> set[int]:
     return indices
 
 
-def _assign_group_weights(mesh_obj, bone_name: str, index_weights: dict[int, float]) -> set[int]:
-    """Assign weights; return previous member indices union new ones."""
+def _assign_group_weights_from_array(mesh_obj, bone_name: str, weights_arr: np.ndarray) -> set[int]:
+    """Assign weights from a dense array; return previous ∪ new member indices.
+
+    Faster than clear-all: only remove leftovers, batch-add by weight value.
+    """
     previous = _group_member_indices(mesh_obj, bone_name)
     vg = ensure_vertex_group(mesh_obj, bone_name)
-    try:
-        vg.remove([v.index for v in mesh_obj.data.vertices])
-    except RuntimeError:
-        pass
+
+    if weights_arr.size == 0:
+        if previous:
+            try:
+                vg.remove(list(previous))
+            except RuntimeError:
+                pass
+        return previous
+
+    mask = weights_arr > 0.0
+    new_indices_arr = np.nonzero(mask)[0]
+    new_indices = set(int(i) for i in new_indices_arr.tolist())
+
+    to_remove = previous - new_indices
+    if to_remove:
+        try:
+            vg.remove(list(to_remove))
+        except RuntimeError:
+            pass
+
+    if not new_indices:
+        return previous
+
+    # Quantize for fewer VertexGroup.add calls (API allows one weight per call).
+    rounded = np.round(weights_arr[mask], 6)
+    uniq = np.unique(rounded)
+    idxs = new_indices_arr
+    for w in uniq:
+        sel = idxs[rounded == w]
+        vg.add(sel.tolist(), float(w), "REPLACE")
+
+    return previous | new_indices
+
+
+def _assign_group_weights(mesh_obj, bone_name: str, index_weights: dict[int, float]) -> set[int]:
+    """Assign weights from a sparse dict (compat helper)."""
+    n = len(mesh_obj.data.vertices)
+    arr = np.zeros(n, dtype=np.float64)
     for idx, w in index_weights.items():
-        if w <= 0.0:
-            continue
-        vg.add([idx], w, "REPLACE")
-    return previous | set(index_weights.keys())
+        if 0 <= idx < n and w > 0.0:
+            arr[idx] = w
+    return _assign_group_weights_from_array(mesh_obj, bone_name, arr)
 
 
 def normalize_mesh_weights(mesh_obj, affected_indices: set[int] | None = None):
@@ -197,13 +326,17 @@ def refresh_bone_on_meshes(armature, bone_name: str, meshes=None, normalize=True
     meshes = meshes if meshes is not None else find_deformed_meshes(armature)
     proxies = proxies_for_bone(armature.name, bone_name)
     for mesh_obj in meshes:
-        merged: dict[int, float] = {}
-        for proxy in proxies:
-            for idx, w in compute_proxy_weights(proxy, mesh_obj).items():
-                prev = merged.get(idx, 0.0)
-                if w > prev:
-                    merged[idx] = w
-        affected = _assign_group_weights(mesh_obj, bone_name, merged)
+        n = len(mesh_obj.data.vertices)
+        if n == 0:
+            continue
+        if not proxies:
+            merged = np.zeros(n, dtype=np.float64)
+        else:
+            merged = compute_proxy_weights_array(proxies[0], mesh_obj)
+            for proxy in proxies[1:]:
+                w = compute_proxy_weights_array(proxy, mesh_obj)
+                np.maximum(merged, w, out=merged)
+        affected = _assign_group_weights_from_array(mesh_obj, bone_name, merged)
         if normalize:
             normalize_mesh_weights(mesh_obj, affected)
 

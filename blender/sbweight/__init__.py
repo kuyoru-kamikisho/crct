@@ -2,7 +2,7 @@
 bl_info = {
     "name": "SBWeight - Bone Bounding Box Weights",
     "author": "sbweight",
-    "version": (1, 0, 0),
+    "version": (1, 1, 0),
     "blender": (4, 2, 0),
     "location": "View3D > Sidebar > SBWeight",
     "description": "Fast bone weight painting via proxy bounding-box empties",

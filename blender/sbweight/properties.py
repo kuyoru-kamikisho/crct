@@ -39,7 +39,10 @@ def _on_proxy_shape_update(self, context):
     obj.empty_display_type = "SPHERE" if self.shape == "SPHERE" else "CUBE"
     if not self.is_proxy:
         return
-    weights.refresh_proxies([obj], normalize=context.scene.sbweight.auto_normalize)
+    from . import handlers
+
+    # Debounce: avoid recomputing on every incremental RNA update.
+    handlers.schedule_proxy_refresh([obj], force=True)
 
 
 def _on_weight_prop_update(self, context):
@@ -48,7 +51,9 @@ def _on_weight_prop_update(self, context):
         return
     if not obj.sbweight.is_proxy:
         return
-    weights.refresh_proxies([obj], normalize=context.scene.sbweight.auto_normalize)
+    from . import handlers
+
+    handlers.schedule_proxy_refresh([obj], force=True)
 
 
 def _on_weight_preview_update(self, context):
@@ -119,6 +124,7 @@ class SBWeightSceneProps(PropertyGroup):
     )
     live_update: BoolProperty(
         name="Live Update",
+        description="Auto-refresh weights after move/scale/rotate finishes (not every mouse move)",
         default=True,
     )
     weight_preview: BoolProperty(
