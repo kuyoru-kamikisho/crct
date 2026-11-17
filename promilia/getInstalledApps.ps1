@@ -19,6 +19,15 @@ param(
     [switch]$ExcludeMicrosoft
 )
 
+# 统一使用 UTF-8 输出，便于被 Python 等调用方按 utf-8 解码
+$utf8NoBom = New-Object System.Text.UTF8Encoding $false
+[Console]::OutputEncoding = $utf8NoBom
+$OutputEncoding = $utf8NoBom
+if ($PSVersionTable.PSVersion.Major -ge 6) {
+    $PSDefaultParameterValues['Out-File:Encoding'] = 'utf8'
+    $PSDefaultParameterValues['*:Encoding'] = 'utf8'
+}
+
 $ErrorActionPreference = 'SilentlyContinue'
 
 $UninstallRoots = @(

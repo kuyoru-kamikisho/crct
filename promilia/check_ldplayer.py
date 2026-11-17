@@ -13,43 +13,64 @@ from pathlib import Path
 
 APP_NAME = "雷电模拟器"
 SCRIPT_NAME = "getInstalledApps.ps1"
+ENCODING = "utf-8"
+
+
+def _ensure_stdio_utf8() -> None:
+    """确保本进程 stdin/stdout/stderr 使用 UTF-8。"""
+    os.environ.setdefault("PYTHONIOENCODING", ENCODING)
+    for stream in (sys.stdin, sys.stdout, sys.stderr):
+        try:
+            stream.reconfigure(encoding=ENCODING)  # type: ignore[attr-defined]
+        except Exception:
+            pass
 
 
 def run_get_installed_apps(script_path: Path) -> str:
-    cmd = [
-        "powershell",
-        "-NoProfile",
-        "-ExecutionPolicy",
-        "Bypass",
-        "-File",
-        str(script_path),
-    ]
     result = subprocess.run(
-        cmd,
+        [
+            "powershell",
+            "-NoProfile",
+            "-ExecutionPolicy",
+            "Bypass",
+            "-File",
+            str(script_path),
+        ],
         capture_output=True,
         text=True,
-        encoding="utf-8",
-        errors="replace",
+        encoding=ENCODING,
+        errors="strict",
         cwd=str(script_path.parent),
     )
     if result.returncode != 0:
-        err = (result.stderr or result.stdout or "").strip()
+        err = ((result.stderr or result.stdout) or "").strip()
         raise RuntimeError(f"执行 {SCRIPT_NAME} 失败 (code={result.returncode}): {err}")
     return result.stdout or ""
 
 
 def extract_exe_path(output: str, app_name: str) -> str | None:
     """从「软件名    [路径]」行中截取指定软件的 exe 路径。"""
-    # 允许名称完全匹配或前缀匹配（如「雷电模拟器 9.0」）
-    pattern = re.compile(
-        rf"^{re.escape(app_name)}(?:\s.*)?\s+\[(.+?)\]\s*$",
-        re.MULTILINE | re.IGNORECASE,
-    )
-    m = pattern.search(output)
-    if not m:
-        return None
-    path = m.group(1).strip().strip('"')
-    return path or None
+    # 逐行匹配，容忍 \r、多余空白、名称后缀（如版本号）
+    path_re = re.compile(r"\[(.+?)\]\s*$")
+    for raw_line in output.splitlines():
+        line = raw_line.strip().strip("\ufeff")
+        if not line:
+            continue
+        # 名称在行首：完全相等，或以「名称 + 空白/分隔」开头
+        if line == app_name or line.startswith(app_name + " ") or line.startswith(app_name + "\t"):
+            m = path_re.search(line)
+            if m:
+                path = m.group(1).strip().strip('"')
+                if path:
+                    return path
+        # 兜底：行内包含软件名且带 [exe]
+        if app_name in line:
+            m = path_re.search(line)
+            if m:
+                path = m.group(1).strip().strip('"')
+                if path.lower().endswith(".exe"):
+                    return path
+    return None
 
 
 def is_process_running(exe_path: str) -> bool:
@@ -69,7 +90,7 @@ def is_process_running(exe_path: str) -> bool:
         ["powershell", "-NoProfile", "-Command", ps],
         capture_output=True,
         text=True,
-        encoding="utf-8",
+        encoding=ENCODING,
         errors="replace",
     )
     if result.returncode == 0 and result.stdout.strip():
@@ -80,7 +101,7 @@ def is_process_running(exe_path: str) -> bool:
         ["tasklist", "/FI", f"IMAGENAME eq {target_name}", "/FO", "CSV", "/NH"],
         capture_output=True,
         text=True,
-        encoding="utf-8",
+        encoding=ENCODING,
         errors="replace",
     )
     out = (result2.stdout or "").strip()
@@ -106,6 +127,8 @@ def start_exe(exe_path: str) -> None:
 
 
 def main() -> int:
+    _ensure_stdio_utf8()
+
     base = Path(__file__).resolve().parent
     script = base / SCRIPT_NAME
     if not script.is_file():
