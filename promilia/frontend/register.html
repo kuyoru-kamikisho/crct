@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>注册 - 功能测试</title>
+</head>
+<body>
+  <h1>注册</h1>
+  <p>
+    <a href="login.html">登录</a> |
+    <a href="forgetpwd.html">忘记密码</a>
+  </p>
+
+  <h2>1. 发送邮箱验证码</h2>
+  <form id="sendCodeForm">
+    <div>
+      <label>邮箱 <input id="email" type="email" required /></label>
+    </div>
+    <div>
+      <label>昵称 <input id="nickname" type="text" required minlength="2" maxlength="32" /></label>
+    </div>
+    <div>
+      <label>
+        图片验证码
+        <input id="captchaCode" type="text" required autocomplete="off" />
+      </label>
+      <input id="captchaId" type="hidden" />
+      <img id="captchaImg" width="120" height="40" alt="验证码" />
+      <button type="button" id="refreshCaptcha">刷新验证码</button>
+    </div>
+    <div>
+      <button type="submit">发送邮箱验证码</button>
+    </div>
+  </form>
+
+  <h2>2. 确认注册</h2>
+  <form id="registerForm">
+    <div>
+      <label>邮箱验证码（6 位） <input id="emailCode" type="text" required minlength="6" maxlength="6" /></label>
+    </div>
+    <div>
+      <label>密码（6~64） <input id="password" type="password" required minlength="6" maxlength="64" /></label>
+    </div>
+    <div>
+      <button type="submit">注册</button>
+    </div>
+  </form>
+
+  <h2>响应</h2>
+  <pre id="result"></pre>
+
+  <script src="shared.js"></script>
+  <script>
+    (function () {
+      var P = Promilia;
+      var resultEl = document.getElementById("result");
+
+      P.bindCaptchaRefresh(
+        document.getElementById("refreshCaptcha"),
+        document.getElementById("captchaImg"),
+        document.getElementById("captchaId"),
+        resultEl
+      );
+
+      function refreshCaptchaAfter() {
+        P.loadCaptcha(
+          document.getElementById("captchaImg"),
+          document.getElementById("captchaId"),
+          resultEl
+        );
+        document.getElementById("captchaCode").value = "";
+      }
+
+      document.getElementById("sendCodeForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        P.api("/api/auth/register/send-code", {
+          method: "POST",
+          body: {
+            email: document.getElementById("email").value.trim(),
+            nickname: document.getElementById("nickname").value.trim(),
+            captchaId: document.getElementById("captchaId").value,
+            captchaCode: document.getElementById("captchaCode").value.trim(),
+          },
+        }).then(function (resp) {
+          P.showResult(resultEl, resp);
+          refreshCaptchaAfter();
+        }).catch(function (err) {
+          P.showResult(resultEl, { code: -1, message: String(err.message || err) });
+        });
+      });
+
+      document.getElementById("registerForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        P.api("/api/auth/register", {
+          method: "POST",
+          body: {
+            email: document.getElementById("email").value.trim(),
+            nickname: document.getElementById("nickname").value.trim(),
+            emailCode: document.getElementById("emailCode").value.trim(),
+            password: document.getElementById("password").value,
+          },
+        }).then(function (resp) {
+          P.showResult(resultEl, resp);
+        }).catch(function (err) {
+          P.showResult(resultEl, { code: -1, message: String(err.message || err) });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

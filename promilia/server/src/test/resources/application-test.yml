@@ -1,0 +1,52 @@
+server:
+  port: 0
+
+spring:
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/promilia?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: "?.spU?pfO9uf"
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    timeout: 3000ms
+  mail:
+    host: localhost
+    port: 25
+    username: test
+    password: test
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.nologging.NoLoggingImpl
+
+promilia:
+  mail:
+    from: test@promilia.local
+    retry-times: 2
+    retry-interval-ms: 10
+  auth:
+    email-code-ttl-seconds: 300
+    email-code-send-interval-seconds: 1
+    reset-token-ttl-seconds: 900
+    login-token-ttl-seconds: 3600
+    captcha-ttl-seconds: 300
+  rate-limit:
+    window-seconds: 60
+    max-requests: 10000
+    duplicate-submit-seconds: 0
+  upload:
+    avatar-dir: ./target/test-uploads/avatars
+  reset-password:
+    link-base-url: http://localhost/api/auth/reset-password
+
+logging:
+  level:
+    root: WARN
+    com.promilia: INFO

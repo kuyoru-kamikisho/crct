@@ -1,0 +1,74 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: promilia-server
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/promilia?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true
+    username: root
+    password: "?.spU?pfO9uf"
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    timeout: 3000ms
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
+  mail:
+    host: smtp.example.com
+    port: 587
+    username: noreply@example.com
+    password: mail-password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
+    default-encoding: UTF-8
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+
+promilia:
+  mail:
+    from: noreply@example.com
+    retry-times: 3
+    retry-interval-ms: 500
+    imap:
+      host: imap.example.com
+      port: 993
+      username: noreply@example.com
+      password: mail-password
+      ssl: true
+  auth:
+    email-code-ttl-seconds: 300
+    email-code-send-interval-seconds: 60
+    reset-token-ttl-seconds: 900
+    login-token-ttl-seconds: 86400
+    captcha-ttl-seconds: 300
+  rate-limit:
+    window-seconds: 60
+    max-requests: 30
+    duplicate-submit-seconds: 2
+  upload:
+    avatar-dir: ./uploads/avatars
+  reset-password:
+    link-base-url: http://localhost:8080/api/auth/reset-password
+
+logging:
+  level:
+    com.promilia: INFO
+    root: INFO

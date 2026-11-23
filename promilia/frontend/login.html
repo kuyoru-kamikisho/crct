@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>登录 - 功能测试</title>
+</head>
+<body>
+  <h1>登录</h1>
+  <p>
+    <a href="register.html">注册</a> |
+    <a href="forgetpwd.html">忘记密码</a> |
+    <a href="profile.html">个人信息</a>
+  </p>
+
+  <form id="loginForm">
+    <div>
+      <label>邮箱 <input id="email" type="email" required /></label>
+    </div>
+    <div>
+      <label>密码 <input id="password" type="password" required /></label>
+    </div>
+    <div>
+      <label>
+        图片验证码
+        <input id="captchaCode" type="text" required autocomplete="off" />
+      </label>
+      <input id="captchaId" type="hidden" />
+      <img id="captchaImg" width="120" height="40" alt="验证码" />
+      <button type="button" id="refreshCaptcha">刷新验证码</button>
+    </div>
+    <div>
+      <button type="submit">登录</button>
+    </div>
+  </form>
+
+  <h2>响应</h2>
+  <pre id="result"></pre>
+
+  <script src="shared.js"></script>
+  <script>
+    (function () {
+      var P = Promilia;
+      var resultEl = document.getElementById("result");
+
+      P.bindCaptchaRefresh(
+        document.getElementById("refreshCaptcha"),
+        document.getElementById("captchaImg"),
+        document.getElementById("captchaId"),
+        resultEl
+      );
+
+      document.getElementById("loginForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        P.api("/api/auth/login", {
+          method: "POST",
+          body: {
+            email: document.getElementById("email").value.trim(),
+            password: document.getElementById("password").value,
+            captchaId: document.getElementById("captchaId").value,
+            captchaCode: document.getElementById("captchaCode").value.trim(),
+          },
+        }).then(function (resp) {
+          P.showResult(resultEl, resp);
+          if (resp.code === 0 && resp.data && resp.data.token) {
+            P.setToken(resp.data.token);
+          }
+          P.loadCaptcha(
+            document.getElementById("captchaImg"),
+            document.getElementById("captchaId"),
+            resultEl
+          );
+          document.getElementById("captchaCode").value = "";
+        }).catch(function (err) {
+          P.showResult(resultEl, { code: -1, message: String(err.message || err) });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

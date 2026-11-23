@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>忘记密码 - 功能测试</title>
+</head>
+<body>
+  <h1>忘记密码</h1>
+  <p>
+    <a href="login.html">登录</a> |
+    <a href="resetpwd.html">重置密码</a>
+  </p>
+  <p>提交成功后，重置链接会发到邮箱。链接中的 token 可粘贴到「重置密码」页。</p>
+
+  <form id="forgotForm">
+    <div>
+      <label>邮箱 <input id="email" type="email" required /></label>
+    </div>
+    <div>
+      <label>
+        图片验证码
+        <input id="captchaCode" type="text" required autocomplete="off" />
+      </label>
+      <input id="captchaId" type="hidden" />
+      <img id="captchaImg" width="120" height="40" alt="验证码" />
+      <button type="button" id="refreshCaptcha">刷新验证码</button>
+    </div>
+    <div>
+      <button type="submit">发送重置邮件</button>
+    </div>
+  </form>
+
+  <h2>响应</h2>
+  <pre id="result"></pre>
+
+  <script src="shared.js"></script>
+  <script>
+    (function () {
+      var P = Promilia;
+      var resultEl = document.getElementById("result");
+
+      P.bindCaptchaRefresh(
+        document.getElementById("refreshCaptcha"),
+        document.getElementById("captchaImg"),
+        document.getElementById("captchaId"),
+        resultEl
+      );
+
+      document.getElementById("forgotForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        P.api("/api/auth/forgot-password", {
+          method: "POST",
+          body: {
+            email: document.getElementById("email").value.trim(),
+            captchaId: document.getElementById("captchaId").value,
+            captchaCode: document.getElementById("captchaCode").value.trim(),
+          },
+        }).then(function (resp) {
+          P.showResult(resultEl, resp);
+          P.loadCaptcha(
+            document.getElementById("captchaImg"),
+            document.getElementById("captchaId"),
+            resultEl
+          );
+          document.getElementById("captchaCode").value = "";
+        }).catch(function (err) {
+          P.showResult(resultEl, { code: -1, message: String(err.message || err) });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
