@@ -122,6 +122,51 @@
     return refresh();
   }
 
+  function base64ToArrayBuffer(base64) {
+    var binary = atob(base64);
+    var bytes = new Uint8Array(binary.length);
+    for (var i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes.buffer;
+  }
+
+  function arrayBufferToBase64(buffer) {
+    var bytes = new Uint8Array(buffer);
+    var binary = "";
+    for (var i = 0; i < bytes.length; i++) {
+      binary += String.fromCharCode(bytes[i]);
+    }
+    return btoa(binary);
+  }
+
+  /**
+   * 用服务端公钥 RSA-OAEP(SHA-256) 加密密码，返回 Base64 密文。
+   * 需 HTTPS 或 localhost；依赖 Web Crypto。
+   */
+  function encryptPassword(plainPassword) {
+    if (!window.crypto || !window.crypto.subtle) {
+      return Promise.reject(new Error("当前环境不支持 Web Crypto，无法加密密码"));
+    }
+    return api("/api/auth/password-public-key").then(function (resp) {
+      if (resp.code !== 0 || !resp.data || !resp.data.publicKey) {
+        throw new Error((resp && resp.message) || "获取密码公钥失败");
+      }
+      return window.crypto.subtle.importKey(
+        "spki",
+        base64ToArrayBuffer(resp.data.publicKey),
+        { name: "RSA-OAEP", hash: "SHA-256" },
+        false,
+        ["encrypt"]
+      ).then(function (key) {
+        var encoded = new TextEncoder().encode(plainPassword);
+        return window.crypto.subtle.encrypt({ name: "RSA-OAEP" }, key, encoded);
+      }).then(function (cipherBuf) {
+        return arrayBufferToBase64(cipherBuf);
+      });
+    });
+  }
+
   global.Promilia = {
     API_BASE: API_BASE,
     getToken: getToken,
@@ -133,5 +178,6 @@
     showResult: showResult,
     loadCaptcha: loadCaptcha,
     bindCaptchaRefresh: bindCaptchaRefresh,
+    encryptPassword: encryptPassword,
   };
 })(window);

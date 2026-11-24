@@ -23,6 +23,7 @@ public enum ErrorCode {
     RESET_TOKEN_INVALID(40008, "重置凭证无效或已过期"),
     AVATAR_INVALID(40009, "头像文件不合法"),
     PROFILE_FIELD_FORBIDDEN(40010, "该字段不允许修改"),
+    PASSWORD_CIPHER_INVALID(40011, "密码密文无效，请刷新后重试"),
 
     MAIL_SEND_FAILED(50001, "邮件发送失败"),
     MAIL_RECEIVE_FAILED(50002, "邮件接收失败"),

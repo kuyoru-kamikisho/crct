@@ -7,9 +7,14 @@ import com.promilia.auth.dto.RegisterConfirmRequest;
 import com.promilia.auth.dto.RegisterSendCodeRequest;
 import com.promilia.auth.dto.ResetPasswordRequest;
 
+import java.util.Map;
+
 public interface AuthService {
 
-    void sendRegisterCode(RegisterSendCodeRequest request);
+    /**
+     * @return mock 模式下返回含 emailCode 的 map，便于本地联调；正式发信返回 null
+     */
+    Map<String, String> sendRegisterCode(RegisterSendCodeRequest request);
 
     Long register(RegisterConfirmRequest request);
 

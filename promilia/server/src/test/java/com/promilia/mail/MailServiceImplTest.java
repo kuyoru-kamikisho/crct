@@ -48,6 +48,17 @@ class MailServiceImplTest {
     }
 
     @Test
+    void sendText_mock_skipsSmtp() {
+        PromiliaProperties properties = new PromiliaProperties();
+        properties.getMail().setMock(true);
+        MailServiceImpl mockMail = new MailServiceImpl(mailSender, properties);
+        mockMail.sendText("a@b.com", "subject", "hello");
+        mockMail.sendVerifyCodeMail("a@b.com", "AB12CD");
+        verify(mailSender, times(0)).send(any(SimpleMailMessage.class));
+        verify(mailSender, times(0)).send(any(MimeMessage.class));
+    }
+
+    @Test
     void sendHtml_success() throws Exception {
         MimeMessage mimeMessage = new MimeMessage(Session.getInstance(new Properties()));
         when(mailSender.createMimeMessage()).thenReturn(mimeMessage);

@@ -26,6 +26,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
@@ -38,10 +40,11 @@ public class AuthServiceImpl implements AuthService {
     private final UserMapper userMapper;
     private final StringRedisTemplate stringRedisTemplate;
     private final PasswordEncoder passwordEncoder;
+    private final PasswordCryptoService passwordCryptoService;
     private final PromiliaProperties properties;
 
     @Override
-    public void sendRegisterCode(RegisterSendCodeRequest request) {
+    public Map<String, String> sendRegisterCode(RegisterSendCodeRequest request) {
         captchaService.validateAndConsume(request.getCaptchaId(), request.getCaptchaCode());
         String email = normalizeEmail(request.getEmail());
         ensureEmailNotRegistered(email);
@@ -65,7 +68,11 @@ public class AuthServiceImpl implements AuthService {
                 TimeUnit.SECONDS
         );
         mailService.sendVerifyCodeMail(email, code);
-        log.info("注册验证码已发送 email={}", email);
+        log.info("注册验证码已发送 email={} mock={}", email, properties.getMail().isMock());
+        if (properties.getMail().isMock()) {
+            return Collections.singletonMap("emailCode", code);
+        }
+        return null;
     }
 
     @Override
@@ -86,9 +93,11 @@ public class AuthServiceImpl implements AuthService {
         ensureEmailNotRegistered(email);
         ensureNicknameAvailable(request.getNickname());
 
+        String plainPassword = decryptAndValidatePassword(request.getPassword());
+
         User user = new User();
         user.setEmail(email);
-        user.setPasswordHash(passwordEncoder.encode(request.getPassword()));
+        user.setPasswordHash(passwordEncoder.encode(plainPassword));
         user.setNickname(request.getNickname().trim());
         user.setGender(Gender.UNKNOWN);
         user.setCreatedAt(LocalDateTime.now());
@@ -102,9 +111,10 @@ public class AuthServiceImpl implements AuthService {
     @Override
     public LoginResponse login(LoginRequest request) {
         captchaService.validateAndConsume(request.getCaptchaId(), request.getCaptchaCode());
+        String plainPassword = passwordCryptoService.decrypt(request.getPassword());
         String email = normalizeEmail(request.getEmail());
         User user = findByEmail(email);
-        if (user == null || !passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+        if (user == null || !passwordEncoder.matches(plainPassword, user.getPasswordHash())) {
             throw new BusinessException(ErrorCode.PASSWORD_INVALID);
         }
         String token = CodeGenerator.token();
@@ -153,10 +163,19 @@ public class AuthServiceImpl implements AuthService {
         if (user == null) {
             throw new BusinessException(ErrorCode.EMAIL_NOT_FOUND);
         }
-        user.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        String plainPassword = decryptAndValidatePassword(request.getNewPassword());
+        user.setPasswordHash(passwordEncoder.encode(plainPassword));
         user.setUpdatedAt(LocalDateTime.now());
         userMapper.updateById(user);
         log.info("密码重置成功 email={}", email);
+    }
+
+    private String decryptAndValidatePassword(String cipherBase64) {
+        String plain = passwordCryptoService.decrypt(cipherBase64);
+        if (plain.length() < 6 || plain.length() > 64) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST, "密码长度需在 6~64 之间");
+        }
+        return plain;
     }
 
     private void ensureEmailNotRegistered(String email) {

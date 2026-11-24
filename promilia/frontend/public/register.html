@@ -29,7 +29,8 @@
       <button type="button" id="refreshCaptcha">刷新验证码</button>
     </div>
     <div>
-      <button type="submit">发送邮箱验证码</button>
+      <button type="submit" id="sendCodeBtn">发送邮箱验证码</button>
+      <span id="sendCodeHint" style="margin-left: 8px; color: #666;"></span>
     </div>
   </form>
 
@@ -54,6 +55,12 @@
     (function () {
       var P = Promilia;
       var resultEl = document.getElementById("result");
+      // 与 server promilia.auth.email-code-send-interval-seconds 保持一致
+      var SEND_INTERVAL_SECONDS = 60;
+      var sendCodeBtn = document.getElementById("sendCodeBtn");
+      var sendCodeHint = document.getElementById("sendCodeHint");
+      var countdownTimer = null;
+      var countdownLeft = 0;
 
       P.bindCaptchaRefresh(
         document.getElementById("refreshCaptcha"),
@@ -71,8 +78,39 @@
         document.getElementById("captchaCode").value = "";
       }
 
+      function stopCountdown() {
+        if (countdownTimer) {
+          clearInterval(countdownTimer);
+          countdownTimer = null;
+        }
+        countdownLeft = 0;
+        sendCodeBtn.disabled = false;
+        sendCodeBtn.textContent = "发送邮箱验证码";
+        sendCodeHint.textContent = "";
+      }
+
+      function tickCountdown() {
+        if (countdownLeft <= 0) {
+          stopCountdown();
+          return;
+        }
+        sendCodeBtn.disabled = true;
+        sendCodeBtn.textContent = "重新发送（" + countdownLeft + "s）";
+        sendCodeHint.textContent = "同一邮箱 " + SEND_INTERVAL_SECONDS + " 秒内只能发送一次";
+        countdownLeft -= 1;
+      }
+
+      function startCountdown(seconds) {
+        stopCountdown();
+        countdownLeft = Math.max(1, seconds | 0);
+        tickCountdown();
+        countdownTimer = setInterval(tickCountdown, 1000);
+      }
+
       document.getElementById("sendCodeForm").addEventListener("submit", function (e) {
         e.preventDefault();
+        if (sendCodeBtn.disabled) return;
+        sendCodeBtn.disabled = true;
         P.api("/api/auth/register/send-code", {
           method: "POST",
           body: {
@@ -84,26 +122,42 @@
         }).then(function (resp) {
           P.showResult(resultEl, resp);
           refreshCaptchaAfter();
+          // 发送成功，或命中后端「过于频繁」锁（40003），都进入倒计时
+          if (resp.code === 0 || resp.code === 40003) {
+            startCountdown(SEND_INTERVAL_SECONDS);
+          } else {
+            sendCodeBtn.disabled = false;
+          }
         }).catch(function (err) {
           P.showResult(resultEl, { code: -1, message: String(err.message || err) });
+          sendCodeBtn.disabled = false;
         });
       });
 
       document.getElementById("registerForm").addEventListener("submit", function (e) {
         e.preventDefault();
-        P.api("/api/auth/register", {
-          method: "POST",
-          body: {
-            email: document.getElementById("email").value.trim(),
-            nickname: document.getElementById("nickname").value.trim(),
-            emailCode: document.getElementById("emailCode").value.trim(),
-            password: document.getElementById("password").value,
-          },
-        }).then(function (resp) {
-          P.showResult(resultEl, resp);
-        }).catch(function (err) {
-          P.showResult(resultEl, { code: -1, message: String(err.message || err) });
-        });
+        var plainPassword = document.getElementById("password").value;
+        P.encryptPassword(plainPassword)
+          .then(function (cipherPassword) {
+            return P.api("/api/auth/register", {
+              method: "POST",
+              body: {
+                email: document.getElementById("email").value.trim(),
+                nickname: document.getElementById("nickname").value.trim(),
+                emailCode: document.getElementById("emailCode").value.trim(),
+                password: cipherPassword,
+              },
+            });
+          })
+          .then(function (resp) {
+            P.showResult(resultEl, resp);
+            if (resp.code === 0) {
+              window.location.href = "login.html";
+            }
+          })
+          .catch(function (err) {
+            P.showResult(resultEl, { code: -1, message: String(err.message || err) });
+          });
       });
     })();
   </script>

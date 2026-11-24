@@ -37,6 +37,10 @@ public class MailServiceImpl implements MailService {
 
     @Override
     public void sendText(String to, String subject, String content) {
+        if (isMock()) {
+            logMock("text", to, subject, content);
+            return;
+        }
         executeWithRetry(() -> {
             SimpleMailMessage message = new SimpleMailMessage();
             message.setFrom(properties.getMail().getFrom());
@@ -49,6 +53,10 @@ public class MailServiceImpl implements MailService {
 
     @Override
     public void sendHtml(String to, String subject, String htmlContent) {
+        if (isMock()) {
+            logMock("html", to, subject, htmlContent);
+            return;
+        }
         executeWithRetry(() -> {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
@@ -58,6 +66,14 @@ public class MailServiceImpl implements MailService {
             helper.setText(htmlContent, true);
             mailSender.send(mimeMessage);
         }, "html", to, subject);
+    }
+
+    private boolean isMock() {
+        return properties.getMail().isMock();
+    }
+
+    private void logMock(String type, String to, String subject, String content) {
+        log.info("[MAIL-MOCK] type={} to={} subject={} content={}", type, to, subject, content);
     }
 
     @Override

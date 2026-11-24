@@ -8,6 +8,7 @@ import com.promilia.common.redis.RedisKeys;
 import com.promilia.common.util.IpUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.http.HttpMethod;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -25,6 +26,9 @@ public class RateLimitInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        if (HttpMethod.OPTIONS.matches(request.getMethod())) {
+            return true;
+        }
         String ip = IpUtils.resolveClientIp(request);
         String key = RedisKeys.rateLimit(ip, request.getRequestURI());
         Long count = stringRedisTemplate.opsForValue().increment(key);

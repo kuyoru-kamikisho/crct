@@ -55,25 +55,31 @@
 
       document.getElementById("resetForm").addEventListener("submit", function (e) {
         e.preventDefault();
-        P.api("/api/auth/reset-password", {
-          method: "POST",
-          body: {
-            resetToken: document.getElementById("resetToken").value.trim(),
-            newPassword: document.getElementById("newPassword").value,
-            captchaId: document.getElementById("captchaId").value,
-            captchaCode: document.getElementById("captchaCode").value.trim(),
-          },
-        }).then(function (resp) {
-          P.showResult(resultEl, resp);
-          P.loadCaptcha(
-            document.getElementById("captchaImg"),
-            document.getElementById("captchaId"),
-            resultEl
-          );
-          document.getElementById("captchaCode").value = "";
-        }).catch(function (err) {
-          P.showResult(resultEl, { code: -1, message: String(err.message || err) });
-        });
+        var plainPassword = document.getElementById("newPassword").value;
+        P.encryptPassword(plainPassword)
+          .then(function (cipherPassword) {
+            return P.api("/api/auth/reset-password", {
+              method: "POST",
+              body: {
+                resetToken: document.getElementById("resetToken").value.trim(),
+                newPassword: cipherPassword,
+                captchaId: document.getElementById("captchaId").value,
+                captchaCode: document.getElementById("captchaCode").value.trim(),
+              },
+            });
+          })
+          .then(function (resp) {
+            P.showResult(resultEl, resp);
+            P.loadCaptcha(
+              document.getElementById("captchaImg"),
+              document.getElementById("captchaId"),
+              resultEl
+            );
+            document.getElementById("captchaCode").value = "";
+          })
+          .catch(function (err) {
+            P.showResult(resultEl, { code: -1, message: String(err.message || err) });
+          });
       });
     })();
   </script>

@@ -44,6 +44,8 @@ mybatis-plus:
 
 promilia:
   mail:
+    # 本地未配真实 SMTP 时保持 true；真发邮件时改为 false 并改 spring.mail
+    mock: true
     from: noreply@example.com
     retry-times: 3
     retry-interval-ms: 500

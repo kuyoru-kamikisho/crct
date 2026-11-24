@@ -61,6 +61,9 @@ class AuthAndUserIntegrationTest {
     @Autowired
     private UserMapper userMapper;
 
+    @Autowired
+    private PasswordCryptoService passwordCryptoService;
+
     @MockBean
     private MailService mailService;
 
@@ -317,19 +320,19 @@ class AuthAndUserIntegrationTest {
         return map;
     }
 
-    private static java.util.Map<String, String> registerBody(String email, String emailCode, String password, String nickname) {
+    private java.util.Map<String, String> registerBody(String email, String emailCode, String password, String nickname) {
         java.util.Map<String, String> map = new java.util.HashMap<String, String>();
         map.put("email", email);
         map.put("emailCode", emailCode);
-        map.put("password", password);
+        map.put("password", passwordCryptoService.encrypt(password));
         map.put("nickname", nickname);
         return map;
     }
 
-    private static java.util.Map<String, String> loginBody(String email, String password, String id, String code) {
+    private java.util.Map<String, String> loginBody(String email, String password, String id, String code) {
         java.util.Map<String, String> map = new java.util.HashMap<String, String>();
         map.put("email", email);
-        map.put("password", password);
+        map.put("password", passwordCryptoService.encrypt(password));
         map.put("captchaId", id);
         map.put("captchaCode", code);
         return map;
@@ -343,10 +346,10 @@ class AuthAndUserIntegrationTest {
         return map;
     }
 
-    private static java.util.Map<String, String> resetBody(String token, String password, String id, String code) {
+    private java.util.Map<String, String> resetBody(String token, String password, String id, String code) {
         java.util.Map<String, String> map = new java.util.HashMap<String, String>();
         map.put("resetToken", token);
-        map.put("newPassword", password);
+        map.put("newPassword", passwordCryptoService.encrypt(password));
         map.put("captchaId", id);
         map.put("captchaCode", code);
         return map;

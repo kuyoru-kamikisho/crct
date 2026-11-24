@@ -17,8 +17,9 @@ public class RegisterConfirmRequest {
     @Size(min = 6, max = 6, message = "邮箱验证码必须为 6 位")
     private String emailCode;
 
+    /** RSA-OAEP 加密后的 Base64 密文（明文长度由服务端解密后校验） */
     @NotBlank(message = "密码不能为空")
-    @Size(min = 6, max = 64, message = "密码长度需在 6~64 之间")
+    @Size(max = 1024, message = "密码密文过长")
     private String password;
 
     @NotBlank(message = "昵称不能为空")

@@ -17,6 +17,11 @@ public class PromiliaProperties {
 
     @Data
     public static class Mail {
+        /**
+         * 本地开发：不连真实 SMTP，只打日志（验证码可在日志/接口响应中看到）。
+         * 上线前务必改为 false 并配置真实邮箱。
+         */
+        private boolean mock = false;
         private String from = "noreply@example.com";
         private int retryTimes = 3;
         private long retryIntervalMs = 500;

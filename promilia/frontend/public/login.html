@@ -51,28 +51,36 @@
 
       document.getElementById("loginForm").addEventListener("submit", function (e) {
         e.preventDefault();
-        P.api("/api/auth/login", {
-          method: "POST",
-          body: {
-            email: document.getElementById("email").value.trim(),
-            password: document.getElementById("password").value,
-            captchaId: document.getElementById("captchaId").value,
-            captchaCode: document.getElementById("captchaCode").value.trim(),
-          },
-        }).then(function (resp) {
-          P.showResult(resultEl, resp);
-          if (resp.code === 0 && resp.data && resp.data.token) {
-            P.setToken(resp.data.token);
-          }
-          P.loadCaptcha(
-            document.getElementById("captchaImg"),
-            document.getElementById("captchaId"),
-            resultEl
-          );
-          document.getElementById("captchaCode").value = "";
-        }).catch(function (err) {
-          P.showResult(resultEl, { code: -1, message: String(err.message || err) });
-        });
+        var plainPassword = document.getElementById("password").value;
+        P.encryptPassword(plainPassword)
+          .then(function (cipherPassword) {
+            return P.api("/api/auth/login", {
+              method: "POST",
+              body: {
+                email: document.getElementById("email").value.trim(),
+                password: cipherPassword,
+                captchaId: document.getElementById("captchaId").value,
+                captchaCode: document.getElementById("captchaCode").value.trim(),
+              },
+            });
+          })
+          .then(function (resp) {
+            P.showResult(resultEl, resp);
+            if (resp.code === 0 && resp.data && resp.data.token) {
+              P.setToken(resp.data.token);
+              window.location.href = "profile.html";
+              return;
+            }
+            P.loadCaptcha(
+              document.getElementById("captchaImg"),
+              document.getElementById("captchaId"),
+              resultEl
+            );
+            document.getElementById("captchaCode").value = "";
+          })
+          .catch(function (err) {
+            P.showResult(resultEl, { code: -1, message: String(err.message || err) });
+          });
       });
     })();
   </script>
