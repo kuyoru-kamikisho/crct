@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.promilia.user.enums.Gender;
+import com.promilia.user.enums.UserRole;
 import lombok.Data;
 
 import java.time.LocalDate;
@@ -32,6 +33,15 @@ public class User {
     private Integer age;
 
     private Gender gender;
+
+    private UserRole role;
+
+    private LocalDateTime banUntil;
+
+    private String banReason;
+
+    /** JSON 数组字符串，如 ["1.2.3.4","5.6.7.8"]，最新在前，最多 10 条 */
+    private String loginIps;
 
     private String ipLocation;
 

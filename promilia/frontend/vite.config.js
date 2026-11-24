@@ -6,7 +6,8 @@ import vueDevTools from 'vite-plugin-vue-devtools'
 
 // https://vite.dev/config/
 export default defineConfig({
-  server:{
+  base: '/promilia/',
+  server: {
     port: 8089,
   },
   plugins: [

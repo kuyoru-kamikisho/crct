@@ -13,9 +13,15 @@ import com.promilia.common.exception.BusinessException;
 import com.promilia.common.exception.ErrorCode;
 import com.promilia.common.redis.RedisKeys;
 import com.promilia.common.util.CodeGenerator;
+import com.promilia.common.util.IpLocationResolver;
+import com.promilia.common.util.IpUtils;
+import com.promilia.common.util.LoginIpStore;
 import com.promilia.mail.MailService;
+import com.promilia.user.EmailBanService;
+import com.promilia.user.entity.EmailBan;
 import com.promilia.user.entity.User;
 import com.promilia.user.enums.Gender;
+import com.promilia.user.enums.UserRole;
 import com.promilia.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -25,8 +31,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
+import javax.servlet.http.HttpServletRequest;
 import java.time.LocalDateTime;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -35,18 +43,23 @@ import java.util.concurrent.TimeUnit;
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
+    private static final int MAX_LOGIN_IPS = 10;
+
     private final CaptchaService captchaService;
     private final MailService mailService;
     private final UserMapper userMapper;
     private final StringRedisTemplate stringRedisTemplate;
     private final PasswordEncoder passwordEncoder;
     private final PasswordCryptoService passwordCryptoService;
+    private final EmailBanService emailBanService;
+    private final IpLocationResolver ipLocationResolver;
     private final PromiliaProperties properties;
 
     @Override
     public Map<String, String> sendRegisterCode(RegisterSendCodeRequest request) {
         captchaService.validateAndConsume(request.getCaptchaId(), request.getCaptchaCode());
         String email = normalizeEmail(request.getEmail());
+        emailBanService.assertNotBanned(email);
         ensureEmailNotRegistered(email);
         ensureNicknameAvailable(request.getNickname());
 
@@ -79,6 +92,8 @@ public class AuthServiceImpl implements AuthService {
     @Transactional(rollbackFor = Exception.class)
     public Long register(RegisterConfirmRequest request) {
         String email = normalizeEmail(request.getEmail());
+        emailBanService.assertNotBanned(email);
+
         String cached = stringRedisTemplate.opsForValue().get(RedisKeys.emailCode(email));
         if (!StringUtils.hasText(cached)) {
             throw new BusinessException(ErrorCode.EMAIL_CODE_INVALID);
@@ -100,6 +115,7 @@ public class AuthServiceImpl implements AuthService {
         user.setPasswordHash(passwordEncoder.encode(plainPassword));
         user.setNickname(request.getNickname().trim());
         user.setGender(Gender.UNKNOWN);
+        user.setRole(UserRole.USER);
         user.setCreatedAt(LocalDateTime.now());
         user.setUpdatedAt(LocalDateTime.now());
         user.setDeleted(0);
@@ -109,14 +125,39 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public LoginResponse login(LoginRequest request) {
+    @Transactional(rollbackFor = Exception.class)
+    public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
         captchaService.validateAndConsume(request.getCaptchaId(), request.getCaptchaCode());
         String plainPassword = passwordCryptoService.decrypt(request.getPassword());
         String email = normalizeEmail(request.getEmail());
+
+        EmailBan ban = emailBanService.findActiveBan(email);
+        if (ban != null) {
+            String tip = StringUtils.hasText(ban.getReason())
+                    ? "账号已被禁用，原因：" + ban.getReason()
+                    : ErrorCode.ACCOUNT_DISABLED.getMessage();
+            throw new BusinessException(ErrorCode.ACCOUNT_DISABLED, tip);
+        }
+
         User user = findByEmail(email);
         if (user == null || !passwordEncoder.matches(plainPassword, user.getPasswordHash())) {
             throw new BusinessException(ErrorCode.PASSWORD_INVALID);
         }
+
+        String clientIp = IpUtils.resolveClientIp(httpRequest);
+        String loginIpsJson = LoginIpStore.push(user.getLoginIps(), clientIp, MAX_LOGIN_IPS);
+        String location = ipLocationResolver.resolve(clientIp);
+        user.setLoginIps(loginIpsJson);
+        user.setIpLocation(location);
+        // 若用户表上曾有过期禁用冗余字段，登录成功时清掉
+        user.setBanUntil(null);
+        user.setBanReason(null);
+        user.setUpdatedAt(LocalDateTime.now());
+        if (user.getRole() == null) {
+            user.setRole(UserRole.USER);
+        }
+        userMapper.updateById(user);
+
         String token = CodeGenerator.token();
         long ttl = properties.getAuth().getLoginTokenTtlSeconds();
         stringRedisTemplate.opsForValue().set(
@@ -125,7 +166,17 @@ public class AuthServiceImpl implements AuthService {
                 ttl,
                 TimeUnit.SECONDS
         );
-        return new LoginResponse(token, ttl, user.getId(), user.getEmail(), user.getNickname());
+        List<String> ips = LoginIpStore.parse(loginIpsJson);
+        return LoginResponse.builder()
+                .token(token)
+                .expireInSeconds(ttl)
+                .userId(user.getId())
+                .email(user.getEmail())
+                .nickname(user.getNickname())
+                .role(user.getRole())
+                .ipLocation(location)
+                .loginIps(ips)
+                .build();
     }
 
     @Override
@@ -180,7 +231,7 @@ public class AuthServiceImpl implements AuthService {
 
     private void ensureEmailNotRegistered(String email) {
         if (findByEmail(email) != null) {
-            throw new BusinessException(ErrorCode.EMAIL_EXISTS);
+            throw new BusinessException(ErrorCode.EMAIL_EXISTS, "该邮箱已注册，请直接登录或找回密码");
         }
     }
 

@@ -1,5 +1,6 @@
 package com.promilia.common.config;
 
+import com.promilia.common.security.AdminInterceptor;
 import com.promilia.common.security.AuthInterceptor;
 import com.promilia.common.security.DuplicateSubmitInterceptor;
 import com.promilia.common.security.RateLimitInterceptor;
@@ -15,6 +16,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebMvcConfig implements WebMvcConfigurer {
 
     private final AuthInterceptor authInterceptor;
+    private final AdminInterceptor adminInterceptor;
     private final RateLimitInterceptor rateLimitInterceptor;
     private final DuplicateSubmitInterceptor duplicateSubmitInterceptor;
     private final PromiliaProperties properties;
@@ -37,6 +39,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/api/**");
         registry.addInterceptor(authInterceptor)
                 .addPathPatterns("/api/user/**");
+        registry.addInterceptor(adminInterceptor)
+                .addPathPatterns("/api/admin/**");
     }
 
     @Override

@@ -7,6 +7,7 @@ import com.promilia.auth.dto.RegisterConfirmRequest;
 import com.promilia.auth.dto.RegisterSendCodeRequest;
 import com.promilia.auth.dto.ResetPasswordRequest;
 
+import javax.servlet.http.HttpServletRequest;
 import java.util.Map;
 
 public interface AuthService {
@@ -18,7 +19,7 @@ public interface AuthService {
 
     Long register(RegisterConfirmRequest request);
 
-    LoginResponse login(LoginRequest request);
+    LoginResponse login(LoginRequest request, HttpServletRequest httpRequest);
 
     void forgotPassword(ForgotPasswordRequest request);
 

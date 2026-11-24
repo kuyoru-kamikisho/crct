@@ -2,6 +2,7 @@ package com.promilia.user;
 
 import com.promilia.common.api.ApiResponse;
 import com.promilia.common.security.UserContext;
+import com.promilia.user.dto.ChangePasswordRequest;
 import com.promilia.user.dto.UpdateProfileRequest;
 import com.promilia.user.dto.UserProfileResponse;
 import lombok.RequiredArgsConstructor;
@@ -41,5 +42,11 @@ public class UserController {
     public ApiResponse<Map<String, String>> uploadAvatar(@RequestParam("file") MultipartFile file) {
         String url = userService.uploadAvatar(UserContext.getUserId(), file);
         return ApiResponse.ok(Collections.singletonMap("avatarUrl", url));
+    }
+
+    @PostMapping("/password")
+    public ApiResponse<Void> changePassword(@Validated @RequestBody ChangePasswordRequest request) {
+        userService.changePassword(UserContext.getUserId(), request);
+        return ApiResponse.ok();
     }
 }

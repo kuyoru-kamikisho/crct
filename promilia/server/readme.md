@@ -16,7 +16,7 @@ Spring Boot 后端（用户认证 / 资料 / 邮件）。默认端口 `8080`。
 - MySQL：`127.0.0.1:3306`，库名 `promilia`，用户 `root`
 - Redis：`127.0.0.1:6379`
 - 邮件：本地默认 `promilia.mail.mock: true`（不连 SMTP）；真发信时改为 `false` 并配置 `spring.mail` / `promilia.mail`
-- 密码传输：登录/注册/重置密码须先 `GET /api/auth/password-public-key`，再用 RSA-OAEP(SHA-256) 加密后提交（前端 `shared.js` 已封装）
+- 密码传输：登录/注册/重置密码须先 `GET /api/auth/password-public-key`，再用 RSA-OAEP(SHA-256) 加密后提交（前端 `src/api/http.js` 已封装）
 
 ---
 

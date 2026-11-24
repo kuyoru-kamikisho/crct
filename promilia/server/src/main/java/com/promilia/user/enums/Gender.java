@@ -1,6 +1,7 @@
 package com.promilia.user.enums;
 
 import com.baomidou.mybatisplus.annotation.EnumValue;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
@@ -20,6 +21,7 @@ public enum Gender {
         this.label = label;
     }
 
+    @JsonCreator
     public static Gender fromCode(Integer code) {
         if (code == null) {
             return UNKNOWN;

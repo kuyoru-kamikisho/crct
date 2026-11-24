@@ -24,6 +24,9 @@ public enum ErrorCode {
     AVATAR_INVALID(40009, "头像文件不合法"),
     PROFILE_FIELD_FORBIDDEN(40010, "该字段不允许修改"),
     PASSWORD_CIPHER_INVALID(40011, "密码密文无效，请刷新后重试"),
+    EMAIL_BANNED(40012, "该邮箱已被禁用，无法注册或登录"),
+    ACCOUNT_DISABLED(40013, "账号已被禁用"),
+    OLD_PASSWORD_INVALID(40014, "旧密码错误"),
 
     MAIL_SEND_FAILED(50001, "邮件发送失败"),
     MAIL_RECEIVE_FAILED(50002, "邮件接收失败"),

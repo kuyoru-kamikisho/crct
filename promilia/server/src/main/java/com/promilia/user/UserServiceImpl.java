@@ -1,17 +1,23 @@
 package com.promilia.user;
 
+import com.promilia.auth.PasswordCryptoService;
+import com.promilia.captcha.CaptchaService;
 import com.promilia.common.config.PromiliaProperties;
 import com.promilia.common.exception.BusinessException;
 import com.promilia.common.exception.ErrorCode;
 import com.promilia.common.util.IpLocationResolver;
 import com.promilia.common.util.IpUtils;
+import com.promilia.common.util.LoginIpStore;
+import com.promilia.user.dto.ChangePasswordRequest;
 import com.promilia.user.dto.UpdateProfileRequest;
 import com.promilia.user.dto.UserProfileResponse;
 import com.promilia.user.entity.User;
+import com.promilia.user.enums.UserRole;
 import com.promilia.user.mapper.UserMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -41,6 +47,9 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PromiliaProperties properties;
     private final IpLocationResolver ipLocationResolver;
+    private final CaptchaService captchaService;
+    private final PasswordCryptoService passwordCryptoService;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     public UserProfileResponse getProfile(Long userId) {
@@ -107,6 +116,28 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void changePassword(Long userId, ChangePasswordRequest request) {
+        captchaService.validateAndConsume(request.getCaptchaId(), request.getCaptchaCode());
+        String oldPlain = passwordCryptoService.decrypt(request.getOldPassword());
+        String newPlain = passwordCryptoService.decrypt(request.getNewPassword());
+        if (newPlain.length() < 6 || newPlain.length() > 64) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST, "新密码长度需在 6~64 之间");
+        }
+        if (oldPlain.equals(newPlain)) {
+            throw new BusinessException(ErrorCode.BAD_REQUEST, "新密码不能与旧密码相同");
+        }
+        User user = requireUser(userId);
+        if (!passwordEncoder.matches(oldPlain, user.getPasswordHash())) {
+            throw new BusinessException(ErrorCode.OLD_PASSWORD_INVALID);
+        }
+        user.setPasswordHash(passwordEncoder.encode(newPlain));
+        user.setUpdatedAt(LocalDateTime.now());
+        userMapper.updateById(user);
+        log.info("用户修改密码成功 userId={}", userId);
+    }
+
     private User requireUser(Long userId) {
         User user = userMapper.selectById(userId);
         if (user == null) {
@@ -136,7 +167,9 @@ public class UserServiceImpl implements UserService {
                 .birthday(user.getBirthday())
                 .age(user.getAge())
                 .gender(user.getGender())
+                .role(user.getRole() == null ? UserRole.USER : user.getRole())
                 .ipLocation(user.getIpLocation())
+                .loginIps(LoginIpStore.parse(user.getLoginIps()))
                 .build();
     }
 }
