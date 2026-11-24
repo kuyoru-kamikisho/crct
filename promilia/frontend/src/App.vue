@@ -15,6 +15,7 @@ import HelloWorld from './components/HelloWorld.vue'
         <RouterLink to="/login">登录</RouterLink>
         <RouterLink to="/register">注册</RouterLink>
         <RouterLink to="/profile">个人资料</RouterLink>
+        <RouterLink to="/characters">角色评价</RouterLink>
         <RouterLink to="/admin/users">用户管理</RouterLink>
         <RouterLink to="/about">关于</RouterLink>
       </nav>

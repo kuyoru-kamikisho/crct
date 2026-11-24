@@ -1,7 +1,10 @@
 <script setup>
 import { onMounted, reactive, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { api, assetUrl, getToken } from '@/api/http'
 
+const router = useRouter()
+const allowed = ref(false)
 const loading = ref(false)
 const message = ref('')
 const keyword = ref('')
@@ -9,6 +12,34 @@ const page = ref(1)
 const size = ref(20)
 const total = ref(0)
 const users = ref([])
+
+function goBack() {
+  if (window.history.length > 1) {
+    router.back()
+  } else {
+    router.replace('/profile')
+  }
+}
+
+/** 进入页时校验当前登录用户是否为管理员（role === 1） */
+async function ensureAdmin() {
+  if (!getToken()) {
+    goBack()
+    return false
+  }
+  try {
+    const resp = await api('/api/user/profile', { auth: true })
+    if (resp.code !== 0 || !resp.data || resp.data.role !== 1) {
+      goBack()
+      return false
+    }
+    allowed.value = true
+    return true
+  } catch {
+    goBack()
+    return false
+  }
+}
 
 const editForm = reactive({
   id: null,
@@ -178,11 +209,15 @@ function nextPage() {
   }
 }
 
-onMounted(loadUsers)
+onMounted(async () => {
+  if (await ensureAdmin()) {
+    await loadUsers()
+  }
+})
 </script>
 
 <template>
-  <div>
+  <div v-if="allowed">
     <h1>用户管理</h1>
     <p>
       <RouterLink to="/login">登录页</RouterLink> |

@@ -44,6 +44,11 @@ const router = createRouter({
       name: 'admin-users',
       component: () => import('../views/admin/userManager.vue'),
     },
+    {
+      path: '/characters',
+      name: 'characters',
+      component: () => import('../views/character/CharacterEvalView.vue'),
+    },
   ],
 })
 

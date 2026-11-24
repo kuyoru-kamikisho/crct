@@ -27,6 +27,12 @@ public enum ErrorCode {
     EMAIL_BANNED(40012, "该邮箱已被禁用，无法注册或登录"),
     ACCOUNT_DISABLED(40013, "账号已被禁用"),
     OLD_PASSWORD_INVALID(40014, "旧密码错误"),
+    CHARACTER_NOT_FOUND(40015, "角色不存在"),
+    FIELD_ALREADY_SUBMITTED(40016, "该项数据您已提交过，不可重复编辑"),
+    FIELD_VALUE_INVALID(40017, "字段数值格式不合法"),
+    FIELD_VOTE_EXISTS(40018, "您已对该数据出处打过分"),
+    COMMENT_TOO_FAST(40019, "评价发送过于频繁，请稍后再试"),
+    COMMENT_TOO_LONG(40020, "评价文字不能超过 2000 字"),
 
     MAIL_SEND_FAILED(50001, "邮件发送失败"),
     MAIL_RECEIVE_FAILED(50002, "邮件接收失败"),

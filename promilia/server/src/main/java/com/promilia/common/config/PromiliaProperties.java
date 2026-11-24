@@ -13,6 +13,7 @@ public class PromiliaProperties {
     private Auth auth = new Auth();
     private RateLimit rateLimit = new RateLimit();
     private Upload upload = new Upload();
+    private CharacterEval characterEval = new CharacterEval();
     private ResetPassword resetPassword = new ResetPassword();
 
     @Data
@@ -56,6 +57,14 @@ public class PromiliaProperties {
     @Data
     public static class Upload {
         private String avatarDir = "./uploads/avatars";
+        private String characterImageDir = "./uploads/characters";
+        private String commentImageDir = "./uploads/comment-images";
+    }
+
+    @Data
+    public static class CharacterEval {
+        /** 同一用户发表评价的最短间隔（秒） */
+        private long commentIntervalSeconds = 300;
     }
 
     @Data

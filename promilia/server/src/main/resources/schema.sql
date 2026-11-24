@@ -38,3 +38,50 @@ CREATE TABLE IF NOT EXISTS t_email_ban (
 
 -- 指定账号设为管理员（用户存在时生效）
 UPDATE t_user SET role = 1 WHERE email = 'kuyoru730@gmail.com' AND deleted = 0;
+
+-- 游戏角色（管理员维护基础信息）
+CREATE TABLE IF NOT EXISTS t_game_character (
+    id          BIGINT PRIMARY KEY AUTO_INCREMENT,
+    name        VARCHAR(64)   NOT NULL,
+    gender      TINYINT       NOT NULL DEFAULT 0 COMMENT '0未知 1男 2女',
+    image_url   VARCHAR(512)  NULL,
+    created_by  BIGINT        NULL,
+    created_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at  DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted     TINYINT       NOT NULL DEFAULT 0
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 用户对角色各字段的投稿（每用户每字段仅一次）
+CREATE TABLE IF NOT EXISTS t_character_field_value (
+    id            BIGINT PRIMARY KEY AUTO_INCREMENT,
+    character_id  BIGINT        NOT NULL,
+    user_id       BIGINT        NOT NULL,
+    field_type    VARCHAR(32)   NOT NULL COMMENT 'HEIGHT/WEIGHT/MEASUREMENTS/CUP_SIZE/RACE/BIRTHDAY/RATING',
+    value_text    VARCHAR(128)  NOT NULL,
+    source        VARCHAR(512)  NOT NULL COMMENT '数据出处',
+    created_at    DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_char_user_field (character_id, user_id, field_type),
+    KEY idx_char_field (character_id, field_type)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 对字段投稿（数据出处）的打分
+CREATE TABLE IF NOT EXISTS t_character_field_vote (
+    id              BIGINT PRIMARY KEY AUTO_INCREMENT,
+    field_value_id  BIGINT   NOT NULL,
+    user_id         BIGINT   NOT NULL,
+    score           TINYINT  NOT NULL COMMENT '1~5',
+    created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE KEY uk_field_vote (field_value_id, user_id),
+    KEY idx_field_value (field_value_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- 角色文字评价（可附带图片）
+CREATE TABLE IF NOT EXISTS t_character_comment (
+    id            BIGINT PRIMARY KEY AUTO_INCREMENT,
+    character_id  BIGINT         NOT NULL,
+    user_id       BIGINT         NOT NULL,
+    content_text  VARCHAR(2000)  NOT NULL,
+    images_json   VARCHAR(4000)  NULL COMMENT 'JSON 图片URL数组，预留 stickers',
+    created_at    DATETIME       NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_char_comment (character_id, id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

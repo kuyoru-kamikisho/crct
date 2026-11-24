@@ -32,4 +32,8 @@ public final class RedisKeys {
     public static String duplicateSubmit(String identity, String uri) {
         return "dup:" + identity + ":" + uri;
     }
+
+    public static String characterCommentLock(Long userId) {
+        return "character:comment:lock:" + userId;
+    }
 }
